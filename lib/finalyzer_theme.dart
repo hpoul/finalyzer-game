@@ -9,6 +9,7 @@ const kAppBarElevation = 0.5;
 
 class FinalyzerTheme {
   static final colorPrimary = kFinalyzerOrange;
+  static final colorSecondary = kFinalyzerGreen;
 }
 
 
