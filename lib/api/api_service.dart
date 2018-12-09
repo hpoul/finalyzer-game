@@ -32,4 +32,8 @@ class ApiService {
 //    var response = await request.close();
 //    response.read
   }
+
+  String getImageUrl(InstrumentImageDto image) {
+    return _baseUri.resolve('api/pricedata/image/${image.id}?noSVG=true').toString();
+  }
 }

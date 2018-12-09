@@ -7,6 +7,10 @@ const kDarkGray = const Color(0XFFF1F5F6);
 const kTextDarkGray = Colors.grey;
 const kAppBarElevation = 0.5;
 
+class FinalyzerTheme {
+  static final colorPrimary = kFinalyzerOrange;
+}
+
 
 ThemeData buildFinalyzerTheme() {
 //  final ThemeData base = ThemeData.light();
