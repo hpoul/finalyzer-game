@@ -25,7 +25,7 @@ class ApiService {
   Future<GameSimpleSetResponse> getSimpleGameSet() async {
     _logger.fine('Requesting simple game set. ${_baseUri.resolve("api/game/simpleGameSet")}');
     var dio = new Dio();
-    await Future.delayed(Duration(seconds: 5));
+//    await Future.delayed(Duration(seconds: 5));
     var response = await dio.get(_baseUri.resolve("api/game/simpleGameSet").toString(), options: Options(responseType: ResponseType.JSON));
     return GameSimpleSetResponse.fromJson(response.data);
 
