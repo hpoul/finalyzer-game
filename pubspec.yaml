@@ -24,6 +24,7 @@ dependencies:
   dio: ^1.0.9
   cached_network_image: ^0.6.0-alpha.2
   intl: ^0.15.7
+  rxdart: ^0.19.0
 
 dev_dependencies:
   flutter_test:
