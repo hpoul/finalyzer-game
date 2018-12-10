@@ -11,7 +11,6 @@ import 'package:logging/logging.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
-
 class MarketCapSorting extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -136,7 +135,6 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 
   @override
   Widget build(BuildContext context) {
-
     return MarketCapSortingGameProvider(
       game: _gameBloc,
       child: Scaffold(
@@ -154,23 +152,25 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                   ))
               : Icon(Icons.check),
-          onPressed: isVerifying ? null : () {
-            setState(() {
-              isVerifying = !isVerifying;
-            });
-            _gameBloc.verifyMarketCaps().then((val) {
-              _showVerifyResultDialog(val);
-              setState(() {
-                isVerifying = false;
-              });
-            }).catchError((error, stackTrace) {
-              _logger.severe('Error while verifying market caps.', error, stackTrace);
-              setState(() {
-                isVerifying = false;
-              });
-              _showErrorDialog(error);
-            });
-          },
+          onPressed: isVerifying
+              ? null
+              : () {
+                  setState(() {
+                    isVerifying = !isVerifying;
+                  });
+                  _gameBloc.verifyMarketCaps().then((val) {
+                    _showVerifyResultDialog(val);
+                    setState(() {
+                      isVerifying = false;
+                    });
+                  }).catchError((error, stackTrace) {
+                    _logger.severe('Error while verifying market caps.', error, stackTrace);
+                    setState(() {
+                      isVerifying = false;
+                    });
+                    _showErrorDialog(error);
+                  });
+                },
           isExtended: true,
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -208,9 +208,9 @@ class MarketCapSortingState extends State<MarketCapSorting> {
         ),
         body: SafeArea(
 //        bottom: false,
-          child: StreamBuilder(
-            stream: _gameBloc.simpleGameSet,
-            builder: (context, snapshot) => snapshot.data == null
+            child: StreamBuilder(
+          stream: _gameBloc.simpleGameSet,
+          builder: (context, snapshot) => snapshot.data == null
               ? Center(child: CircularProgressIndicator())
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -219,77 +219,98 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                     Expanded(child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data as GameSimpleSetResponse)),
                   ],
                 ),
-        )
-        ),
+        )),
       ),
     );
   }
 
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response) {
     final _api = ApiService.instance;
-    showDialog(context: context, builder: (context) =>
-        AlertDialog(
-          title: Text('Correct Market Caps'),
-          content: StreamBuilder<GameSimpleSetResponse>(
-            stream: _gameBloc.simpleGameSet,
-          builder: (context, snapshot) => snapshot.data == null ? Container() : Column(children:
-                    response.actual.map((guess) {
-                      final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == guess.instrumentKey);
-                      var pos = 0;
-                      double guessedMarketCap;
-                      for (var value in _gameBloc.marketCapPositions) {
-                        pos++;
-                        if (value.key == guess.instrumentKey) {
-                          guessedMarketCap = value.value;
-                          break;
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text('Correct Market Caps'),
+              content: StreamBuilder<GameSimpleSetResponse>(
+                stream: _gameBloc.simpleGameSet,
+                builder: (context, snapshot) => snapshot.data == null
+                    ? Container()
+                    : SingleChildScrollView(
+                  child: Column(
+                        children: response.actual.asMap().map((resultIdx, resultDto) {
+                        final info =
+                            snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
+                        var pos = 0;
+                        double guessedMarketCap;
+                        final guesses = _gameBloc.marketCapPositions.toList();
+                        guesses.sort((a, b) => a.value.compareTo(b.value));
+
+                        for (var value in guesses) {
+                          pos++;
+                          if (value.key == resultDto.instrumentKey) {
+                            guessedMarketCap = value.value;
+                            break;
+                          }
                         }
-                      }
-                      return Container(
-                        margin: EdgeInsets.only(bottom: 16.0),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              CachedNetworkImage(
+
+                        return MapEntry(resultIdx, Container(
+                          decoration: resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
+                          padding: EdgeInsets.only(top: 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                            Container(
+                              alignment: Alignment.centerRight,
+                              width: 100,
+                              height: 40,
+                              child: CachedNetworkImage(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
                                 width: 100,
                                 height: 40,
                                 imageUrl: _api.getImageUrl(info.logo),
                               ),
-                              Text(formatMarketCap(guess.marketCap), style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono')),
-                              Text("Your Guess: Position: $pos / MarketCap: ${formatMarketCap(guessedMarketCap)}", style: Theme.of(context).textTheme.caption,),
-                            ]
-                        ),
-                      );
-                    }).toList()
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('New Game'),
-              onPressed: () {
-                _gameBloc.newGame();
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        )
-    );
+                            ),
+                            Container(
+//                              constraints: BoxConstraints.expand(),
+                              margin: EdgeInsets.only(bottom: 8.0),
+                              child: Text(formatMarketCap(resultDto.marketCap),
+                                  style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'), textAlign: TextAlign.right,),
+                            ),
+                            Text("Your Guess:", style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.right,),
+                            Text("Position: $pos ${pos == resultIdx+1 ? '👍 ️️✅️' : '👎 🤷️'}",style: Theme.of(context).textTheme.caption.copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red), textAlign: TextAlign.right),
+                            Text("MarketCap: ${formatMarketCap(guessedMarketCap)}",
+                              style: Theme.of(context).textTheme.caption, textAlign: TextAlign.right,
+                            ),
+                          ]),
+                        ));
+                      }).values.toList()),
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('New Game'),
+                  onPressed: () {
+                    _gameBloc.newGame();
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ));
   }
 
   void _showErrorDialog(Error error) {
-    showDialog(context: context, builder: (context) =>
-        AlertDialog(
-          title: Text('Error'),
-          content: Text('There was an error during the request.\nPlease try again later.\n$error'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Dismiss'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        )
-    );
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text('Error'),
+              content: Text('There was an error during the request.\nPlease try again later.\n$error'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Dismiss'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ));
   }
 }
 
@@ -303,7 +324,6 @@ class MarketCapSortingScaleWidget extends StatefulWidget {
   State<StatefulWidget> createState() {
     return MarketCapSortingScaleState();
   }
-
 }
 
 class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
@@ -371,8 +391,8 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                     RenderBox renderBox = context.findRenderObject();
                     final local = renderBox.globalToLocal(event.globalPosition);
 //                        ;
-                    gameBloc.updateMarketCapPosition(val.instrumentKey, this.widget.simpleGameSet.marketCapScaleMax -
-                        this.totalRange / context.size.height * local.dy);
+                    gameBloc.updateMarketCapPosition(val.instrumentKey,
+                        this.widget.simpleGameSet.marketCapScaleMax - this.totalRange / context.size.height * local.dy);
                   });
                 },
                 child: Stack(
@@ -396,7 +416,8 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                         ),
                       ),
                     ),
-                    buildMarketCapLabel(gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
+                    buildMarketCapLabel(
+                        gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
                     buildLine(),
                   ],
                 ),
