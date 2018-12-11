@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 import 'package:logging/logging.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -294,6 +295,10 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 
     var score = 0;
 
+    // ok, this is a pretty bad misuse, but i couldn't come up with a better use case right now :-)
+    final trace = FirebasePerformance.instance.newTrace('sorting_score');
+    trace.start();
+
     final ret = Column(
       children: response.actual
           .asMap()
@@ -313,7 +318,10 @@ class MarketCapSortingState extends State<MarketCapSorting> {
             }
 
             if (pos == resultIdx + 1) {
+              trace.incrementCounter('correct');
               score++;
+            } else {
+              trace.incrementCounter('wrong');
             }
 
             return MapEntry(
@@ -366,6 +374,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
           .toList(),
     );
 
+    trace.stop();
     AnalyticsUtils.instance.analytics.logEvent(name: "verify_sort", parameters: {'score': score});
 
     return ret;
