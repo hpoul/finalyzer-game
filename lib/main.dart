@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 
 final _logger = new Logger("app.anlage.game.main");
 
@@ -19,25 +24,60 @@ void _setupLogging() {
   });
 }
 
+Future<void> _setupCrashlytics() async {
+  bool isInDebugMode = false;
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (isInDebugMode) {
+      // In development mode simply print to console.
+      FlutterError.dumpErrorToConsole(details);
+    } else {
+      // In production mode report to the application zone to report to
+      // Crashlytics.
+      Zone.current.handleUncaughtError(details.exception, details.stack);
+    }
+  };
+
+  await FlutterCrashlytics().initialize();
+}
+
+void startApp(Env env) async {
+  _setupLogging();
+  await _setupCrashlytics();
+  _logger.fine('Logging was set up.');
+
+  runZoned<Future<Null>>(() async {
+    runApp(MyApp(env));
+  }, onError: (error, stackTrace) async {
+    // Whenever an error occurs, call the `reportCrash` function. This will send
+    // Dart errors to our dev console or Crashlytics depending on the environment.
+    await FlutterCrashlytics().reportCrash(error, stackTrace, forceCrash: false);
+  });
+}
+
 //void main() => runApp(MyApp());
 void main() => throw Exception('Run some env/*.dart');
 
 class MyApp extends StatelessWidget {
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
+  static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics);
+
   MyApp(Env env) {
-    _setupLogging();
-    _logger.fine('Logging was set up.');
   }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    analytics.logAppOpen();
     return MaterialApp(
       title: 'Anlage.App Game',
       theme: buildFinalyzerTheme(),
+      navigatorObservers: [observer],
       home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
     );
   }
 }
+
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);

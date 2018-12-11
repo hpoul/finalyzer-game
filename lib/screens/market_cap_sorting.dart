@@ -8,6 +8,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -140,6 +141,31 @@ class MarketCapSortingState extends State<MarketCapSorting> {
       child: Scaffold(
         appBar: AppBar(
           title: Text('Market Cap Game by https://Anlage.App'),
+          actions: <Widget>[
+            PopupMenuButton<String>(
+                onSelected: (val) {
+                  _logger.fine('User wants to $val');
+                  if (val == 'report' || val == 'crash') {
+                    try {
+                      throw Exception();
+                    } catch (error, stackTrace) {
+                      _logger.fine('We are reporting an error.');
+                      FlutterCrashlytics().reportCrash('some random $val', stackTrace, forceCrash: val == 'crash');
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                      value: 'report',
+                      child: Text('Report Log')
+                  ),
+                  const PopupMenuItem(
+                    value: 'crash',
+                    child: Text('Crash Me'),
+                  )
+                ]
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton.extended(
           label: Text(isVerifying ? 'Loading …' : 'Check'),

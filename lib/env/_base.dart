@@ -10,7 +10,10 @@ abstract class Env {
 
   Env() {
     value = this;
-    runApp(MyApp(this));
+  }
+
+  Future<void> start() async {
+    await startApp(this);
   }
 
   String get name => runtimeType.toString();

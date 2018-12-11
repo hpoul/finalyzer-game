@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:flutter/material.dart';
 
-void main() => Development();
+void main() async => await Development().start();
 
 class Development extends Env {
 //  final String baseUrl = 'http://localhost:8080';
