@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -59,8 +60,8 @@ void startApp(Env env) async {
 void main() => throw Exception('Run some env/*.dart');
 
 class MyApp extends StatelessWidget {
-  static FirebaseAnalytics analytics = FirebaseAnalytics();
-  static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics);
+  static AnalyticsUtils analytics = AnalyticsUtils.instance;
+  static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics.analytics);
 
   MyApp(Env env) {
   }
@@ -68,7 +69,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    analytics.logAppOpen();
+    analytics.analytics.logAppOpen();
     return MaterialApp(
       title: 'Anlage.App Game',
       theme: buildFinalyzerTheme(),

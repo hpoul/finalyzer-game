@@ -1,5 +1,6 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
@@ -38,6 +39,7 @@ class MarketCapSortingGameBloc {
     _simpleGameSetFetcher.add(null);
     _logger.fine('Fetching new game.');
     _apiService.getSimpleGameSet().then((val) {
+      AnalyticsUtils.instance.analytics.logEvent(name: 'start_new_sort');
       _simpleGameSetFetcher.add(val);
     });
   }

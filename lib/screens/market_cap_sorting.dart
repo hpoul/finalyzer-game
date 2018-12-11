@@ -2,13 +2,14 @@ import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:logging/logging.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
+import 'package:logging/logging.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -155,16 +156,12 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(
-                      value: 'report',
-                      child: Text('Report Log')
-                  ),
-                  const PopupMenuItem(
-                    value: 'crash',
-                    child: Text('Crash Me'),
-                  )
-                ]
-            ),
+                      const PopupMenuItem(value: 'report', child: Text('Report Log')),
+                      const PopupMenuItem(
+                        value: 'crash',
+                        child: Text('Crash Me'),
+                      )
+                    ]),
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -251,7 +248,6 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   }
 
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response) {
-    final _api = ApiService.instance;
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -261,54 +257,8 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                 builder: (context, snapshot) => snapshot.data == null
                     ? Container()
                     : SingleChildScrollView(
-                  child: Column(
-                        children: response.actual.asMap().map((resultIdx, resultDto) {
-                        final info =
-                            snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
-                        var pos = 0;
-                        double guessedMarketCap;
-                        final guesses = _gameBloc.marketCapPositions.toList();
-                        guesses.sort((a, b) => a.value.compareTo(b.value));
-
-                        for (var value in guesses) {
-                          pos++;
-                          if (value.key == resultDto.instrumentKey) {
-                            guessedMarketCap = value.value;
-                            break;
-                          }
-                        }
-
-                        return MapEntry(resultIdx, Container(
-                          decoration: resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
-                          padding: EdgeInsets.only(top: 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                            Container(
-                              alignment: Alignment.centerRight,
-                              width: 100,
-                              height: 40,
-                              child: CachedNetworkImage(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerRight,
-                                width: 100,
-                                height: 40,
-                                imageUrl: _api.getImageUrl(info.logo),
-                              ),
-                            ),
-                            Container(
-//                              constraints: BoxConstraints.expand(),
-                              margin: EdgeInsets.only(bottom: 8.0),
-                              child: Text(formatMarketCap(resultDto.marketCap),
-                                  style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'), textAlign: TextAlign.right,),
-                            ),
-                            Text("Your Guess:", style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold), textAlign: TextAlign.right,),
-                            Text("Position: $pos ${pos == resultIdx+1 ? '👍 ️️✅️' : '👎 🤷️'}",style: Theme.of(context).textTheme.caption.copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red), textAlign: TextAlign.right),
-                            Text("MarketCap: ${formatMarketCap(guessedMarketCap)}",
-                              style: Theme.of(context).textTheme.caption, textAlign: TextAlign.right,
-                            ),
-                          ]),
-                        ));
-                      }).values.toList()),
-                ),
+                        child: _createResultScreen(response, snapshot),
+                      ),
               ),
               actions: <Widget>[
                 FlatButton(
@@ -337,6 +287,88 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                 )
               ],
             ));
+  }
+
+  _createResultScreen(GameSimpleSetVerifyResponse response, AsyncSnapshot<GameSimpleSetResponse> snapshot) {
+    final _api = ApiService.instance;
+
+    var score = 0;
+
+    final ret = Column(
+      children: response.actual
+          .asMap()
+          .map((resultIdx, resultDto) {
+            final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
+            var pos = 0;
+            double guessedMarketCap;
+            final guesses = _gameBloc.marketCapPositions.toList();
+            guesses.sort((a, b) => a.value.compareTo(b.value));
+
+            for (var value in guesses) {
+              pos++;
+              if (value.key == resultDto.instrumentKey) {
+                guessedMarketCap = value.value;
+                break;
+              }
+            }
+
+            if (pos == resultIdx + 1) {
+              score++;
+            }
+
+            return MapEntry(
+                resultIdx,
+                Container(
+                  decoration:
+                      resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
+                  padding: EdgeInsets.only(top: 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Container(
+                      alignment: Alignment.centerRight,
+                      width: 100,
+                      height: 40,
+                      child: CachedNetworkImage(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        width: 100,
+                        height: 40,
+                        imageUrl: _api.getImageUrl(info.logo),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(bottom: 8.0),
+                      child: Text(
+                        formatMarketCap(resultDto.marketCap),
+                        style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    Text(
+                      "Your Guess:",
+                      style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.right,
+                    ),
+                    Text("Position: $pos ${pos == resultIdx + 1 ? '👍 ️️✅️' : '👎 🤷️'}",
+                        style: Theme.of(context)
+                            .textTheme
+                            .caption
+                            .copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red),
+                        textAlign: TextAlign.right),
+                    Text(
+                      "MarketCap: ${formatMarketCap(guessedMarketCap)}",
+                      style: Theme.of(context).textTheme.caption,
+                      textAlign: TextAlign.right,
+                    ),
+                  ]),
+                ));
+          })
+          .values
+          .toList(),
+    );
+
+    AnalyticsUtils.instance.analytics.logEvent(name: "verify_sort", parameters: {'score': score});
+
+    return ret;
   }
 }
 
