@@ -302,7 +302,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
             var pos = 0;
             double guessedMarketCap;
             final guesses = _gameBloc.marketCapPositions.toList();
-            guesses.sort((a, b) => a.value.compareTo(b.value));
+            guesses.sort((a, b) => -1 * a.value.compareTo(b.value));
 
             for (var value in guesses) {
               pos++;
