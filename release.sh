@@ -4,12 +4,14 @@ set -xe
 
 case "$1" in
     ios)
-        flutter build ios -t lib/env/production.dart
+        flutter build ios -t lib/env/production.dart --release
         cd ios
         fastlane beta
     ;;
     android)
-        echo "case 2 or 3"
+        flutter build apk -t lib/env/production.dart --release
+        cd android
+        fastlane beta
     ;;
     *)
         echo "Unsupported command $1"
