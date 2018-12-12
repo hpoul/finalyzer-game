@@ -15,6 +15,8 @@ class MarketCapSortingGameBloc {
 
   BehaviorSubject<GameSimpleSetResponse> _simpleGameSetFetcher;
 
+  GameSimpleSetResponse _currentSimpleGameSet;
+
   ValueObservable<GameSimpleSetResponse> get simpleGameSet => _simpleGameSetFetcher.stream;
 
   MarketCapSortingGameBloc() {
@@ -27,6 +29,7 @@ class MarketCapSortingGameBloc {
       if (event == null) {
         return;
       }
+      _currentSimpleGameSet = event;
       calculateMarketCapPositions(event);
     });
   }
@@ -41,6 +44,9 @@ class MarketCapSortingGameBloc {
     _apiService.getSimpleGameSet().then((val) {
       AnalyticsUtils.instance.analytics.logEvent(name: 'start_new_sort');
       _simpleGameSetFetcher.add(val);
+    }).catchError((error, stackTrace) {
+      _logger.warning('Error while fetching new game.', error, stackTrace);
+      _simpleGameSetFetcher.addError(error, stackTrace);
     });
   }
 
@@ -65,6 +71,7 @@ class MarketCapSortingGameBloc {
 
   Future<GameSimpleSetVerifyResponse> verifyMarketCaps() {
     return _apiService.verifySimpleGameSet(
+        _currentSimpleGameSet.gameTurnId,
         marketCapPositions.map((pos) => GameSimpleSetGuessDto(pos.key, pos.value)).toList());
   }
 }

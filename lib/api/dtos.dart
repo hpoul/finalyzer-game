@@ -1,6 +1,8 @@
 // hand made dto :-) copied from kotlin code
 // need to find a way to automate this..
 
+import 'package:meta/meta.dart';
+
 class InstrumentImageDto {
   String id;
   String mimeType;
@@ -21,11 +23,13 @@ class SimpleGameDto {
 
 class GameSimpleSetResponse {
   List<SimpleGameDto> simpleGame;
+  String gameTurnId;
   double marketCapScaleMin;
   double marketCapScaleMax;
 
   GameSimpleSetResponse.fromJson(Map<String, dynamic> json)
       : simpleGame = (json['simpleGame'] as List<dynamic>).map((val) => SimpleGameDto.fromJson(val)).toList(),
+        gameTurnId = json['gameTurnId'] as String,
         marketCapScaleMin = json['marketCapScaleMin'] as double,
         marketCapScaleMax = json['marketCapScaleMax'] as double;
 }
@@ -47,13 +51,13 @@ class GameSimpleSetGuessDto {
 }
 
 class GameSimpleSetVerifyRequest {
-  String gameId;
+  String gameTurnId;
   List<GameSimpleSetGuessDto> guesses;
 
-  GameSimpleSetVerifyRequest(this.gameId, this.guesses);
+  GameSimpleSetVerifyRequest(this.gameTurnId, this.guesses);
 
   toJson() => {
-        'gameId': gameId,
+        'gameTurnId': gameTurnId,
         'guesses': guesses.map((guess) => guess.toJson()).toList(),
       };
 }
@@ -64,3 +68,35 @@ class GameSimpleSetVerifyResponse {
   GameSimpleSetVerifyResponse.fromJson(Map<String, dynamic> data)
       : actual = (data['actual'] as List<dynamic>).map((a) => GameSimpleSetGuessDto.fromJson(a)).toList();
 }
+
+enum DevicePlatform {
+  iOS,
+  Android,
+  Unknown
+}
+
+String _devicePlatformToString(DevicePlatform platform) {
+  switch (platform) {
+    case DevicePlatform.iOS: return 'iOS';
+    case DevicePlatform.Android: return 'Android';
+    case DevicePlatform.Unknown: return 'Unknown';
+  }
+  throw Exception('cannot happen. ever.');
+}
+
+class RegisterDeviceRequest {
+  String osInfo;
+  String deviceInfo;
+  DevicePlatform platform;
+
+  RegisterDeviceRequest({@required this.osInfo, @required this.deviceInfo, @required this.platform});
+
+  toJson() => {
+    'osInfo': osInfo,
+    'deviceInfo': deviceInfo,
+    'platform': _devicePlatformToString(platform),
+  };
+}
+
+
+
