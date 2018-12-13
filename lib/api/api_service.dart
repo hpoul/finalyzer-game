@@ -21,6 +21,13 @@ class LoginState {
 
 }
 
+class ResponseWrapper<T> {
+  Response<dynamic> response;
+  T data;
+
+  ResponseWrapper(this.response, this.data);
+}
+
 class ApiService {
   static final ApiService instance = new ApiService();
   static const PREF_GAME_SESSION = 'GAME_SESSION';
@@ -51,7 +58,7 @@ class ApiService {
       }
       final packageInfo = await PackageInfo.fromPlatform();
       final appVersion = "${packageInfo.version} (${packageInfo.buildNumber}) ${packageInfo.packageName} ${packageInfo.appName}";
-      final userInfo = await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo));
+      final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo))).data;
       _loginState.add(LoginState()
         ..avatarUrl = 'https://robohash.org/a${userInfo.key}'
         ..userInfo = userInfo);
@@ -79,17 +86,20 @@ class ApiService {
   Future<String> _registerDevice() async {
     final dio = Dio();
     final location = RegisterDeviceLocation();
-    final response = await dio.post(
-        _baseUri.resolve(location.path).toString(),
-        data: RegisterDeviceRequest(
-            "TODO",
-            "${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}",
-            Platform.isIOS ? DevicePlatform.iOS : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown).toJson(),
-        options: Options(responseType: ResponseType.JSON));
-    final gameSession = response.headers.value('GAME_SESSION');
+    final response = await _post(location, RegisterDeviceRequest(
+        "TODO",
+        "${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}",
+        Platform.isIOS ? DevicePlatform.iOS : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown).toJson(),
+        dio: dio
+    );
+    final gameSession = response.response.headers.value(GAME_SESSION_HEADER);
     _logger.finer('Got Game Session: $gameSession');
+    if (gameSession == null) {
+      throw StateError('Got null response for gameSession from server.');
+    }
     return gameSession;
   }
+
 
   Future<U> _get<U>(GetLocation<U> location) async {
     final dio = await getSessionDio();
@@ -97,10 +107,15 @@ class ApiService {
     return location.bodyFromGetJson(response.data);
   }
 
-  Future<U> _post<T, U>(PostBodyLocation<T, U> location, T args, {Dio dio}) async {
+  Future<ResponseWrapper<U>> _post<T, U>(PostBodyLocation<T, U> location, T args, {Dio dio}) async {
     final client = dio ?? await getSessionDio();
-    final response = await client.post(_baseUri.resolve(location.path).toString(), data: args);
-    return location.bodyFromPostJson(response.data);
+    try {
+      final response = await client.post(_baseUri.resolve(location.path).toString(), data: args);
+      return ResponseWrapper(response, location.bodyFromPostJson(response.data));
+    } catch (error, stackTrace) {
+      _logger.warning('Error during post request', error, stackTrace);
+      rethrow;
+    }
   }
 
   Future<Dio> getSessionDio() async {
@@ -119,10 +134,10 @@ class ApiService {
   Future<GameSimpleSetVerifyResponse> verifySimpleGameSet(String gameTurnId, List<GameSimpleSetGuessDto> guesses) async {
     final result = await this._post(GameSimpleSetLocation(), GameSimpleSetVerifyRequest(gameTurnId, guesses));
     final state = _loginState.value;
-    state.userInfo.statsCorrectAnswers = result.statsCorrectAnswers;
-    state.userInfo.statsTotalTurns = result.statsTotalTurns;
+    state.userInfo.statsCorrectAnswers = result.data.statsCorrectAnswers;
+    state.userInfo.statsTotalTurns = result.data.statsTotalTurns;
     _loginState.add(state);
-    return result;
+    return result.data;
   }
 
   String getImageUrl(InstrumentImageDto image) {
