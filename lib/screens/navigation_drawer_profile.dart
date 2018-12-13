@@ -39,7 +39,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                       ),
                     ),
                     Text('Hello Anonymous Investor!', textAlign: TextAlign.right,),
-                    Text('Maybe you could tell us a bit about you?', textAlign: TextAlign.right),
+                    Text('Stay tuned to get honoured soon in our leaderboard!', textAlign: TextAlign.right),
                   ],
                 ),
               ),

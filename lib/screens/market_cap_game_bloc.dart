@@ -72,7 +72,11 @@ class MarketCapSortingGameBloc {
   Future<GameSimpleSetVerifyResponse> verifyMarketCaps() {
     return _apiService.verifySimpleGameSet(
         _currentSimpleGameSet.gameTurnId,
-        marketCapPositions.map((pos) => GameSimpleSetGuessDto(pos.key, pos.value)).toList());
+        marketCapPositions
+            .map((pos) => GameSimpleSetGuessDto(pos.key, pos.value))
+            .toList()
+          ..sort((a, b) => -a.marketCap.compareTo(b.marketCap) )
+    );
   }
 }
 

@@ -49,23 +49,39 @@ class ApiService {
     _dio = _createSessionDio();
     
     // some arbitrary time after staring up, request current status from the server.
-    Future.delayed(Duration(seconds: 3)).then((x) async {
-      var deviceInfo;
-      if (Platform.isIOS) {
-        final iosInfo = await DeviceInfoPlugin().iosInfo;
-        deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
-      } else if (Platform.isAndroid) {
-        final androidInfo = await DeviceInfoPlugin().androidInfo;
-        deviceInfo = "${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo.manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
-      }
-      final packageInfo = await PackageInfo.fromPlatform();
-      final appVersion = "${packageInfo.version} (${packageInfo.buildNumber}) ${packageInfo.packageName} ${packageInfo.appName}";
-      _logger.finer('sending userinfo.');
+    Future.delayed(Duration(seconds: 3)).then((x) async { await _updateUserInfo(); });
+  }
+
+  Future<void> _updateUserInfo({int retryCount = 0}) async {
+    var deviceInfo;
+    if (Platform.isIOS) {
+      final iosInfo = await DeviceInfoPlugin().iosInfo;
+      deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
+    } else if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      deviceInfo = "${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
+          .manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
+    }
+    final packageInfo = await PackageInfo.fromPlatform();
+    final appVersion = "${packageInfo.version} (${packageInfo.buildNumber}) ${packageInfo.packageName} ${packageInfo
+        .appName}";
+    _logger.finer('sending userinfo.');
+
+    try {
       final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo))).data;
+
       _loginState.add(LoginState()
         ..avatarUrl = 'https://robohash.org/a${userInfo.key}'
         ..userInfo = userInfo);
-    });
+    } on DioError catch (error, stackTrace)  {
+      if (retryCount < 10) {
+        final duration = 10 * (retryCount+1);
+        _logger.warning('Error while updating user info. retrying in $duration seconds. Retries: $retryCount');
+        Future.delayed(Duration(seconds: duration)).then((val) {
+          _updateUserInfo(retryCount: retryCount - 1);
+        });
+      }
+    }
   }
 
   Dio _createSessionDio() {
@@ -125,7 +141,6 @@ class ApiService {
         Platform.isIOS ? DevicePlatform.iOS : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown).toJson(),
         dio: dio
     );
-    final d = response.data.deviceKey;
     final gameSession = response.response.headers.value(GAME_SESSION_HEADER);
     _logger.finer('Got Game Session: $gameSession');
     if (gameSession == null) {
@@ -168,9 +183,14 @@ class ApiService {
   Future<GameSimpleSetVerifyResponse> verifySimpleGameSet(String gameTurnId, List<GameSimpleSetGuessDto> guesses) async {
     final result = await this._post(GameSimpleSetLocation(), GameSimpleSetVerifyRequest(gameTurnId, guesses));
     final state = _loginState.value;
-    state.userInfo.statsCorrectAnswers = result.data.statsCorrectAnswers;
-    state.userInfo.statsTotalTurns = result.data.statsTotalTurns;
-    _loginState.add(state);
+    if (state == null) {
+      this._updateUserInfo();
+    } else {
+      state.userInfo.statsCorrectAnswers = result.data.statsCorrectAnswers;
+      state.userInfo.statsTotalTurns = result.data.statsTotalTurns;
+      _loginState.add(state);
+    }
+    _logger.finer('Received answer with correctAnswers: ${result.data.statsCorrectAnswers} (now: ${result.data.correctCount})');
     return result.data;
   }
 
