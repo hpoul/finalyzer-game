@@ -24,7 +24,7 @@ class LoginState {
 class ApiService {
   static final ApiService instance = new ApiService();
   static const PREF_GAME_SESSION = 'GAME_SESSION';
-  static const GAME_SESSION_HEADER = 'GAME_SESSION';
+  static const GAME_SESSION_HEADER = 'GAME-SESSION';
 
   final _loginState = BehaviorSubject<LoginState>();
   get loginState => _loginState.stream;
