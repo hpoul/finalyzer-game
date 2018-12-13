@@ -328,7 +328,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
             response.correctCount == 0 ? Text('😞 None were correctly', style: Theme.of(context).textTheme.title.copyWith(color: Colors.orange))
             : response.correctCount == 1 ? Text('🤔 Nice try.')
             : response.correctCount == 2 ? Text('️📈️ Almost!')
-            : response.correctCount == 3 ? Text('🎉️ WOW! All Correct!', style: Theme.of(context).textTheme.title.copyWith(color: Colors.green))
+            : response.correctCount == 4 ? Text('🎉️ WOW! All Correct!', style: Theme.of(context).textTheme.title.copyWith(color: Colors.green))
             : Text('?!')),
         content: StreamBuilder<GameSimpleSetResponse>(
           stream: _gameBloc.simpleGameSet,
