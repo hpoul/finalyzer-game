@@ -20,7 +20,8 @@ ThemeData buildFinalyzerTheme() {
     accentColor: kFinalyzerGreen,
     primaryColor: kFinalyzerOrange,
     primaryColorBrightness: Brightness.dark,
-    canvasColor: kDarkGray,
+//    canvasColor: kDarkGray,
+  canvasColor: Colors.white,
   );
 //  base.inputDecorationTheme.fillColor = Colors.white;
   return base;

@@ -7,3 +7,7 @@ Anlage.App Market Cap Game
 * Error handling for initial loading & Retry
 * Fix progress bar
 
+## Possible avatar generators
+
+* https://avatars.dicebear.com/
+

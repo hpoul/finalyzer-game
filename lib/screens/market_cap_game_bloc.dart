@@ -1,5 +1,5 @@
 import 'package:anlage_app_game/api/api_service.dart';
-import 'package:anlage_app_game/api/dtos.dart';
+import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -58,7 +58,7 @@ class MarketCapSortingGameBloc {
     var singlePos = range / (simpleGameSet.simpleGame.length - 1);
     var i = 0;
 
-    _logger.fine('Positining simpleGame starting at ${simpleGameSet.marketCapScaleMin} ${i}');
+    _logger.fine('Positining simpleGame starting at ${simpleGameSet.marketCapScaleMin} $i');
     marketCapPositions =
         simpleGameSet.simpleGame.map((dto) => MapEntry(dto.instrumentKey, rangeMin + (singlePos * i++))).toList();
   }

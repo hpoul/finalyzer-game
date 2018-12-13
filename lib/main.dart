@@ -6,9 +6,8 @@ import 'package:anlage_app_game/screens/market_cap_sorting.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
+import 'package:logging/logging.dart';
 
 final _logger = new Logger("app.anlage.game.main");
 
@@ -42,7 +41,7 @@ Future<void> _setupCrashlytics() async {
   await FlutterCrashlytics().initialize();
 }
 
-void startApp(Env env) async {
+Future<void> startApp(Env env) async {
   _setupLogging();
   await _setupCrashlytics();
   _logger.fine('Logging was set up.');
@@ -63,8 +62,7 @@ class MyApp extends StatelessWidget {
   static AnalyticsUtils analytics = AnalyticsUtils.instance;
   static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics.analytics);
 
-  MyApp(Env env) {
-  }
+  MyApp(Env env);
 
   // This widget is the root of your application.
   @override

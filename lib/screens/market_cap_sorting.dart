@@ -1,16 +1,16 @@
 import 'package:anlage_app_game/api/api_service.dart';
-import 'package:anlage_app_game/api/dtos.dart';
+import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 import 'package:logging/logging.dart';
-import 'package:firebase_performance/firebase_performance.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -120,6 +120,7 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
 class MarketCapSortingState extends State<MarketCapSorting> {
   bool isVerifying = false;
   MarketCapSortingGameBloc _gameBloc;
+  final _api = ApiService.instance;
 
   @override
   void initState() {
@@ -141,9 +142,25 @@ class MarketCapSortingState extends State<MarketCapSorting> {
     return MarketCapSortingGameProvider(
       game: _gameBloc,
       child: Scaffold(
+        endDrawer: NavigationDrawerProfile(),
         appBar: AppBar(
-          title: Text('Market Cap Game by https://Anlage.App'),
+          title: Text('Market Cap Game'),
           actions: <Widget>[
+            StreamBuilder<LoginState>(
+                builder: (context, snapshot) => IconButton(
+                  iconSize: 36,
+                  icon: CircleAvatar(
+                      maxRadius: 18,
+                      backgroundColor: Colors.white,
+                      backgroundImage: snapshot.data?.avatarUrl == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl)
+                  ),
+                  onPressed: () {
+                    AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
+                    Scaffold.of(context).openEndDrawer();
+                  }),
+              stream: _api.loginState,
+            ),
+            /*
             PopupMenuButton<String>(
                 onSelected: (val) {
                   _logger.fine('User wants to $val');
@@ -163,6 +180,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                         child: Text('Crash Me'),
                       )
                     ]),
+                    */
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -233,16 +251,36 @@ class MarketCapSortingState extends State<MarketCapSorting> {
         body: SafeArea(
 //        bottom: false,
             child: StreamBuilder(
-          stream: _gameBloc.simpleGameSet,
-          builder: (context, snapshot) => snapshot.data == null
-              ? Center(child: CircularProgressIndicator())
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
+              stream: _gameBloc.simpleGameSet,
+              builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
 //            Text("lorem ipsum"),
-                    Expanded(child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data as GameSimpleSetResponse)),
+                  Expanded(child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data as GameSimpleSetResponse)),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return Container(
+                margin: EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text("Error occurred while fetching data. Please check your network connection and try again."),
+                    RaisedButton(
+                      child: Text('Retry'),
+                      onPressed: () {
+                        _gameBloc.newGame();
+                      },
+                    ),
                   ],
                 ),
+              );
+            } else {
+              return Center(child: CircularProgressIndicator());
+            }
+          },
         )),
       ),
     );
@@ -301,6 +339,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 
     final ret = Column(
       children: response.actual
+          .toList()
           .asMap()
           .map((resultIdx, resultDto) {
             final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
@@ -474,7 +513,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                         child: Container(
                           padding: EdgeInsets.all(8),
                           child: CachedNetworkImage(
-                            placeholder: Center(child: CircularProgressIndicator()),
+                            placeholder: Center(child: LinearProgressIndicator()),
                             errorWidget: Text('Error :( ${val.logo.id}'),
 //                              width: 100,
 //                                  height: 50,

@@ -12,12 +12,12 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
 
   final FirebaseAnalytics analytics;
 
-  _extractScreenName(RouteSettings settings) =>
-    settings.name ?? settings.runtimeType.toString();
+  _extractScreenName(Route<dynamic> route) =>
+    route.settings.name ?? route.runtimeType.toString();
 
 
   void _sendScreenView(Route<dynamic> route) {
-    final String screenName = _extractScreenName(route.settings);
+    final String screenName = _extractScreenName(route);
     if (screenName != null) {
       analytics.setCurrentScreen(screenName: screenName);
       _logger.finer('Track Screen: $screenName');
