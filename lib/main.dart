@@ -15,11 +15,23 @@ void _setupLogging() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((LogRecord rec) {
     print('${rec.level.name}: ${rec.time}: ${rec.message}');
+
+    if (rec.level >= Level.INFO) {
+      FlutterCrashlytics().log(rec.message, priority: rec.level.value, tag: rec.loggerName);
+    }
+
     if (rec.error != null) {
       print(rec.error);
     }
     if (rec.stackTrace != null) {
       print(rec.stackTrace);
+      if (rec.level >= Level.INFO) {
+        AnalyticsUtils.instance.analytics.logEvent(name: 'error', parameters: {'message': rec.message, 'stack': rec.stackTrace});
+        FlutterCrashlytics().logException(rec.error, rec.stackTrace);
+      }
+    } else if (rec.level >= Level.SEVERE) {
+      AnalyticsUtils.instance.analytics.logEvent(name: 'error', parameters: {'message': rec.message, 'stack': StackTrace.current.toString()});
+      FlutterCrashlytics().logException(Exception('SEVERE LOG ${rec.message}'), StackTrace.current);
     }
   });
 }

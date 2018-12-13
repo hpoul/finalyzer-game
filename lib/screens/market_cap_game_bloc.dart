@@ -58,7 +58,7 @@ class MarketCapSortingGameBloc {
     var singlePos = range / (simpleGameSet.simpleGame.length - 1);
     var i = 0;
 
-    _logger.fine('Positining simpleGame starting at ${simpleGameSet.marketCapScaleMin} $i');
+    _logger.fine('Positioning simpleGame starting at ${simpleGameSet.marketCapScaleMin} $i');
     marketCapPositions =
         simpleGameSet.simpleGame.map((dto) => MapEntry(dto.instrumentKey, rangeMin + (singlePos * i++))).toList();
   }

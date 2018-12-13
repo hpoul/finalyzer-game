@@ -40,11 +40,13 @@ class ApiService {
   Uri _baseUri;
 
   String _gameSession;
+  Dio _dio;
 
 
   ApiService({Env env}) {
     this._env = env ?? Env.value;
     _baseUri = Uri.parse(_env.baseUrl);
+    _dio = _createSessionDio();
     
     // some arbitrary time after staring up, request current status from the server.
     Future.delayed(Duration(seconds: 3)).then((x) async {
@@ -58,6 +60,7 @@ class ApiService {
       }
       final packageInfo = await PackageInfo.fromPlatform();
       final appVersion = "${packageInfo.version} (${packageInfo.buildNumber}) ${packageInfo.packageName} ${packageInfo.appName}";
+      _logger.finer('sending userinfo.');
       final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo))).data;
       _loginState.add(LoginState()
         ..avatarUrl = 'https://robohash.org/a${userInfo.key}'
@@ -65,24 +68,54 @@ class ApiService {
     });
   }
 
-  Future<String> getGameSession() async {
+  Dio _createSessionDio() {
+    final dio = Dio();
+    dio.interceptor.request.onSend = (Options options) async {
+      var gameSession = await _getGameSessionFromPreferences();
+
+      if (gameSession == null) {
+        dio.interceptor.request.lock();
+        _logger.info('No session found, registering device.');
+        await Future.delayed(Duration(seconds: 5)); _logger.severe('DEBUG WAITING for 5 SECONDS.');
+
+        try {
+          gameSession = await _registerDevice();
+          _setGameSession(gameSession);
+        } finally {
+          dio.interceptor.request.unlock();
+        }
+      }
+
+      options.headers[GAME_SESSION_HEADER] = gameSession;
+
+      return options;
+    };
+    dio.interceptor.response.onError = (DioError error) async {
+      if (error.response != null && error.response.statusCode == HttpStatus.unauthorized) {
+        _logger.severe('It seems session got invalid. at least remove session so on next request it is working again. ${await this._getGameSessionFromPreferences()}');
+        await _setGameSession(null);
+      }
+      return error;
+    };
+    return dio;
+  }
+
+  Future<String> _getGameSessionFromPreferences() async {
     if (_gameSession != null) {
       return _gameSession;
     }
 
     final prefs = await SharedPreferences.getInstance();
     _gameSession = prefs.getString(PREF_GAME_SESSION);
-
-    if (_gameSession == null) {
-      _gameSession = await this._registerDevice();
-    }
-
-    prefs.setString(PREF_GAME_SESSION, _gameSession);
-    _loginState.add(LoginState()..avatarUrl = 'https://robohash.org/a${_gameSession.hashCode.toString()}');
-
     return _gameSession;
   }
-  
+
+  Future<void> _setGameSession(String gameSession) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PREF_GAME_SESSION, gameSession);
+    _gameSession = gameSession;
+  }
+
   Future<String> _registerDevice() async {
     final dio = Dio();
     final location = RegisterDeviceLocation();
@@ -92,6 +125,7 @@ class ApiService {
         Platform.isIOS ? DevicePlatform.iOS : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown).toJson(),
         dio: dio
     );
+    final d = response.data.deviceKey;
     final gameSession = response.response.headers.value(GAME_SESSION_HEADER);
     _logger.finer('Got Game Session: $gameSession');
     if (gameSession == null) {
@@ -119,7 +153,7 @@ class ApiService {
   }
 
   Future<Dio> getSessionDio() async {
-    return Dio(Options(headers: {GAME_SESSION_HEADER: await this.getGameSession()}));
+    return _dio;
   }
 
   Future<GameSimpleSetResponse> getSimpleGameSet() async {
