@@ -147,40 +147,20 @@ class MarketCapSortingState extends State<MarketCapSorting> {
           title: Text('Market Cap Game'),
           actions: <Widget>[
             StreamBuilder<LoginState>(
-                builder: (context, snapshot) => IconButton(
+              builder: (context, snapshot) => IconButton(
                   iconSize: 36,
                   icon: CircleAvatar(
                       maxRadius: 18,
                       backgroundColor: Colors.white,
-                      backgroundImage: snapshot.data?.avatarUrl == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl)
-                  ),
+                      backgroundImage: snapshot.data?.avatarUrl == null
+                          ? null
+                          : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
                   onPressed: () {
                     AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
                     Scaffold.of(context).openEndDrawer();
                   }),
               stream: _api.loginState,
             ),
-            /*
-            PopupMenuButton<String>(
-                onSelected: (val) {
-                  _logger.fine('User wants to $val');
-                  if (val == 'report' || val == 'crash') {
-                    try {
-                      throw Exception();
-                    } catch (error, stackTrace) {
-                      _logger.fine('We are reporting an error.');
-                      FlutterCrashlytics().reportCrash('some random $val', stackTrace, forceCrash: val == 'crash');
-                    }
-                  }
-                },
-                itemBuilder: (context) => [
-                      const PopupMenuItem(value: 'report', child: Text('Report Log')),
-                      const PopupMenuItem(
-                        value: 'crash',
-                        child: Text('Crash Me'),
-                      )
-                    ]),
-                    */
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
@@ -216,19 +196,6 @@ class MarketCapSortingState extends State<MarketCapSorting> {
           isExtended: true,
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-//      persistentFooterButtons: <Widget>[
-//            RaisedButton(
-//                child: Text('Verify'),
-//                onPressed: () { })
-//          ],
-//    bottomNavigationBar: Container(
-//      margin: EdgeInsets.all(16.0),
-//      child: Row(
-//        children: <Widget>[
-//          Text('Bottom sheet.'),
-//        ],
-//      ),
-//    ),
         bottomNavigationBar: Card(
           elevation: 16.0,
           margin: EdgeInsets.only(top: 0.0),
@@ -243,7 +210,6 @@ class MarketCapSortingState extends State<MarketCapSorting> {
                   'Sort the companies based on their Market Cap.',
                   style: Theme.of(context).textTheme.body2,
                 ),
-                Text('Extra points for approximating the right value! (+/-10%)'),
               ],
             ),
           ),
@@ -251,8 +217,8 @@ class MarketCapSortingState extends State<MarketCapSorting> {
         body: SafeArea(
 //        bottom: false,
             child: StreamBuilder(
-              stream: _gameBloc.simpleGameSet,
-              builder: (context, snapshot) {
+          stream: _gameBloc.simpleGameSet,
+          builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -287,9 +253,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   }
 
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response) {
-    showDialog(
-        context: context,
-        builder: (context) => MarketCapSortingResultWidget(response, _gameBloc));
+    showDialog(context: context, builder: (context) => MarketCapSortingResultWidget(response, _gameBloc));
   }
 
   void _showErrorDialog(Error error) {
@@ -308,12 +272,9 @@ class MarketCapSortingState extends State<MarketCapSorting> {
               ],
             ));
   }
-
-
 }
 
 class MarketCapSortingResultWidget extends StatelessWidget {
-
   final GameSimpleSetVerifyResponse response;
   final MarketCapSortingGameBloc _gameBloc;
 
@@ -323,35 +284,39 @@ class MarketCapSortingResultWidget extends StatelessWidget {
   Widget build(BuildContext context) {
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
     return Container(
-      child: AlertDialog(
-        title: (
-            response.correctCount == 0 ? Text('😞 None were correctly', style: Theme.of(context).textTheme.title.copyWith(color: Colors.orange))
-            : response.correctCount == 1 ? Text('🤔 Nice try.')
-            : response.correctCount == 2 ? Text('️📈️ Almost!')
-            : response.correctCount == 4 ? Text('🎉️ WOW! All Correct!', style: Theme.of(context).textTheme.title.copyWith(color: Colors.green))
-            : Text('?!')),
-        content: StreamBuilder<GameSimpleSetResponse>(
-          stream: _gameBloc.simpleGameSet,
-          builder: (context, snapshot) => snapshot.data == null
-              ? Container()
-              : SingleChildScrollView(
-            child: _createResultScreen(response, snapshot, _gameBloc, context),
-          ),
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: Text('New Game'),
-            onPressed: () {
-              _gameBloc.newGame();
-              Navigator.of(context).pop();
-            },
-          )
-        ],
-      )
-    );
+        child: AlertDialog(
+      title: (response.correctCount == 0
+          ? Text('😞 None were correctly', style: Theme.of(context).textTheme.title.copyWith(color: Colors.orange))
+          : response.correctCount == 1
+              ? Text('🤔 Nice try.')
+              : response.correctCount == 2
+                  ? Text('️📈️ Almost!')
+                  : response.correctCount == 4
+                      ? Text('🎉️ WOW! All Correct!',
+                          style: Theme.of(context).textTheme.title.copyWith(color: Colors.green))
+                      : Text('?!')),
+      content: StreamBuilder<GameSimpleSetResponse>(
+        stream: _gameBloc.simpleGameSet,
+        builder: (context, snapshot) => snapshot.data == null
+            ? Container()
+            : SingleChildScrollView(
+                child: _createResultScreen(response, snapshot, _gameBloc, context),
+              ),
+      ),
+      actions: <Widget>[
+        FlatButton(
+          child: Text('New Game'),
+          onPressed: () {
+            _gameBloc.newGame();
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    ));
   }
 
-  _createResultScreen(GameSimpleSetVerifyResponse response, AsyncSnapshot<GameSimpleSetResponse> snapshot, MarketCapSortingGameBloc _gameBloc, BuildContext context) {
+  _createResultScreen(GameSimpleSetVerifyResponse response, AsyncSnapshot<GameSimpleSetResponse> snapshot,
+      MarketCapSortingGameBloc _gameBloc, BuildContext context) {
     final _api = ApiService.instance;
 
     var score = 0;
@@ -363,78 +328,81 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final ret = Column(
       children: <Widget>[
 //        Text('${response.correctCount} correct answers.'),
-      ] + response.actual
-          .toList()
-          .asMap()
-          .map((resultIdx, resultDto) {
-        final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
-        var pos = 0;
-        double guessedMarketCap;
-        final guesses = _gameBloc.marketCapPositions.toList();
-        guesses.sort((a, b) => -1 * a.value.compareTo(b.value));
+          ] +
+          response.actual
+              .toList()
+              .asMap()
+              .map((resultIdx, resultDto) {
+                final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
+                var pos = 0;
+                double guessedMarketCap;
+                final guesses = _gameBloc.marketCapPositions.toList();
+                guesses.sort((a, b) => -1 * a.value.compareTo(b.value));
 
-        for (var value in guesses) {
-          pos++;
-          if (value.key == resultDto.instrumentKey) {
-            guessedMarketCap = value.value;
-            break;
-          }
-        }
+                for (var value in guesses) {
+                  pos++;
+                  if (value.key == resultDto.instrumentKey) {
+                    guessedMarketCap = value.value;
+                    break;
+                  }
+                }
 
-        if (pos == resultIdx + 1) {
-          trace.incrementCounter('correct');
-          score++;
-        } else {
-          trace.incrementCounter('wrong');
-        }
+                if (pos == resultIdx + 1) {
+                  trace.incrementCounter('correct');
+                  score++;
+                } else {
+                  trace.incrementCounter('wrong');
+                }
 
-        return MapEntry(
-            resultIdx,
-            Container(
-              decoration: resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
-              padding: EdgeInsets.only(top: resultIdx == 0 ? 0.0 : 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Container(
-                  alignment: Alignment.centerRight,
-                  width: 100,
-                  height: 40,
-                  child: CachedNetworkImage(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    width: 100,
-                    height: 40,
-                    imageUrl: _api.getImageUrl(info.logo),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    formatMarketCap(resultDto.marketCap),
-                    style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                Text(
-                  "Your Guess:",
-                  style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.right,
-                ),
-                Text("Position: $pos ${pos == resultIdx + 1 ? '👍 ️️✅️' : '👎 🤷️'}",
-                    style: Theme.of(context)
-                        .textTheme
-                        .caption
-                        .copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red),
-                    textAlign: TextAlign.right),
-                Text(
-                  "MarketCap: ${formatMarketCap(guessedMarketCap)}",
-                  style: Theme.of(context).textTheme.caption,
-                  textAlign: TextAlign.right,
-                ),
-              ]),
-            ));
-      })
-          .values
-          .toList(),
+                return MapEntry(
+                    resultIdx,
+                    Container(
+                      decoration:
+                          resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
+                      padding:
+                          EdgeInsets.only(top: resultIdx == 0 ? 0.0 : 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        Container(
+                          alignment: Alignment.centerRight,
+                          width: 100,
+                          height: 40,
+                          child: CachedNetworkImage(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            width: 100,
+                            height: 40,
+                            imageUrl: _api.getImageUrl(info.logo),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(bottom: 8.0),
+                          child: Text(
+                            formatMarketCap(resultDto.marketCap),
+                            style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        Text(
+                          "Your Guess:",
+                          style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.right,
+                        ),
+                        Text("Position: $pos ${pos == resultIdx + 1 ? '👍 ️️✅️' : '👎 🤷️'}",
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red),
+                            textAlign: TextAlign.right),
+                        Text(
+                          "MarketCap: ${formatMarketCap(guessedMarketCap)}",
+                          style: Theme.of(context).textTheme.caption,
+                          textAlign: TextAlign.right,
+                        ),
+                      ]),
+                    ));
+              })
+              .values
+              .toList(),
     );
 
     trace.stop();
@@ -442,7 +410,6 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
     return ret;
   }
-
 }
 
 class MarketCapSortingScaleWidget extends StatefulWidget {
