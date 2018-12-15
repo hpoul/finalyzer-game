@@ -45,7 +45,11 @@ class MarketCapSortingGameBloc {
       AnalyticsUtils.instance.analytics.logEvent(name: 'start_new_sort');
       _simpleGameSetFetcher.add(val);
     }).catchError((error, stackTrace) {
-      _logger.warning('Error while fetching new game.', error, stackTrace);
+      if (error is ApiNetworkError) {
+        _logger.warning('Error while fetching new game.', error, stackTrace);
+      } else {
+        _logger.severe('Error while loading new game. (NOT NETWORK)', error, stackTrace);
+      }
       _simpleGameSetFetcher.addError(error, stackTrace);
     });
   }

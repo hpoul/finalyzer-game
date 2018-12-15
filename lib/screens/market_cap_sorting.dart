@@ -141,114 +141,113 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   Widget build(BuildContext context) {
     return MarketCapSortingGameProvider(
       game: _gameBloc,
-      child: Scaffold(
-        endDrawer: NavigationDrawerProfile(),
-        appBar: AppBar(
-          title: Text('Market Cap Game'),
-          actions: <Widget>[
-            StreamBuilder<LoginState>(
-              builder: (context, snapshot) => IconButton(
-                  iconSize: 36,
-                  icon: CircleAvatar(
-                      maxRadius: 18,
-                      backgroundColor: Colors.white,
-                      backgroundImage: snapshot.data?.avatarUrl == null
-                          ? null
-                          : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
-                  onPressed: () {
-                    AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
-                    Scaffold.of(context).openEndDrawer();
-                  }),
-              stream: _api.loginState,
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          label: Text(isVerifying ? 'Loading …' : 'Check'),
-          icon: isVerifying
-              ? Container(
-                  height: 16.0,
-                  width: 16.0,
-//                padding: EdgeInsets.all(6),
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                  ))
-              : Icon(Icons.check),
-          onPressed: isVerifying
-              ? null
-              : () {
-                  setState(() {
-                    isVerifying = !isVerifying;
-                  });
-                  _gameBloc.verifyMarketCaps().then((val) {
-                    _showVerifyResultDialog(val);
-                    setState(() {
-                      isVerifying = false;
-                    });
-                  }).catchError((error, stackTrace) {
-                    _logger.severe('Error while verifying market caps.', error, stackTrace);
-                    setState(() {
-                      isVerifying = false;
-                    });
-                    _showErrorDialog(error);
-                  });
-                },
-          isExtended: true,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        bottomNavigationBar: Card(
-          elevation: 16.0,
-          margin: EdgeInsets.only(top: 0.0),
-          child: Container(
-            margin: EdgeInsets.all(16.0).copyWith(bottom: 16.0 + MediaQuery.of(context).padding.bottom),
-            padding: EdgeInsets.only(top: 16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'Sort the companies based on their Market Cap.',
-                  style: Theme.of(context).textTheme.body2,
-                ),
-              ],
-            ),
-          ),
-        ),
-        body: SafeArea(
-//        bottom: false,
-            child: StreamBuilder(
+      child: StreamBuilder(
           stream: _gameBloc.simpleGameSet,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-//            Text("lorem ipsum"),
-                  Expanded(child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data as GameSimpleSetResponse)),
-                ],
-              );
-            } else if (snapshot.hasError) {
-              return Container(
-                margin: EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text("Error occurred while fetching data. Please check your network connection and try again."),
-                    RaisedButton(
-                      child: Text('Retry'),
-                      onPressed: () {
-                        _gameBloc.newGame();
-                      },
+            return Scaffold(
+                endDrawer: NavigationDrawerProfile(),
+                appBar: AppBar(
+                  title: Text('Market Cap Game'),
+                  actions: <Widget>[
+                    StreamBuilder<LoginState>(
+                      builder: (context, snapshot) => IconButton(
+                          iconSize: 36,
+                          icon: CircleAvatar(
+                              maxRadius: 18,
+                              backgroundColor: Colors.white,
+                              backgroundImage: snapshot.data?.avatarUrl == null
+                                  ? null
+                                  : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
+                          onPressed: () {
+                            AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
+                            Scaffold.of(context).openEndDrawer();
+                          }),
+                      stream: _api.loginState,
                     ),
                   ],
                 ),
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
-        )),
-      ),
+                floatingActionButton: FloatingActionButton.extended(
+                  label: Text(isVerifying || snapshot.data == null ? 'Loading …' : 'Check'),
+                  icon: isVerifying || snapshot.data == null
+                      ? Container(
+                          height: 16.0,
+                          width: 16.0,
+//                padding: EdgeInsets.all(6),
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                          ))
+                      : Icon(Icons.check),
+                  onPressed: isVerifying || snapshot.data == null
+                      ? null
+                      : () {
+                          setState(() {
+                            isVerifying = !isVerifying;
+                          });
+                          _gameBloc.verifyMarketCaps().then((val) {
+                            _showVerifyResultDialog(val);
+                            setState(() {
+                              isVerifying = false;
+                            });
+                          }).catchError((error, stackTrace) {
+                            _logger.severe('Error while verifying market caps.', error, stackTrace);
+                            setState(() {
+                              isVerifying = false;
+                            });
+                            _showErrorDialog(error);
+                          });
+                        },
+                  isExtended: true,
+                ),
+                floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+                bottomNavigationBar: Card(
+                  elevation: 16.0,
+                  margin: EdgeInsets.only(top: 0.0),
+                  child: Container(
+                    margin: EdgeInsets.all(16.0).copyWith(bottom: 16.0 + MediaQuery.of(context).padding.bottom),
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Sort the companies based on their Market Cap.',
+                          style: Theme.of(context).textTheme.body2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                body: SafeArea(
+//        bottom: false,
+                  child: snapshot.hasData
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: <Widget>[
+//            Text("lorem ipsum"),
+                            Expanded(
+                                child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data as GameSimpleSetResponse)),
+                          ],
+                        )
+                      : snapshot.hasError
+                          ? Container(
+                              margin: EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                      "Error occurred while fetching data. Please check your network connection and try again."),
+                                  RaisedButton(
+                                    child: Text('Retry'),
+                                    onPressed: () {
+                                      _gameBloc.newGame();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Center(child: CircularProgressIndicator()),
+                ));
+          }),
     );
   }
 
@@ -429,6 +428,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
 
   static const STOCK_CARD_WIDTH = 100.0;
   static const STOCK_CARD_HEIGHT = 50.0;
+  static const STOCK_CARD_DRAGGED_RATIO = 1.4;
 
   double totalRange;
   String draggedInstrument;
@@ -459,6 +459,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
       child: CustomMultiChildLayout(
         delegate: MarketPriceLayoutDelegate(gameBloc.marketCapPositions, widget.simpleGameSet),
         children: instruments.map((val) {
+          var isDragged = draggedInstrument == val.instrumentKey;
           return LayoutId(
               id: val.instrumentKey,
               child: GestureDetector(
@@ -498,10 +499,10 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                   children: [
 //                      Text('Lorem ipsum'),
                     Container(
-                      width: STOCK_CARD_WIDTH,
-                      height: STOCK_CARD_HEIGHT,
+                      width: isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH,
+                      height: isDragged ? STOCK_CARD_HEIGHT * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_HEIGHT,
                       child: Card(
-                        elevation: draggedInstrument == val.instrumentKey ? 4 : 1,
+                        elevation: isDragged ? 8 : 1,
                         child: Container(
                           padding: EdgeInsets.all(8),
                           child: CachedNetworkImage(
@@ -516,7 +517,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                     ),
                     buildMarketCapLabel(
                         gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
-                    buildLine(),
+                    buildLine(isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH),
                   ],
                 ),
               ));
@@ -546,7 +547,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     );
   }
 
-  Widget buildLine() {
+  Widget buildLine(double stockCardWidth) {
     final dotSize = 12.0;
     return Align(
       alignment: Alignment.centerRight,
@@ -556,14 +557,14 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
         children: <Widget>[
           Container(
             margin: EdgeInsets.only(
-                left: MarketCapScalePainter.MARGIN_LEFT, right: MarketCapSortingScaleState.STOCK_CARD_WIDTH - 4),
+                left: MarketCapScalePainter.MARGIN_LEFT, right: stockCardWidth - 4),
             height: 2.0,
 //          width: 300,
             color: FinalyzerTheme.colorSecondary, //Color.fromARGB(255, 200, 200, 200),
           ),
           Positioned(
             top: -(dotSize / 2),
-            right: MarketCapSortingScaleState.STOCK_CARD_WIDTH - 4 - (dotSize / 2),
+            right: stockCardWidth - 4 - (dotSize / 2),
             height: dotSize,
             width: dotSize,
             child: Container(

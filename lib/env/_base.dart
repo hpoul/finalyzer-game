@@ -7,6 +7,7 @@ abstract class Env {
 
   String get baseUrl;
   Color get primarySwatch;
+  Duration get fakeLatency => null;
 
   Env() {
     value = this;

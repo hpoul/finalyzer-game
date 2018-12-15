@@ -28,6 +28,15 @@ class ResponseWrapper<T> {
   ResponseWrapper(this.response, this.data);
 }
 
+class ApiNetworkError extends Error {
+  String message;
+  DioError cause;
+
+  ApiNetworkError(this.message, this.cause);
+
+  ApiNetworkError.fromError(DioError cause) : this(cause.message, cause);
+}
+
 class ApiService {
   static final ApiService instance = new ApiService();
   static const PREF_GAME_SESSION = 'GAME_SESSION';
@@ -151,9 +160,16 @@ class ApiService {
 
 
   Future<U> _get<U>(GetLocation<U> location) async {
+    if (_env.fakeLatency != null) {
+      await Future.delayed(_env.fakeLatency);
+    }
     final dio = await getSessionDio();
-    final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.JSON));
-    return location.bodyFromGetJson(response.data);
+    try {
+      final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.JSON));
+      return location.bodyFromGetJson(response.data);
+    } on DioError catch (dioError) {
+      throw ApiNetworkError.fromError(dioError);
+    }
   }
 
   Future<ResponseWrapper<U>> _post<T, U>(PostBodyLocation<T, U> location, T args, {Dio dio}) async {
@@ -161,6 +177,8 @@ class ApiService {
     try {
       final response = await client.post(_baseUri.resolve(location.path).toString(), data: args);
       return ResponseWrapper(response, location.bodyFromPostJson(response.data));
+    } on DioError catch (dioError) {
+      throw ApiNetworkError.fromError(dioError);
     } catch (error, stackTrace) {
       _logger.warning('Error during post request', error, stackTrace);
       rethrow;
