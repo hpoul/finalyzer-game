@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
+import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
@@ -38,7 +39,6 @@ class ApiNetworkError extends Error {
 }
 
 class ApiService {
-  static final ApiService instance = new ApiService();
   static const PREF_GAME_SESSION = 'GAME_SESSION';
   static const GAME_SESSION_HEADER = 'GAME-SESSION';
 
@@ -77,7 +77,7 @@ class ApiService {
     _logger.finer('sending userinfo.');
 
     try {
-      final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo))).data;
+      final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await CloudMessagingUtil.instance.getToken()))).data;
 
       _loginState.add(LoginState()
         ..avatarUrl = 'https://robohash.org/a${userInfo.key}'
@@ -91,6 +91,10 @@ class ApiService {
         });
       }
     }
+  }
+
+  Future<void> triggerUpdateUserInfo() async {
+    return await this._updateUserInfo();
   }
 
   Dio _createSessionDio() {

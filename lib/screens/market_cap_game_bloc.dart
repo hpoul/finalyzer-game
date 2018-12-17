@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart';
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
 class MarketCapSortingGameBloc {
-  final _apiService = ApiService.instance;
+  final ApiService _apiService;
 
 //  GameSimpleSetResponse simpleGameSet;
   Iterable<MapEntry<String, double>> marketCapPositions;
@@ -19,7 +19,7 @@ class MarketCapSortingGameBloc {
 
   ValueObservable<GameSimpleSetResponse> get simpleGameSet => _simpleGameSetFetcher.stream;
 
-  MarketCapSortingGameBloc() {
+  MarketCapSortingGameBloc(this._apiService) {
     _simpleGameSetFetcher = BehaviorSubject<GameSimpleSetResponse>(onListen: () {
       _logger.fine('_simpleGameSetFetcher is being listened to.');
 //      fetchGame();
@@ -88,7 +88,7 @@ class MarketCapSortingGameProvider extends InheritedWidget {
   final MarketCapSortingGameBloc game;
 
   MarketCapSortingGameProvider({Key key, MarketCapSortingGameBloc game, Widget child})
-      : game = game ?? MarketCapSortingGameBloc(),
+      : game = game,
         super(key: key, child: child);
 
   @override

@@ -33,6 +33,7 @@ dependencies:
   firebase_analytics: ^1.0.6
   flutter_crashlytics: ^0.1.1
   firebase_performance: ^0.0.8+1
+  firebase_messaging: ^2.1.0
 
 dev_dependencies:
   flutter_test:

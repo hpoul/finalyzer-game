@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
+import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
@@ -53,9 +57,12 @@ Future<void> _setupCrashlytics() async {
   await FlutterCrashlytics().initialize();
 }
 
+
 Future<void> startApp(Env env) async {
   _setupLogging();
+  // TODO maybe we should check if this stuff makes startup slower? how?
   await _setupCrashlytics();
+  CloudMessagingUtil.instance.setupFirebaseMessaging();
   _logger.fine('Logging was set up.');
 
   runZoned<Future<Null>>(() async {
@@ -74,17 +81,28 @@ class MyApp extends StatelessWidget {
   static AnalyticsUtils analytics = AnalyticsUtils.instance;
   static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics.analytics);
 
-  MyApp(Env env);
+  final Deps deps;
+
+  MyApp(Env env): deps = Deps(
+    api: ApiService(env: env),
+  );
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     analytics.analytics.logAppOpen();
-    return MaterialApp(
-      title: 'Anlage.App Game',
-      theme: buildFinalyzerTheme(),
-      navigatorObservers: [observer],
-      home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
+    return DepsProvider(
+      deps: deps,
+      child: MaterialApp(
+        title: 'Anlage.App Game',
+        debugShowCheckedModeBanner: false,
+        theme: buildFinalyzerTheme(),
+        navigatorObservers: [observer],
+        home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
+        routes: {
+          ProfileEdit.ROUTE_NAME: (context) => ProfileEdit()
+        },
+      ),
     );
   }
 }

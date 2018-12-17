@@ -2,6 +2,10 @@
 
 Anlage.App Market Cap Game
 
+## CI
+
+Currently I have configured https://app.bitrise.io/dashboard/builds for creating iOS builds.
+
 ## TODOs
 
 * Error handling for initial loading & Retry

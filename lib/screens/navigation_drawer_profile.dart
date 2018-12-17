@@ -1,6 +1,9 @@
 
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/profile_edit.dart';
+import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -11,10 +14,9 @@ final _logger = new Logger("app.anlage.game.screens.navigation_drawer_profile");
 
 class NavigationDrawerProfile extends StatelessWidget {
 
-  final _api = ApiService.instance;
-
   @override
   Widget build(BuildContext context) {
+    final _api = DepsProvider.of(context).api;
 
     return Drawer(
       child: Container(
@@ -32,10 +34,17 @@ class NavigationDrawerProfile extends StatelessWidget {
                   children: <Widget>[
                     Container(
                       margin: EdgeInsets.only(bottom: 16),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        backgroundImage: snapshot.data == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl),
-                        radius: 64,
+                      child: InkWell(
+                        onTap: () {
+                          _logger.info('Tapped on profile image.');
+                          Navigator.of(context).pushNamed(ProfileEdit.ROUTE_NAME);
+                          CloudMessagingUtil.instance.requestPermission();
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: Colors.white,
+                          backgroundImage: snapshot.data == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl),
+                          radius: 64,
+                        ),
                       ),
                     ),
                     Text('Hello Anonymous Investor!', textAlign: TextAlign.right,),

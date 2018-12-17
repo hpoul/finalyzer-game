@@ -4,6 +4,7 @@ import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -120,14 +121,20 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
 class MarketCapSortingState extends State<MarketCapSorting> {
   bool isVerifying = false;
   MarketCapSortingGameBloc _gameBloc;
-  final _api = ApiService.instance;
+  ApiService _api;
 
   @override
   void initState() {
     super.initState();
 //    final gameBloc = MarketCapSortingGameProvider.of(context);
 //    gameBloc.fetchGame();
-    _gameBloc = MarketCapSortingGameBloc();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _api = DepsProvider.of(context).api;
+    _gameBloc = MarketCapSortingGameBloc(_api);
     _gameBloc.newGame();
   }
 
@@ -139,6 +146,8 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 
   @override
   Widget build(BuildContext context) {
+    final deps = DepsProvider.of(context);
+
     return MarketCapSortingGameProvider(
       game: _gameBloc,
       child: StreamBuilder(
@@ -316,7 +325,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
   _createResultScreen(GameSimpleSetVerifyResponse response, AsyncSnapshot<GameSimpleSetResponse> snapshot,
       MarketCapSortingGameBloc _gameBloc, BuildContext context) {
-    final _api = ApiService.instance;
+    final _api = DepsProvider.of(context).api;
 
     var score = 0;
 
@@ -424,7 +433,7 @@ class MarketCapSortingScaleWidget extends StatefulWidget {
 }
 
 class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
-  final ApiService _apiService = ApiService.instance;
+  ApiService _apiService;
 
   static const STOCK_CARD_WIDTH = 100.0;
   static const STOCK_CARD_HEIGHT = 50.0;
@@ -439,6 +448,12 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     final simpleGameSet = widget.simpleGameSet;
     final totalRange = simpleGameSet.marketCapScaleMax - simpleGameSet.marketCapScaleMin;
     this.totalRange = totalRange;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _apiService = DepsProvider.of(context).api;
   }
 
   int _calculatePriority(SimpleGameDto dto) {
