@@ -7,6 +7,7 @@ import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:path/path.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info/device_info.dart';
@@ -15,6 +16,10 @@ import 'package:package_info/package_info.dart';
 final _logger = new Logger("app.anlage.game.api.api_service");
 
 class LoginState {
+
+  LoginState(Uri baseUri, UserInfoResponse userInfoResponse) :
+        avatarUrl = baseUri.resolve(userInfoResponse.avatarUrl).toString(),
+        userInfo = userInfoResponse;
 
   String avatarUrl;
 
@@ -79,9 +84,7 @@ class ApiService {
     try {
       final userInfo = (await this._post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await CloudMessagingUtil.instance.getToken()))).data;
 
-      _loginState.add(LoginState()
-        ..avatarUrl = 'https://robohash.org/a${userInfo.key}'
-        ..userInfo = userInfo);
+      _loginState.add(LoginState(_baseUri, userInfo));
     } on DioError catch (error, stackTrace)  {
       if (retryCount < 10) {
         final duration = 10 * (retryCount+1);
@@ -218,5 +221,28 @@ class ApiService {
 
   String getImageUrl(InstrumentImageDto image) {
     return _baseUri.resolve('api/pricedata/image/${image.id}?noSVG=true').toString();
+  }
+
+  Future<UserInfoResponse> uploadAvatarImage(File image) async {
+    final dio = await getSessionDio();
+    final formData = FormData.from({"avatarImage": UploadFileInfo(image, basename(image.path))});
+    final url = _baseUri.resolve(UserInfoAvatarUpload().path);
+    try {
+      final response = await dio.post(url.toString(), data: formData);
+      final userInfo = await UserInfoResponse.fromJson(response.data);
+      _loginState.add(LoginState(_baseUri, userInfo));
+      return userInfo;
+    } on DioError catch (dioError) {
+      throw ApiNetworkError.fromError(dioError);
+    } catch (error, stackTrace) {
+      _logger.warning("Error while uploading avatar.", error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<UserInfoResponse> updateUserInfo({String displayName, String email}) async {
+    final res = await this._post(UserInfoUpdateLocation(), UserInfoUpdateRequest(displayName, email));
+    _loginState.add(LoginState(_baseUri, res.data));
+    return res.data;
   }
 }

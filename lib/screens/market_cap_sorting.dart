@@ -133,9 +133,12 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _api = DepsProvider.of(context).api;
-    _gameBloc = MarketCapSortingGameBloc(_api);
-    _gameBloc.newGame();
+    final api = DepsProvider.of(context).api;
+    if (_api != api) {
+      _api = api;
+      _gameBloc = MarketCapSortingGameBloc(_api);
+      _gameBloc.newGame();
+    }
   }
 
   @override
