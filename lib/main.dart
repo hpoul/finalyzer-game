@@ -94,7 +94,7 @@ class MyApp extends StatelessWidget {
     return DepsProvider(
       deps: deps,
       child: MaterialApp(
-        title: 'Anlage.App Game',
+        title: 'MarketCap Game',
         debugShowCheckedModeBanner: false,
         theme: buildFinalyzerTheme(),
         navigatorObservers: [observer],
