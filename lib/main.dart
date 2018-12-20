@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
@@ -100,7 +101,8 @@ class MyApp extends StatelessWidget {
         navigatorObservers: [observer],
         home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
         routes: {
-          ProfileEdit.ROUTE_NAME: (context) => ProfileEdit()
+          ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
+          LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
         },
       ),
     );

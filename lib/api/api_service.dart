@@ -245,4 +245,10 @@ class ApiService {
     _loginState.add(LoginState(_baseUri, res.data));
     return res.data;
   }
+
+  Future<LeaderboardSimpleResponse> fetchLeaderboard() async {
+    return this._get(LeaderboardSimpleLocation());
+  }
+
+  resolveUri(String relativeOrAbsoluteUrl) => _baseUri.resolve(relativeOrAbsoluteUrl).toString();
 }

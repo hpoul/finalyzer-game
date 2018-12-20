@@ -1,6 +1,7 @@
 
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
@@ -63,6 +64,13 @@ class NavigationDrawerProfile extends StatelessWidget {
                 trailing: Text('${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}', style: Theme.of(context).textTheme.display1,),
               ),
               Spacer(flex: 1,),
+              ListTile(
+                leading: Icon(Icons.list),
+                title: Text('Leaderboard'),
+                onTap: () {
+                  Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
+                },
+              ),
               ListTile(
                 leading: Icon(Icons.email),
                 title: Text('How can we improve? Problems?'),
