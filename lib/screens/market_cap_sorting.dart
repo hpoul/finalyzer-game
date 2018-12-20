@@ -24,9 +24,13 @@ class MarketCapSorting extends StatefulWidget {
 
 class MarketCapScalePainter extends CustomPainter {
   static const MARGIN_LEFT = 16.0;
-  static const MARGIN_VERTICAL = 0.0;
+  static const MARGIN_VERTICAL = 8.0;
   static const TEXT_MARGIN_VERTICAL = 8.0;
   static const SCALE_WIDTH = 8.0;
+
+  static const ARROW_LENGTH = 16;
+  static const ARROW_WIDTH = 8;
+  static const ARROW_ARM_WIDTH = ARROW_WIDTH / 2;
 
   double marketCapScaleMin;
   double marketCapScaleMax;
@@ -50,8 +54,22 @@ class MarketCapScalePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    var rect = Offset(MARGIN_LEFT, MARGIN_VERTICAL) & Size(SCALE_WIDTH, size.height - 2 * MARGIN_VERTICAL);
-    canvas.drawRect(rect, Paint()..color = FinalyzerTheme.colorPrimary);
+    final bottomY = size.height - (2 * MARGIN_VERTICAL);
+    var rect = Offset(MARGIN_LEFT, MARGIN_VERTICAL+4) & Size(SCALE_WIDTH, bottomY-16);
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(SCALE_WIDTH / 2)), Paint()..color = FinalyzerTheme.colorPrimary);
+    final paint = Paint();
+    paint.color = FinalyzerTheme.colorPrimary;
+    paint.strokeWidth = 1;
+
+    canvas.drawPath(Path()..addPolygon([
+      Offset(MARGIN_LEFT-ARROW_ARM_WIDTH, MARGIN_VERTICAL+ARROW_LENGTH),
+      Offset(MARGIN_LEFT+(SCALE_WIDTH/2), MARGIN_VERTICAL),
+      Offset(MARGIN_LEFT+SCALE_WIDTH+ARROW_ARM_WIDTH, MARGIN_VERTICAL+ARROW_LENGTH)], true), paint);
+
+    canvas.drawPath(Path()..addPolygon([
+      Offset(MARGIN_LEFT-ARROW_ARM_WIDTH, bottomY-ARROW_LENGTH),
+      Offset(MARGIN_LEFT+(SCALE_WIDTH/2), bottomY),
+      Offset(MARGIN_LEFT+SCALE_WIDTH+ARROW_ARM_WIDTH, bottomY-ARROW_LENGTH)], true), paint);
 
     maxTextPainter.paint(canvas, new Offset(MARGIN_LEFT + SCALE_WIDTH + 4, TEXT_MARGIN_VERTICAL));
     minTextPainter.paint(
@@ -339,6 +357,10 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final ret = Column(
       children: <Widget>[
 //        Text('${response.correctCount} correct answers.'),
+            Container(
+              padding: EdgeInsets.only(bottom: 8),
+              child: Text('Correct order by market cap:'),
+            ),
           ] +
           response.actual
               .toList()
@@ -358,7 +380,8 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                   }
                 }
 
-                if (pos == resultIdx + 1) {
+                final isCorrect = pos == resultIdx + 1;
+                if (isCorrect) {
                   trace.incrementCounter('correct');
                   score++;
                 } else {
@@ -372,44 +395,64 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                           resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
                       padding:
                           EdgeInsets.only(top: resultIdx == 0 ? 0.0 : 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        Container(
-                          alignment: Alignment.centerRight,
-                          width: 100,
-                          height: 40,
-                          child: CachedNetworkImage(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerRight,
-                            width: 100,
-                            height: 40,
-                            imageUrl: _api.getImageUrl(info.logo),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Text('${resultIdx + 1}.'),
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                              Container(
+                                alignment: Alignment.centerRight,
+                                width: 100,
+                                height: 40,
+                                child: CachedNetworkImage(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  width: 100,
+                                  height: 40,
+                                  imageUrl: _api.getImageUrl(info.logo),
+                                ),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(bottom: 8.0),
+                                child: Text(
+                                  formatMarketCap(resultDto.marketCap),
+                                  style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+//                              Text(
+//                                "Your Guess:",
+//                                style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
+//                                textAlign: TextAlign.right,
+//                              ),
+                              Text("You ranked it: $pos ${isCorrect ? '👍️' : '👎️'}",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .body1
+                                      .copyWith(color: isCorrect ? Colors.green : Colors.red),
+                                  textAlign: TextAlign.right),
+//                              Text(
+//                                "MarketCap: ${formatMarketCap(guessedMarketCap)}",
+//                                style: Theme.of(context).textTheme.caption,
+//                                textAlign: TextAlign.right,
+//                              ),
+                            ]),
                           ),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(bottom: 8.0),
-                          child: Text(
-                            formatMarketCap(resultDto.marketCap),
-                            style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        Text(
-                          "Your Guess:",
-                          style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.right,
-                        ),
-                        Text("Position: $pos ${pos == resultIdx + 1 ? '👍 ️️✅️' : '👎 🤷️'}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .caption
-                                .copyWith(color: pos == resultIdx + 1 ? Colors.green : Colors.red),
-                            textAlign: TextAlign.right),
-                        Text(
-                          "MarketCap: ${formatMarketCap(guessedMarketCap)}",
-                          style: Theme.of(context).textTheme.caption,
-                          textAlign: TextAlign.right,
-                        ),
-                      ]),
+                          Container(
+                            margin: EdgeInsets.only(left: 8),
+                            child: isCorrect
+                                ? Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                  )
+                                : Icon(
+                                    Icons.close,
+                                    color: Colors.red,
+                                  ),
+                          )
+                        ],
+                      ),
                     ));
               })
               .values
@@ -442,6 +485,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   static const STOCK_CARD_HEIGHT = 50.0;
   static const STOCK_CARD_DRAGGED_RATIO = 1.4;
 
+  bool moved = false;
   double totalRange;
   String draggedInstrument;
 
@@ -451,6 +495,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     final simpleGameSet = widget.simpleGameSet;
     final totalRange = simpleGameSet.marketCapScaleMax - simpleGameSet.marketCapScaleMin;
     this.totalRange = totalRange;
+    this.moved = false;
   }
 
   @override
@@ -478,6 +523,31 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
         delegate: MarketPriceLayoutDelegate(gameBloc.marketCapPositions, widget.simpleGameSet),
         children: instruments.map((val) {
           var isDragged = draggedInstrument == val.instrumentKey;
+
+          final arrows = <Widget>[
+            Positioned(
+              top: -30,
+              right: STOCK_CARD_WIDTH / 2 - 12,
+              child: AnimatedOpacity(
+                  opacity: moved ? 0 : 1,
+                  duration: Duration(milliseconds: 500),
+                  child: Icon(Icons.arrow_upward, size: 24, color: Colors.black26)),
+            ),
+            Positioned(
+              bottom: -30,
+              right: STOCK_CARD_WIDTH / 2 - 12,
+              child: AnimatedOpacity(
+                opacity: moved ? 0 : 1,
+                duration: Duration(milliseconds: 500),
+                child: Icon(
+                  Icons.arrow_downward,
+                  size: 24,
+                  color: Colors.black26,
+                ),
+              ),
+            ),
+          ];
+
           return LayoutId(
               id: val.instrumentKey,
               child: GestureDetector(
@@ -508,35 +578,39 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                     RenderBox renderBox = context.findRenderObject();
                     final local = renderBox.globalToLocal(event.globalPosition);
 //                        ;
+                    moved = true;
                     gameBloc.updateMarketCapPosition(val.instrumentKey,
                         this.widget.simpleGameSet.marketCapScaleMax - this.totalRange / context.size.height * local.dy);
                   });
                 },
                 child: Stack(
                   alignment: Alignment.centerRight,
-                  children: [
+                  overflow: Overflow.visible,
+                  children: arrows +
+                      [
 //                      Text('Lorem ipsum'),
-                    Container(
-                      width: isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH,
-                      height: isDragged ? STOCK_CARD_HEIGHT * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_HEIGHT,
-                      child: Card(
-                        elevation: isDragged ? 8 : 1,
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          child: CachedNetworkImage(
-                            placeholder: Center(child: LinearProgressIndicator()),
-                            errorWidget: Text('Error :( ${val.logo.id}'),
+
+                        Container(
+                          width: isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH,
+                          height: isDragged ? STOCK_CARD_HEIGHT * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_HEIGHT,
+                          child: Card(
+                            elevation: isDragged ? 8 : 1,
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              child: CachedNetworkImage(
+                                placeholder: Center(child: LinearProgressIndicator()),
+                                errorWidget: Text('Error :( ${val.logo.id}'),
 //                              width: 100,
 //                                  height: 50,
-                            imageUrl: _apiService.getImageUrl(val.logo),
+                                imageUrl: _apiService.getImageUrl(val.logo),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    buildMarketCapLabel(
-                        gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
-                    buildLine(isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH),
-                  ],
+                        buildMarketCapLabel(
+                            gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
+                        buildLine(isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH),
+                      ],
                 ),
               ));
         }).toList(),
@@ -574,8 +648,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
         overflow: Overflow.visible,
         children: <Widget>[
           Container(
-            margin: EdgeInsets.only(
-                left: MarketCapScalePainter.MARGIN_LEFT, right: stockCardWidth - 4),
+            margin: EdgeInsets.only(left: MarketCapScalePainter.MARGIN_LEFT, right: stockCardWidth - 4),
             height: 2.0,
 //          width: 300,
             color: FinalyzerTheme.colorSecondary, //Color.fromARGB(255, 200, 200, 200),
