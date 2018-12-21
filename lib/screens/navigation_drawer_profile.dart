@@ -1,4 +1,3 @@
-
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
@@ -12,9 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 final _logger = new Logger("app.anlage.game.screens.navigation_drawer_profile");
 
-
 class NavigationDrawerProfile extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     final _api = DepsProvider.of(context).api;
@@ -23,79 +20,106 @@ class NavigationDrawerProfile extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
         child: StreamBuilder<LoginState>(
-          stream: _api.loginState,
-          builder: (context, snapshot) => Column(
-            children: <Widget>[
-              Container(
-                alignment: Alignment.centerRight,
-                color: FinalyzerTheme.colorPrimary,
-                padding: EdgeInsets.all(16).copyWith(top: MediaQuery.of(context).padding.top + 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(bottom: 16),
-                      child: InkWell(
-                        onTap: () {
-                          _logger.info('Tapped on profile image.');
-                          Navigator.of(context).pushNamed(ProfileEdit.ROUTE_NAME);
-                          CloudMessagingUtil.instance.requestPermission();
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          backgroundImage: snapshot.data == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl),
-                          radius: 64,
+            stream: _api.loginState,
+            builder: (context, snapshot) {
+              final displayName = snapshot?.data?.userInfo?.displayName;
+              return Column(
+                children: <Widget>[
+                  Ink(
+                    color: FinalyzerTheme.colorPrimary,
+                    child: InkWell(
+                      onTap: () {
+                        _logger.info('Tapped on profile image.');
+                        Navigator.of(context).pushNamed(ProfileEdit.ROUTE_NAME);
+                        CloudMessagingUtil.instance.requestPermission();
+                      },
+                      child: Container(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.all(16).copyWith(top: MediaQuery.of(context).padding.top + 16),
+                        child: DefaultTextStyle(
+                          style: Theme.of(context).primaryTextTheme.body1,
+                          textAlign: TextAlign.right,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 16),
+                                    constraints: BoxConstraints.tightFor(width: 128, height: 128),
+                                    child: AvatarWithEditIcon(
+                                      snapshot?.data?.avatarUrl,
+                                      radius: 64,
+                                    ),
+                                  ),
+                                ] +
+                                (displayName == null
+                                    ? [
+                                        Text(
+                                          'Hello Anonymous Investor!',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          'Tell us a bit about you to get listed in the leaderboard!',
+                                        ),
+                                      ]
+                                    : [Text('Hello $displayName!')]),
+                          ),
                         ),
                       ),
                     ),
-                    Text('Hello Anonymous Investor!', textAlign: TextAlign.right,),
-                    Text('Stay tuned to get honoured soon in our leaderboard!', textAlign: TextAlign.right),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.assignment),
-                title: Text('Completed Turns:'),
-                trailing: Text('${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}', style: Theme.of(context).textTheme.display1,),
-              ),
-              ListTile(
-                leading: Icon(Icons.thumb_up, color: Colors.green,),
-                title: Text('Correct Answers:'),
-                trailing: Text('${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}', style: Theme.of(context).textTheme.display1,),
-              ),
-              Spacer(flex: 1,),
-              ListTile(
-                leading: Icon(Icons.list),
-                title: Text('Leaderboard'),
-                onTap: () {
-                  Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.email),
-                title: Text('How can we improve? Problems?'),
-                subtitle: Text('We love to hear from you at hello@anlage.app'),
-              ),
-              ListTile(
-                leading: Icon(Icons.link),
-                title: Text('By https://Anlage.App/'),
-                subtitle: Text('Track&Analyse your portfolio.'),
-                onTap: () async {
-                  final url = 'https://anlage.app/?utm_source=marketcap-game';
-                  if (await canLaunch(url)) {
-                    await launch(url, forceSafariVC: false);
-                  } else {
-                    _logger.severe('Unable to launch url $url');
-                  }
-                },
-              )
-            ],
-          ),
-        ),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.assignment),
+                    title: Text('Completed Turns:'),
+                    trailing: Text(
+                      '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
+                      style: Theme.of(context).textTheme.display1,
+                    ),
+                  ),
+                  ListTile(
+                    leading: Icon(
+                      Icons.thumb_up,
+                      color: Colors.green,
+                    ),
+                    title: Text('Correct Answers:'),
+                    trailing: Text(
+                      '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
+                      style: Theme.of(context).textTheme.display1,
+                    ),
+                  ),
+                  Spacer(
+                    flex: 1,
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.list),
+                    title: Text('Leaderboard'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.email),
+                    title: Text('How can we improve? Problems?'),
+                    subtitle: Text('We love to hear from you at hello@anlage.app'),
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.link),
+                    title: Text('By https://Anlage.App/'),
+                    subtitle: Text('Track&Analyse your portfolio.'),
+                    onTap: () async {
+                      final url = 'https://anlage.app/?utm_source=marketcap-game';
+                      if (await canLaunch(url)) {
+                        await launch(url, forceSafariVC: false);
+                      } else {
+                        _logger.severe('Unable to launch url $url');
+                      }
+                    },
+                  )
+                ],
+              );
+            }),
       ),
     );
   }
-
 }
 
 //Drawer createNavigationDrawerProfile() {
