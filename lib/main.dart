@@ -82,15 +82,18 @@ class MyApp extends StatelessWidget {
   static AnalyticsUtils analytics = AnalyticsUtils.instance;
   static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics.analytics);
 
-  final Deps deps;
+  final Env env;
 
-  MyApp(Env env): deps = Deps(
-    api: ApiService(env: env),
-  );
+//  final Deps deps;
+
+  MyApp(this.env);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Deps deps = Deps(
+      api: ApiService(env: env),
+    );
     analytics.analytics.logAppOpen();
     return DepsProvider(
       deps: deps,

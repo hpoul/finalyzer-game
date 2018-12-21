@@ -22,6 +22,21 @@ class NavigationDrawerProfile extends StatelessWidget {
         child: StreamBuilder<LoginState>(
             stream: _api.loginState,
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Column(
+                  children: <Widget>[
+                    Text('Error while fetching user information.'),
+                  ],
+                );
+              }
+              if (!snapshot.hasData) {
+                _logger.fine(snapshot);
+                return Center(
+//                  heightFactor: 1.5,
+                  child: CircularProgressIndicator(),
+                );
+              }
+
               final displayName = snapshot?.data?.userInfo?.displayName ?? "";
               return Column(
                 children: <Widget>[
@@ -39,7 +54,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                         child: DefaultTextStyle(
                           style: Theme.of(context).primaryTextTheme.body1,
                           textAlign: TextAlign.right,
-                          child: Column(
+                          child: !snapshot.hasData ? Container() : Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: <Widget>[
                                   Container(

@@ -61,7 +61,11 @@ class ApiService {
     this._env = env ?? Env.value;
     _baseUri = Uri.parse(_env.baseUrl);
     _dio = _createSessionDio();
-    
+    _loginState.onListen = () {
+      _logger.fine('Somebody listening on loginState.');
+    };
+    _logger.fine('Creating new ApiService.');
+
     // some arbitrary time after staring up, request current status from the server.
     Future.delayed(Duration(seconds: 3)).then((x) async { await _updateUserInfo(); });
   }
@@ -86,6 +90,9 @@ class ApiService {
 
       _loginState.add(LoginState(_baseUri, userInfo));
     } on DioError catch (error, stackTrace)  {
+      if (_loginState.value == null) {
+        _loginState.addError(error, stackTrace);
+      }
       if (retryCount < 10) {
         final duration = 10 * (retryCount+1);
         _logger.warning('Error while updating user info. retrying in $duration seconds. Retries: $retryCount');

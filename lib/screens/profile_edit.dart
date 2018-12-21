@@ -106,13 +106,13 @@ class ProfileEditState extends State<ProfileEdit> {
                             keyboardType: TextInputType.text,
                             autofocus: true,
                             decoration: InputDecoration(
-                              labelText: 'Your full name',
+                              labelText: 'Your name for the leaderboard',
                             ),
                           ),
                           TextFormField(
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(labelText: 'Your email address, so you can log back in'),
+                            decoration: InputDecoration(labelText: 'Your email address', helperText: 'You can use your email address to log in later.'),
                             validator: (value) {
                               if (value.isEmpty || emailRegexp.hasMatch(value)) {
                                 _logger.fine('has match. $value');
@@ -122,10 +122,11 @@ class ProfileEditState extends State<ProfileEdit> {
                             },
                           ),
                           FutureBuilder(
+                            future: _userUpdateFuture,
                             builder: (context, snapshot) => Padding(
                               padding: EdgeInsets.only(top: 8),
-                              child: RaisedButton(
-                                child: snapshot.connectionState == ConnectionState.waiting ? Text('Saving …') : Text('Save'),
+                              child: snapshot.connectionState == ConnectionState.waiting ? RaisedButton(onPressed: null, child: Text('Loading …'), disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),) : RaisedButton(
+                                child:  Text('Save'),
                                 color: Theme.of(context).accentColor,
                                 onPressed: snapshot.connectionState == ConnectionState.waiting ? null : () {
                                   if (!_formKey.currentState.validate()) {
