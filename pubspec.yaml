@@ -7,7 +7,7 @@ description: Anlage.App Market Cap Game
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 1.0.1+18
+version: 1.0.1+19
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
@@ -36,6 +36,8 @@ dependencies:
   firebase_performance: ^0.0.8+1
   firebase_messaging: ^2.1.0
   image_picker: ^0.4.10
+  esys_flutter_share: ^0.0.6
+  image: ^2.0.5
 
 dev_dependencies:
   flutter_test:
