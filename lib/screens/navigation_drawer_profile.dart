@@ -22,7 +22,7 @@ class NavigationDrawerProfile extends StatelessWidget {
         child: StreamBuilder<LoginState>(
             stream: _api.loginState,
             builder: (context, snapshot) {
-              final displayName = snapshot?.data?.userInfo?.displayName;
+              final displayName = snapshot?.data?.userInfo?.displayName ?? "";
               return Column(
                 children: <Widget>[
                   Ink(
@@ -31,7 +31,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                       onTap: () {
                         _logger.info('Tapped on profile image.');
                         Navigator.of(context).pushNamed(ProfileEdit.ROUTE_NAME);
-                        CloudMessagingUtil.instance.requestPermission();
+//                        CloudMessagingUtil.instance.requestPermission();
                       },
                       child: Container(
                         alignment: Alignment.centerRight,
@@ -51,7 +51,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                     ),
                                   ),
                                 ] +
-                                (displayName == null
+                                (displayName == ""
                                     ? [
                                         Text(
                                           'Hello Anonymous Investor!',
