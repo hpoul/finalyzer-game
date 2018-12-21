@@ -338,24 +338,6 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
     return Container(
         child: AlertDialog(
-          title: (response.correctCount == 0
-              ? Text('😞 None were correctly', style: Theme
-              .of(context)
-              .textTheme
-              .title
-              .copyWith(color: Colors.orange))
-              : response.correctCount == 1
-              ? Text('🤔 Nice try.')
-              : response.correctCount == 2
-              ? Text('️📈️ Almost!')
-              : response.correctCount == 4
-              ? Text('🎉️ WOW! All Correct!',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .title
-                  .copyWith(color: Colors.green))
-              : Text('?!')),
           content: StreamBuilder<GameSimpleSetResponse>(
             stream: _gameBloc.simpleGameSet,
             builder: (context, snapshot) =>
@@ -374,7 +356,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
               label: Text('Share'),
               onPressed: () {
                 AnalyticsUtils.instance.analytics.logShare(contentType: 'result_sorting', itemId: 'sort');
-                _capturePng(context);
+                _capturePngWithPicture(context);
               },
             ),
             FlatButton(
@@ -400,12 +382,31 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final trace = FirebasePerformance.instance.newTrace('sorting_score');
     trace.start();
 
+    final theme = Theme.of(context);
+    // Somehow when we use a transparent font during converting to image the emoticon looks weird.
+//    final titleTextStyle = theme.textTheme.title.copyWith(color: Color.alphaBlend(theme.textTheme.title.color, Colors.white));
+    final titleTextStyle = theme.textTheme.title;
+    _logger.fine('title theme: ${theme.textTheme.title.toString()}');
+
     final ret = Column(
       children: <Widget>[
+
+        (response.correctCount == 0
+            ? Text('😞 None were correctly', style: titleTextStyle.copyWith(color: Colors.orange))
+            : response.correctCount == 1
+            ? Text('🤔 Nice try.',style: titleTextStyle)
+            : response.correctCount == 2
+            ? Text('️📈️ Almost!',style: titleTextStyle)
+            : response.correctCount == 4
+            ? Text('🎉️ WOW! All Correct!',
+            style: titleTextStyle
+                .copyWith(color: Colors.green))
+            : Text('?!')),
+
 //        Text('${response.correctCount} correct answers.'),
         Container(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Text('Correct order by market cap:'),
+          padding: EdgeInsets.only(bottom: 8, top: 20),
+          child: Text('Correct order by market cap:', style: theme.textTheme.caption),
         ),
       ] +
           response.actual
@@ -476,7 +477,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 //                                style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
 //                                textAlign: TextAlign.right,
 //                              ),
-                          Text("You ranked it: $pos ${isCorrect ? '👍️' : '👎️'}",
+                          Text("You ranked it: $pos ${isCorrect ? '👍️' : '👎'}",
                               style: Theme
                                   .of(context)
                                   .textTheme
@@ -516,21 +517,74 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     return ret;
   }
 
+  void _capturePngWithPicture(BuildContext context) async {
+    try {
+
+      TextSpan span = new TextSpan(
+          style: new TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 24, fontFamily: 'RobotoMono'),
+          text: 'https://anlage.app/game');
+      final painter = new TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
+      painter.layout();
+
+
+      RenderRepaintBoundary boundary = drawGlobalKey.currentContext.findRenderObject();
+      ui.Image img = await boundary.toImage(pixelRatio: 2.0);
+
+      final padding = 64.0;
+
+      final recorder = ui.PictureRecorder();
+      final canvasRect = Offset(0, 0) & Size(img.width + 2*padding, img.height + 2*padding + padding + painter.height);
+      final canvas = ui.Canvas(recorder, canvasRect);
+
+      final p = Paint();
+      p.color = Colors.white;
+      canvas.drawRect(canvasRect, p);
+      canvas.drawImage(img, Offset(padding, padding), Paint());
+
+      painter.paint(canvas, Offset(padding, canvasRect.height - padding - painter.height));
+      _logger.fine('painter.height: ${painter.height} --- $painter');
+
+      final picture = recorder.endRecording();
+
+      ui.Image finalImage = picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
+
+
+      final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        _logger.severe('byteData is null ?!');
+        return;
+      }
+      _logger.fine('Opening share dialog.');
+      await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
+    } catch (error, stackTrace) {
+      _logger.warning('Error during share', error, stackTrace);
+      rethrow;
+    }
+  }
+
   void _capturePng(BuildContext context) async {
     try {
       RenderRepaintBoundary boundary = drawGlobalKey.currentContext.findRenderObject();
-      ui.Image img = await boundary.toImage();
+      ui.Image img = await boundary.toImage(pixelRatio: 2.0);
+//      await EsysFlutterShare.shareImage('result.png', await img.toByteData(format: ui.ImageByteFormat.png), 'MarketShare Game - Results');
 
-      final newImg = image.Image.fromBytes(img.width, img.height, (await img.toByteData()).buffer.asUint8List());
-      img.dispose();
+
+      final newImg = image.Image.fromBytes(img.width, img.height, (await img.toByteData(format: ui.ImageByteFormat.rawUnmodified)).buffer.asUint32List());
+//      img.dispose();
       final padding = 64;
-      final targetImage = image.Image(newImg.width + 2 * padding, newImg.height + 2 * padding);
+      final targetImage = image.Image(newImg.width + 2 * padding, newImg.height + 2 * padding + 24 + padding);
       image.fill(targetImage, image.Color.fromRgb(255, 255, 255));
       image.drawImage(targetImage, newImg, dstX: padding, dstY: padding);
+      image.drawString(targetImage, image.arial_24, padding, targetImage.height - padding - 24, 'https://anlage.app/game', color: 0xff000000);
 //    ByteData byteData = await img.toByteData(format: ui.ImageByteFormat.png);
       final byteData = ByteData.view(Uint8List
           .fromList(image.encodePng(targetImage))
           .buffer);
+      if (byteData == null) {
+        _logger.severe('byteData is null ?!');
+        return;
+      }
+      _logger.fine('Opening share dialog.');
       await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
 //    Uint8List pngBytes = byteData.buffer.asUint8List();
 //    print(pngBytes);
