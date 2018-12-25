@@ -30,12 +30,16 @@ dependencies:
   package_info: ^0.3.2
   device_info: ^0.3.0
   rxdart: ^0.19.0
+
   firebase_core: ^0.2.5+1
   firebase_analytics: ^1.0.6
   flutter_crashlytics: ^0.1.1
   firebase_performance: ^0.0.8+1
   firebase_messaging: ^2.1.0
+  firebase_dynamic_links: ^0.1.0+1
+
   image_picker: ^0.4.10
+  share: ^0.5.3
   esys_flutter_share: ^0.0.6
   image: ^2.0.5
 

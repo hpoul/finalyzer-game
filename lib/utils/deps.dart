@@ -3,16 +3,28 @@
 import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/api_service.dart';
+import 'package:anlage_app_game/env/_base.dart';
 import 'package:flutter/widgets.dart';
+
+class FirebaseConfig {
+  final domain = 'anlageapp.page.link';
+  final androidPackageName = 'app.anlage.game.marketcap';
+  final iosPackageName = 'app.anlage.game.marketcap';
+  final iosAppStoreId = '1446255350';
+  final iosCustomScheme = 'anlageappgame';
+
+}
 
 @immutable
 class Deps {
+  final Env env;
+  final FirebaseConfig firebaseConfig = FirebaseConfig();
   final ApiCaller apiCaller;
   final ApiService api;
   final ApiChallenge apiChallenge;
 
-  Deps({@required this.apiCaller, @required this.api}) :
-      apiChallenge = ApiChallenge(api);
+  Deps({@required this.apiCaller, @required this.api, @required this.env}) :
+      apiChallenge = ApiChallenge(apiCaller);
 }
 
 class DepsProvider extends InheritedWidget {

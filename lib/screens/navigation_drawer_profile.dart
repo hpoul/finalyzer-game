@@ -1,5 +1,6 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
@@ -103,6 +104,13 @@ class NavigationDrawerProfile extends StatelessWidget {
                   ),
                   Spacer(
                     flex: 1,
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.insert_invitation),
+                    title: Text('Challenge a friend.'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.list),

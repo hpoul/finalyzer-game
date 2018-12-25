@@ -4,6 +4,7 @@ import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
@@ -11,6 +12,7 @@ import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 import 'package:logging/logging.dart';
@@ -85,6 +87,8 @@ class MyApp extends StatelessWidget {
 
   final Env env;
 
+  GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'topLevelNavigator');
+
 //  final Deps deps;
 
   MyApp(this.env);
@@ -96,107 +100,103 @@ class MyApp extends StatelessWidget {
     Deps deps = Deps(
       apiCaller: apiCaller,
       api: ApiService(env, apiCaller),
+      env: env,
     );
     analytics.analytics.logAppOpen();
     return DepsProvider(
       deps: deps,
-      child: MaterialApp(
-        title: 'MarketCap Game',
-        debugShowCheckedModeBanner: false,
-        theme: buildFinalyzerTheme(),
-        navigatorObservers: [observer],
-        home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
-        routes: {
-          ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
-          LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
-        },
+      child: DynamicLinkHandler(
+        navigatorKey: navigatorKey,
+        child: MaterialApp(
+          title: 'MarketCap Game',
+          navigatorKey: navigatorKey,
+          debugShowCheckedModeBanner: false,
+          theme: buildFinalyzerTheme(),
+          navigatorObservers: [observer],
+          home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
+          routes: {
+            ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
+            LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
+            ChallengeInvite.ROUTE_NAME: (context) => ChallengeInvite(),
+          },
+        ),
       ),
     );
   }
 }
 
+class DynamicLinkHandler extends StatefulWidget {
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  final Widget child;
+  final GlobalKey<NavigatorState> navigatorKey;
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  DynamicLinkHandler({this.child, this.navigatorKey});
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _DynamicLinkHandlerState createState() => _DynamicLinkHandlerState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBindingObserver {
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _retrieveDynamicLink();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _logger.fine('didChangeLifecycleState to: $state');
+    if (state == AppLifecycleState.resumed) {
+      _retrieveDynamicLink().then((val) {
+        _logger.fine('retrieving dynamic link successful.');
+      }).catchError((error, stackTrace) {
+        _logger.severe('Error while retrieving dynamic link.', error, stackTrace);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    return widget.child;
   }
+
+  Future<void> _retrieveDynamicLink() async {
+    _logger.fine('retrieving dynamic links ...');
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.retrieveDynamicLink();
+    _logger.fine('Got: $data');
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+      _logger.fine('Received dynamic link $deepLink');
+      if (deepLink.path == ChallengeInvite.URL_PATH) {
+        _logger.fine('pushing ChallgeInviteInfo.');
+        var count = 0;
+        while (widget.navigatorKey.currentState == null && count < 10) {
+          _logger.fine('currentStat is null. $count');
+          await Future.delayed(Duration(milliseconds: 100*count));
+          count++;
+        }
+        await widget.navigatorKey.currentState.push(MaterialPageRoute(
+            builder: (context) => ChallengeInviteInfo(
+              inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
+            )));
+//        Navigator.of(context).push(MaterialPageRoute(
+//            builder: (context) => ChallengeInviteInfo(
+//              inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
+//            )));
+      } else {
+        _logger.warning('Unknown dynamic link $deepLink.');
+        Navigator.pushNamed(context, deepLink.path); // deeplink.path == '/helloworld'
+      }
+    }
+  }
+
 }
