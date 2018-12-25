@@ -1,13 +1,18 @@
 
 
+import 'package:anlage_app_game/api/api_caller.dart';
+import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:flutter/widgets.dart';
 
 @immutable
 class Deps {
-  ApiService api;
+  final ApiCaller apiCaller;
+  final ApiService api;
+  final ApiChallenge apiChallenge;
 
-  Deps({this.api});
+  Deps({@required this.apiCaller, @required this.api}) :
+      apiChallenge = ApiChallenge(api);
 }
 
 class DepsProvider extends InheritedWidget {

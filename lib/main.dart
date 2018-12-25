@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
@@ -91,8 +92,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final apiCaller = ApiCaller(env);
     Deps deps = Deps(
-      api: ApiService(env: env),
+      apiCaller: apiCaller,
+      api: ApiService(env, apiCaller),
     );
     analytics.analytics.logAppOpen();
     return DepsProvider(
