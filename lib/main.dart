@@ -87,7 +87,7 @@ class MyApp extends StatelessWidget {
 
   final Env env;
 
-  GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'topLevelNavigator');
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'topLevelNavigator');
 
 //  final Deps deps;
 

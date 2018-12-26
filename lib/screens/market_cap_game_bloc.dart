@@ -10,6 +10,8 @@ final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 class MarketCapSortingGameBloc {
   final ApiService _apiService;
 
+  ApiService get api => _apiService;
+
 //  GameSimpleSetResponse simpleGameSet;
   Iterable<MapEntry<String, double>> marketCapPositions;
 
@@ -82,18 +84,4 @@ class MarketCapSortingGameBloc {
           ..sort((a, b) => -a.marketCap.compareTo(b.marketCap) )
     );
   }
-}
-
-class MarketCapSortingGameProvider extends InheritedWidget {
-  final MarketCapSortingGameBloc game;
-
-  MarketCapSortingGameProvider({Key key, MarketCapSortingGameBloc game, Widget child})
-      : game = game,
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) => true;
-
-  static MarketCapSortingGameBloc of(BuildContext context) =>
-      (context.inheritFromWidgetOfExactType(MarketCapSortingGameProvider) as MarketCapSortingGameProvider).game;
 }

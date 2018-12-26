@@ -101,13 +101,14 @@ class ApiCaller {
     try {
       final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.JSON));
       return location.bodyFromGetJson(response.data);
-    } on DioError catch (dioError) {
+    } on DioError catch (dioError, stackTrace) {
+      _logger.finer('Error during api call', dioError, stackTrace);
       throw ApiNetworkError.fromError(dioError);
     }
   }
 
-  Future<ResponseWrapper<U>> post<T, U>(PostBodyLocation<T, U> location, T args) async {
-    return await _post(location, args);
+  Future<U> post<T, U>(PostBodyLocation<T, U> location, T args) async {
+    return (await _post(location, args)).data;
   }
 
   Future<ResponseWrapper<U>> _post<T, U>(PostBodyLocation<T, U> location, T args, {Dio dio}) async {
@@ -115,6 +116,19 @@ class ApiCaller {
     try {
       final response = await client.post(_baseUri.resolve(location.path).toString(), data: args);
       return ResponseWrapper(response, location.bodyFromPostJson(response.data));
+    } on DioError catch (dioError) {
+      throw ApiNetworkError.fromError(dioError);
+    } catch (error, stackTrace) {
+      _logger.warning('Error during post request', error, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<U> put<T, U>(PutBodyLocation<T, U> location, T args) async {
+    final client = _dio;
+    try {
+      final response = await client.put(_baseUri.resolve(location.path).toString(), data: args);
+      return location.bodyFromPutJson(response.data);
     } on DioError catch (dioError) {
       throw ApiNetworkError.fromError(dioError);
     } catch (error, stackTrace) {

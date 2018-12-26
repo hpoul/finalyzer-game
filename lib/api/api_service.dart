@@ -81,7 +81,7 @@ class ApiService {
     _logger.finer('sending userinfo.');
 
     try {
-      final userInfo = (await this._apiCaller.post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await CloudMessagingUtil.instance.getToken()))).data;
+      final userInfo = await this._apiCaller.post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await CloudMessagingUtil.instance.getToken()));
 
       _loginState.add(LoginState(_baseUri, userInfo));
     } on DioError catch (error, stackTrace)  {
@@ -121,12 +121,12 @@ class ApiService {
     if (state == null) {
       this._updateUserInfo();
     } else {
-      state.userInfo.statsCorrectAnswers = result.data.statsCorrectAnswers;
-      state.userInfo.statsTotalTurns = result.data.statsTotalTurns;
+      state.userInfo.statsCorrectAnswers = result.statsCorrectAnswers;
+      state.userInfo.statsTotalTurns = result.statsTotalTurns;
       _loginState.add(state);
     }
-    _logger.finer('Received answer with correctAnswers: ${result.data.statsCorrectAnswers} (now: ${result.data.correctCount})');
-    return result.data;
+    _logger.finer('Received answer with correctAnswers: ${result.statsCorrectAnswers} (now: ${result.correctCount})');
+    return result;
   }
 
   String getImageUrl(InstrumentImageDto image) {
@@ -142,8 +142,8 @@ class ApiService {
 
   Future<UserInfoResponse> updateUserInfo({String displayName, String email}) async {
     final res = await _apiCaller.post(UserInfoUpdateLocation(), UserInfoUpdateRequest(displayName, email));
-    _loginState.add(LoginState(_baseUri, res.data));
-    return res.data;
+    _loginState.add(LoginState(_baseUri, res));
+    return res;
   }
 
   Future<LeaderboardSimpleResponse> fetchLeaderboard() async {
