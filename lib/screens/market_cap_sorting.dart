@@ -4,11 +4,12 @@ import 'dart:ui' as ui;
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
-import 'package:anlage_app_game/utils_format.dart';
+import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:firebase_performance/firebase_performance.dart';
@@ -170,7 +171,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
     if (_api != api) {
       _api = api;
       _gameBloc = MarketCapSortingGameBloc(_api);
-      _gameBloc.newGame();
+      _gameBloc.nextTurn();
     }
   }
 
@@ -190,6 +191,40 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   }
 
 }
+
+class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
+
+  final ApiService api;
+  final ui.Size preferredSize = const Size.fromHeight(kToolbarHeight);
+
+  const MarketCapAppBar({Key key, this.api}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text('Market Cap Game'),
+      actions: <Widget>[
+        StreamBuilder<LoginState>(
+          builder: (context, snapshot) => IconButton(
+              iconSize: 36,
+              icon: CircleAvatar(
+                  maxRadius: 18,
+                  backgroundColor: Colors.white,
+                  backgroundImage: snapshot.data?.avatarUrl == null
+                      ? null
+                      : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
+              onPressed: () {
+                AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
+                Scaffold.of(context).openEndDrawer();
+              }),
+          stream: api.loginState,
+        ),
+      ],
+    );
+  }
+
+}
+
 
 class MarketCapSortingScreen extends StatefulWidget {
   final MarketCapSortingGameBloc gameBloc;
@@ -211,26 +246,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
     final _api = _gameBloc.api;
     return Scaffold(
         endDrawer: NavigationDrawerProfile(),
-        appBar: AppBar(
-          title: Text('Market Cap Game'),
-          actions: <Widget>[
-            StreamBuilder<LoginState>(
-              builder: (context, snapshot) => IconButton(
-                  iconSize: 36,
-                  icon: CircleAvatar(
-                      maxRadius: 18,
-                      backgroundColor: Colors.white,
-                      backgroundImage: snapshot.data?.avatarUrl == null
-                          ? null
-                          : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
-                  onPressed: () {
-                    AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
-                    Scaffold.of(context).openEndDrawer();
-                  }),
-              stream: _api.loginState,
-            ),
-          ],
-        ),
+        appBar: MarketCapAppBar(api: _api,),
         floatingActionButton: FloatingActionButton.extended(
           label: Text(isVerifying || snapshot.data == null ? 'Loading …' : 'Check'),
           icon: isVerifying || snapshot.data == null
@@ -271,13 +287,20 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
             padding: EdgeInsets.only(top: 16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Text(
-                  'Sort the companies based on their Market Cap.',
+                  widget.gameBloc.maxTurns == null ? 'Sort the companies based on their Market Cap.'
+                      : 'Sort the companies based on their Market Cap.',
                   style: Theme.of(context).textTheme.body2,
                 ),
-              ],
+              ] + (widget.gameBloc.maxTurns == null ? [] : [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text('Turn ${widget.gameBloc.currentTurn+1} of ${widget.gameBloc.maxTurns}', style: Theme.of(context).textTheme.caption, textAlign: TextAlign.center,),
+                ),
+                LinearProgressIndicator(value:(widget.gameBloc.currentTurn+1) /  widget.gameBloc.maxTurns),
+              ]),
             ),
           ),
         ),
@@ -301,7 +324,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
                 RaisedButton(
                   child: Text('Retry'),
                   onPressed: () {
-                    _gameBloc.newGame();
+                    _gameBloc.nextTurn();
                   },
                 ),
               ],
@@ -342,6 +365,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final challengeBloc = _gameBloc is MarketCapSortingChallengeBloc ? _gameBloc as MarketCapSortingChallengeBloc : null;
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
     return Container(
         child: AlertDialog(
@@ -366,10 +390,20 @@ class MarketCapSortingResultWidget extends StatelessWidget {
           },
         ),
         FlatButton(
-          child: Text('New Game'),
+          child: Text(
+              challengeBloc == null ? 'New Game'
+                  : challengeBloc.isCompleted ? 'Finish Challenge' : 'Next Turn'),
           onPressed: () {
-            _gameBloc.newGame();
-            Navigator.of(context).pop();
+            if (challengeBloc?.isCompleted ?? false) {
+              Navigator.of(context)
+                ..pop()
+                ..pushReplacement(MaterialPageRoute(
+                    builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
+                );
+            } else {
+              _gameBloc.nextTurn();
+              Navigator.of(context).pop();
+            }
           },
         )
       ],

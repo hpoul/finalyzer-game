@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="app.anlage.anlageappgame">
 
     <!-- The INTERNET permission is required for development. Specifically,
@@ -38,6 +39,24 @@
             <intent-filter>
                 <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:host="anlage.app"
+                    android:pathPrefix="/game/invite"
+                    android:scheme="https"/>
+            </intent-filter>
+            <intent-filter android:autoVerify="true"
+                tools:targetApi="m">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="anlageapp.page.link" android:scheme="http"/>
+                <data android:host="anlageapp.page.link" android:scheme="https"/>
             </intent-filter>
         </activity>
     </application>

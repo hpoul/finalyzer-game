@@ -1,6 +1,9 @@
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -129,13 +132,16 @@ class ChallengeInviteInfo extends StatefulWidget {
 
 class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
   Future<GameChallengeInviteInfoResponse> _inviteInfoFuture;
+  Future<GameChallengeDto> _acceptChallengeFuture;
 
+  Deps _deps;
   ApiChallenge _apiChallenge;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    this._apiChallenge = DepsProvider.of(context).apiChallenge;
+    this._deps = DepsProvider.of(context);
+    this._apiChallenge = _deps.apiChallenge;
     _requestInfo();
   }
 
@@ -187,15 +193,27 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                   ),
                 ),
                 Text('You have been challenged by ${createdBy.displayName}. Do you want to play?'),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: RaisedButton.icon(
-                    onPressed: () {
-
-                    },
-                    icon: Icon(Icons.check),
-                    label: Text('Accept'),
-                  ),
+                FutureBuilder<GameChallengeDto>(
+                  future: _acceptChallengeFuture,
+                  builder: (context, snapshot) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: RaisedButton.icon(
+                          onPressed: snapshot.connectionState == ConnectionState.waiting
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
+                                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                          builder: (context) => Challenge(
+                                                gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
+                                              )));
+                                    }).catchError(DialogUtil.genericErrorDialog(context));
+                                  });
+                                },
+                          icon: Icon(Icons.check),
+                          label: Text('Accept'),
+                        ),
+                      ),
                 ),
               ],
             ),
@@ -213,6 +231,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
     });
   }
 }
+
 
 class ErrorRetry extends StatelessWidget {
   final VoidCallback onPressed;

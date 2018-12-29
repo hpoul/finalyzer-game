@@ -41,6 +41,11 @@ class ApiNetworkError extends Error {
   ApiNetworkError(this.message, this.cause);
 
   ApiNetworkError.fromError(DioError cause) : this(cause.message, cause);
+
+  @override
+  String toString() {
+    return 'ApiNetworkError{$cause}';
+  }
 }
 
 class ApiService {
@@ -52,6 +57,8 @@ class ApiService {
 
   Uri _baseUri;
   get loginState => _loginState.stream;
+  // Simple way to access the currently logged in user. Can always be null!!!
+  LoginState get currentLoginState => _loginState.value;
 
 
   ApiService(this._env, this._apiCaller) {

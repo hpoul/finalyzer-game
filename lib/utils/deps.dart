@@ -4,6 +4,7 @@ import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
+import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:flutter/widgets.dart';
 
 class FirebaseConfig {
@@ -22,6 +23,7 @@ class Deps {
   final ApiCaller apiCaller;
   final ApiService api;
   final ApiChallenge apiChallenge;
+  final FormatUtil formatUtil = FormatUtil();
 
   Deps({@required this.apiCaller, @required this.api, @required this.env}) :
       apiChallenge = ApiChallenge(apiCaller);

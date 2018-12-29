@@ -12,7 +12,6 @@ class MarketCapSortingGameBloc {
 
   ApiService get api => _apiService;
 
-//  GameSimpleSetResponse simpleGameSet;
   Iterable<MapEntry<String, double>> marketCapPositions;
 
   BehaviorSubject<GameSimpleSetResponse> _simpleGameSetFetcher;
@@ -20,6 +19,9 @@ class MarketCapSortingGameBloc {
   GameSimpleSetResponse _currentSimpleGameSet;
 
   ValueObservable<GameSimpleSetResponse> get simpleGameSet => _simpleGameSetFetcher.stream;
+
+  final int maxTurns = null;
+  final int currentTurn = null;
 
   MarketCapSortingGameBloc(this._apiService) {
     _simpleGameSetFetcher = BehaviorSubject<GameSimpleSetResponse>(onListen: () {
@@ -40,9 +42,9 @@ class MarketCapSortingGameBloc {
     _simpleGameSetFetcher.close();
   }
 
-  void newGame() {
+  void nextTurn() {
     _simpleGameSetFetcher.add(null);
-    _logger.fine('Fetching new game.');
+    _logger.fine('Fetching new turn.');
     _apiService.getSimpleGameSet().then((val) {
       AnalyticsUtils.instance.analytics.logEvent(name: 'start_new_sort');
       _simpleGameSetFetcher.add(val);
@@ -83,5 +85,27 @@ class MarketCapSortingGameBloc {
             .toList()
           ..sort((a, b) => -a.marketCap.compareTo(b.marketCap) )
     );
+  }
+}
+
+class MarketCapSortingChallengeBloc extends MarketCapSortingGameBloc {
+
+  GameChallengeDto challenge;
+  @override
+  int currentTurn = -1;
+
+  @override
+  int get maxTurns => challenge.simpleGame.length;
+
+  bool get isCompleted => currentTurn + 1 == maxTurns;
+
+  MarketCapSortingChallengeBloc(ApiService apiService, this.challenge) : super(apiService);
+
+
+  @override
+  void nextTurn() {
+    currentTurn++;
+    final turn = challenge.simpleGame[currentTurn];
+    _simpleGameSetFetcher.add(turn);
   }
 }

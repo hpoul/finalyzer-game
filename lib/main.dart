@@ -4,6 +4,7 @@ import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting.dart';
@@ -118,6 +119,7 @@ class MyApp extends StatelessWidget {
             ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
             LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
             ChallengeInvite.ROUTE_NAME: (context) => ChallengeInvite(),
+            ChallengeList.ROUTE_NAME: (context) => ChallengeList(),
           },
         ),
       ),
@@ -142,7 +144,10 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _retrieveDynamicLink();
+    _retrieveDynamicLink()
+      .catchError((error, stackTrace) {
+        _logger.warning('Error while retrieving dynamic link.', error, stackTrace);
+    });
   }
 
   @override
@@ -171,7 +176,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   Future<void> _retrieveDynamicLink() async {
     _logger.fine('retrieving dynamic links ...');
     final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.retrieveDynamicLink();
-    _logger.fine('Got: $data');
+    _logger.fine('dynamic link, Got: $data');
     final Uri deepLink = data?.link;
 
     if (deepLink != null) {
