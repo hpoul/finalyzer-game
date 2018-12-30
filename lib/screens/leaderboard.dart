@@ -1,5 +1,6 @@
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -47,7 +48,10 @@ class LeaderboardListState extends State<LeaderboardList> {
                     isMyself: entry.loggedInUser,
                     statsCorrectAnswers: entry.statsCorrectAnswers,
                     onTap: () {
-
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) => LeaderBoardBottomSheet(entry),
+                      );
                     },
                   );
                 },
@@ -57,6 +61,42 @@ class LeaderboardListState extends State<LeaderboardList> {
     );
   }
 }
+
+class LeaderBoardBottomSheet extends StatelessWidget {
+
+  final LeaderboardEntry entry;
+
+  LeaderBoardBottomSheet(this.entry);
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    final deps = DepsProvider.of(context);
+    final apiChallenge = deps.apiChallenge;
+    return Padding(
+      padding: EdgeInsets.only(top: 16, bottom: MediaQuery.of(context).padding.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text("${entry.displayName}", style: Theme.of(context).textTheme.headline),
+          ListTile(
+            leading: Icon(Icons.send),
+            title: Text('Send Challenge'),
+            onTap: () {
+              apiChallenge.createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
+                  .then((val) {
+                    _logger.fine('Created Challenge.');
+                    DialogUtil.showSimpleAlertDialog(context, null, 'Sent invitation.');
+                  }).catchError(DialogUtil.genericErrorDialog(context));
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 class LeaderboardListTile extends StatelessWidget {
   final int rank;

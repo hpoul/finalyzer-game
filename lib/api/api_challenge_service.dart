@@ -8,8 +8,8 @@ class ApiChallenge {
 
   ApiChallenge(this._apiCaller);
 
-  Future<GameChallengeInviteResponse> createChallengeInvite(String displayName) {
-    return _apiCaller.post(GameChallengeInviteLocation(), GameChallengeInviteCreateRequest(displayName));
+  Future<GameChallengeInviteResponse> createChallengeInvite(GameChallengeInviteType type, {String displayName = '', String gameUserToken}) {
+    return _apiCaller.post(GameChallengeInviteLocation(), GameChallengeInviteCreateRequest(displayName, gameUserToken, type));
   }
 
   Future<GameChallengeInviteInfoResponse> getChallengeInviteInfo(String inviteToken) {

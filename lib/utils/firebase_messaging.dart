@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logging/logging.dart';
@@ -59,10 +61,11 @@ class CloudMessagingUtil {
   void _handleMessage(Map<String, dynamic> message) {
     if (message.containsKey('d')) {
       try {
-        final notification = GameNotification.fromJson(message);
+        final messageMap = jsonDecode(message['d']);
+        final notification = GameNotification.fromJson(messageMap);
         _onNotification.add(notification);
       } catch (error, stackTrace) {
-        _logger.warning('Error while parsing notification.', error, stackTrace);
+        _logger.severe('Error while parsing notification.', error, stackTrace);
       }
     }
   }

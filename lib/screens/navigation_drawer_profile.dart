@@ -163,6 +163,15 @@ class NavigationDrawerProfile extends StatelessWidget {
                                             _logger.severe('Unable to launch url $url');
                                           }
                                         },
+                                        onLongPress: () async {
+                                          _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
+                                          final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                          if (await canLaunch(url)) {
+                                          await launch(url, forceSafariVC: false);
+                                          } else {
+                                          _logger.severe('Unable to launch url $url');
+                                          }
+                                        },
                                       ),
                                     ],
                                   ),

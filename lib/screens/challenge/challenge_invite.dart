@@ -81,7 +81,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
                 label: Text('Create Challenge'),
                 onPressed: () {
                   _logger.fine('Creating challenge ...');
-                  _createFuture = apiChallenge.createChallengeInvite(_displayNameCtrl.text).then((value) {
+                  _createFuture = apiChallenge.createChallengeInvite(GameChallengeInviteType.LinkInvite, displayName: _displayNameCtrl.text).then((value) {
                     _logger.fine('Created challenge ${value.toJson()}');
                     return _createInviteLink(deps, value);
                   }).then((dynamicLink) {

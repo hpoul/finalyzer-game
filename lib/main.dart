@@ -150,17 +150,22 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
     WidgetsBinding.instance.addObserver(this);
     _retrieveDynamicLinkBackgroundWithLogging();
     _onNotificationSubscription = CloudMessagingUtil.instance.onNotification.listen((notification) {
+      _logger.fine('Handling notification ${notification} ${notification?.toJson()}');
       if (notification == null) {
         return;
       }
-      CloudMessagingUtil.instance.clearNotification();
       switch (notification.type) {
+        case GameNotificationType.ChallengeInvitation:
+          widget.navigatorKey.currentState
+              .push(MaterialPageRoute(builder: (context) => ChallengeInviteInfo(inviteToken: notification.inviteToken)));
+          break;
         case GameNotificationType.ChallengeInvitationAccepted:
         case GameNotificationType.ChallengeParticipantFinished:
           widget.navigatorKey.currentState
               .push(MaterialPageRoute(builder: (context) => ChallengeDetails(notification.challengeId)));
           break;
       }
+      CloudMessagingUtil.instance.clearNotification();
     });
   }
 
