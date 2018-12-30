@@ -55,116 +55,123 @@ class NavigationDrawerProfile extends StatelessWidget {
                         child: DefaultTextStyle(
                           style: Theme.of(context).primaryTextTheme.body1,
                           textAlign: TextAlign.right,
-                          child: !snapshot.hasData ? Container() : Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: <Widget>[
-                                  Container(
-                                    margin: EdgeInsets.only(bottom: 16),
-                                    constraints: BoxConstraints.tightFor(width: 128, height: 128),
-                                    child: AvatarWithEditIcon(
-                                      snapshot?.data?.avatarUrl,
-                                      radius: 64,
-                                    ),
-                                  ),
-                                ] +
-                                (displayName == ""
-                                    ? [
-                                        Text(
-                                          'Hello Anonymous Investor!',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
+                          child: !snapshot.hasData
+                              ? Container()
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: <Widget>[
+                                        Container(
+                                          margin: EdgeInsets.only(bottom: 16),
+                                          constraints: BoxConstraints.tightFor(width: 128, height: 128),
+                                          child: AvatarWithEditIcon(
+                                            snapshot?.data?.avatarUrl,
+                                            radius: 64,
+                                          ),
                                         ),
-                                        Text(
-                                          'Tell us a bit about you to get listed in the leaderboard!',
-                                        ),
-                                      ]
-                                    : [Text('Hello $displayName!')]),
-                          ),
+                                      ] +
+                                      (displayName == ""
+                                          ? [
+                                              Text(
+                                                'Hello Anonymous Investor!',
+                                                style: TextStyle(fontWeight: FontWeight.bold),
+                                              ),
+                                              Text(
+                                                'Tell us a bit about you to get listed in the leaderboard!',
+                                              ),
+                                            ]
+                                          : [Text('Hello $displayName!')]),
+                                ),
                         ),
                       ),
                     ),
                   ),
-
-                  SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                ListTile(
-                                  leading: Icon(Icons.assignment),
-                                  title: Text('Completed Turns:'),
-                                  trailing: Text(
-                                    '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
-                                    style: Theme.of(context).textTheme.display1,
+                  Flexible(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => SingleChildScrollView(
+                            child: Container(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: Icon(Icons.assignment),
+                                        title: Text('Completed Turns:'),
+                                        trailing: Text(
+                                          '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
+                                          style: Theme.of(context).textTheme.display1,
+                                        ),
+                                      ),
+                                      ListTile(
+                                        leading: Icon(
+                                          Icons.thumb_up,
+                                          color: Colors.green,
+                                        ),
+                                        title: Text('Correct Answers:'),
+                                        trailing: Text(
+                                          '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
+                                          style: Theme.of(context).textTheme.display1,
+                                        ),
+                                      ),
+                                      Divider(),
+                                    ],
                                   ),
-                                ),
-                                ListTile(
-                                  leading: Icon(
-                                    Icons.thumb_up,
-                                    color: Colors.green,
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: Icon(Icons.insert_invitation),
+                                        title: Text('Challenge a friend.'),
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.view_list),
+                                        title: Text('Challenges'),
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.list),
+                                        title: Text('Leaderboard'),
+                                        onTap: () {
+                                          Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
+                                        },
+                                      ),
+                                      Divider(),
+                                      ListTile(
+                                        leading: Icon(Icons.email),
+                                        title: Text('How can we improve? Problems?'),
+                                        subtitle: Text('We love to hear from you at hello@anlage.app'),
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.link),
+                                        title: Text('By https://Anlage.App/'),
+                                        subtitle: Text('Track&Analyse your portfolio.'),
+                                        onTap: () async {
+                                          final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                          if (await canLaunch(url)) {
+                                            await launch(url, forceSafariVC: false);
+                                          } else {
+                                            _logger.severe('Unable to launch url $url');
+                                          }
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  title: Text('Correct Answers:'),
-                                  trailing: Text(
-                                    '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
-                                    style: Theme.of(context).textTheme.display1,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-
-                            Divider(),
-
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                            ListTile(
-                              leading: Icon(Icons.insert_invitation),
-                              title: Text('Challenge a friend.'),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
-                              },
-                            ),
-                            ListTile(
-                              leading: Icon(Icons.view_list),
-                              title: Text('Challenges'),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
-                              },
-                            ),
-                            ListTile(
-                              leading: Icon(Icons.list),
-                              title: Text('Leaderboard'),
-                              onTap: () {
-                                Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
-                              },
-                            ),
-                                Divider(),
-                            ListTile(
-                              leading: Icon(Icons.email),
-                              title: Text('How can we improve? Problems?'),
-                              subtitle: Text('We love to hear from you at hello@anlage.app'),
-                            ),
-                            ListTile(
-                              leading: Icon(Icons.link),
-                              title: Text('By https://Anlage.App/'),
-                              subtitle: Text('Track&Analyse your portfolio.'),
-                              onTap: () async {
-                                final url = 'https://anlage.app/?utm_source=marketcap-game';
-                                if (await canLaunch(url)) {
-                                  await launch(url, forceSafariVC: false);
-                                } else {
-                                  _logger.severe('Unable to launch url $url');
-                                }
-                              },
-                            ),
-                              ],
-                            ),
-                      ],
+                          ),
                     ),
                   ),
-
                 ],
               );
             }),
