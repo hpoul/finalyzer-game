@@ -47,7 +47,11 @@ class ApiNetworkError extends Error {
 
   @override
   String toString() {
-    return 'ApiNetworkError{$cause}';
+    var data = '';
+    if (cause.response?.statusCode == HttpStatus.badRequest) {
+      data = cause?.response?.data;
+    }
+    return 'ApiNetworkError{$cause, $data}';
   }
 }
 
