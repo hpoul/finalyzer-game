@@ -91,6 +91,9 @@ class ApiService {
 
     // some arbitrary time after staring up, request current status from the server.
     Future.delayed(Duration(seconds: 3)).then((x) async { await _updateUserInfo(); });
+    CloudMessagingUtil.instance.onTokenRefresh.listen((newToken) {
+      _updateUserInfo();
+    });
   }
 
   Future<void> _updateUserInfo({int retryCount = 0}) async {

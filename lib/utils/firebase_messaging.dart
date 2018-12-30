@@ -2,6 +2,7 @@
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logging/logging.dart';
+import 'package:rxdart/rxdart.dart';
 
 final _logger = new Logger("app.anlage.game.main");
 
@@ -13,6 +14,9 @@ class CloudMessagingUtil {
   CloudMessagingUtil._();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+
+  final BehaviorSubject<String> _onTokenRefresh = BehaviorSubject<String>();
+  ValueObservable<String> get onTokenRefresh => _onTokenRefresh.stream;
 
 
   Future<void> setupFirebaseMessaging() {
@@ -30,6 +34,7 @@ class CloudMessagingUtil {
     );
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
       _logger.warning('We have received a new token. Need to change it to $newToken');
+      _onTokenRefresh.add(newToken);
     });
     return null;
   }
@@ -55,6 +60,10 @@ class CloudMessagingUtil {
         _logger.warning('Error while parsing notification.', error, stackTrace);
       }
     }
+  }
+
+  void dispose() {
+    _onTokenRefresh.close();
   }
 
 }
