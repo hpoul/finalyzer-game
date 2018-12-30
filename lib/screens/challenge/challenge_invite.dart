@@ -5,10 +5,10 @@ import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:anlage_app_game/utils/widgets/avatar.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:logging/logging.dart';
 import 'package:share/share.dart';
 
@@ -118,8 +118,8 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
           medium: 'app',
           source: 'game',
         ));
-//    return params.buildShortLink().then((shortLink) => shortLink.shortUrl);
-    return params.buildUrl();
+    return params.buildShortLink().then((shortLink) => shortLink.shortUrl);
+//    return params.buildUrl();
   }
 }
 
@@ -182,9 +182,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                CircleAvatar(
-                  backgroundImage: CachedNetworkImageProvider(createdBy.avatarUrl),
-                  backgroundColor: Theme.of(context).primaryColor,
+                Avatar(
+                  createdBy.avatarUrl,
                   radius: 80,
                 ),
                 Padding(

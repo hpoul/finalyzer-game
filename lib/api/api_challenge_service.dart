@@ -24,8 +24,8 @@ class ApiChallenge {
     return _apiCaller.get(GameChallengeListLocation());
   }
 
-  Future<GameChallengeDto> startChallenge(String challengeId) {
-    return _apiCaller.put(GameChallengeLocation(challengeId), new GameChallengeRequest(GameChallengeAction.Start));
+  Future<GameChallengeDto> startChallenge(String challengeId, {GameChallengeAction action = GameChallengeAction.Start}) {
+    return _apiCaller.put(GameChallengeLocation(challengeId), new GameChallengeRequest(action));
   }
 
   Future<GameChallengeDetailsResponse> getGameChallengeDetails(String challengeId) =>

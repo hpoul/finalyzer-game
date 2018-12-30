@@ -86,11 +86,16 @@ class _ChallengeListState extends State<ChallengeList> {
 //                dense: true,
                       title: Text('Created ${_deps.formatUtil.formatRelativeFuzzy(item.createdAt.dateTime)}'),
                       subtitle: Text(item.createdBy == null ? 'by you.' : 'by: ${item.createdBy.displayName}.'),
-                      trailing: Icon(item.myParticipantStatus == GameChallengeParticipantStatus.Finished ? Icons.check : Icons.markunread_mailbox),
+                      trailing: Icon(
+                        item.myParticipantStatus == GameChallengeParticipantStatus.Finished
+                            ? Icons.check
+                            : item.status == GameChallengeStatus.Accepted ? Icons.play_arrow : Icons.markunread_mailbox,
+                      ),
                       onTap: () {
-//                  Scaffold.of(context).showBottomSheet(builders)
-                        showModalBottomSheet(
-                            context: context, builder: (context) => ChallengeListActionBottomSheet(item));
+//                        showModalBottomSheet(
+//                            context: context, builder: (context) => ChallengeListActionBottomSheet(item));
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (context) => ChallengeDetails(item.challengeId)));
                       },
                     );
                   },
@@ -177,6 +182,27 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
         final details = snapshot.data;
         final createdBy = details?.baseInfo?.createdBy;
         final createdAt = details?.baseInfo?.createdAt?.dateTime;
+
+        List<Widget> actions = [];
+        if (details?.baseInfo?.status == GameChallengeStatus.Accepted) {
+          if (details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.Ready
+              || details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated)
+          actions = [
+            RaisedButton(
+              child: Text('Play Now'),
+              onPressed: () {
+                _apiChallenge.startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve).then((challenge) {
+                  final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => Challenge(
+                        gameBloc: bloc,
+                      )));
+                });
+              },
+            ),
+          ];
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: Text('Challenge Details'),
@@ -185,13 +211,15 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
               ? Center(child: CircularProgressIndicator())
               : Column(
                   mainAxisSize: MainAxisSize.max,
-                  children: [
+                  children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: createdBy == null
-                          ? Text('You creaed this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}')
-                          : Text('Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}'),
+                          ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}')
+                          : Text(
+                              'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}'),
                     ),
+                  ] + actions + [
                     Expanded(
                       child: ListView.separated(
                         separatorBuilder: (context, index) => Divider(height: 0),

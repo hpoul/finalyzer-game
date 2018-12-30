@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_service.dart';
+import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
@@ -36,11 +37,13 @@ void _setupLogging() {
     if (rec.stackTrace != null) {
       print(rec.stackTrace);
       if (rec.level >= Level.INFO) {
-        AnalyticsUtils.instance.analytics.logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': rec.stackTrace});
+        AnalyticsUtils.instance.analytics
+            .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': rec.stackTrace});
         FlutterCrashlytics().logException(rec.error, rec.stackTrace);
       }
     } else if (rec.level >= Level.SEVERE) {
-      AnalyticsUtils.instance.analytics.logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': StackTrace.current.toString()});
+      AnalyticsUtils.instance.analytics
+          .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': StackTrace.current.toString()});
       FlutterCrashlytics().logException(Exception('SEVERE LOG ${rec.message}'), StackTrace.current);
     }
   });
@@ -62,7 +65,6 @@ Future<void> _setupCrashlytics() async {
 
   await FlutterCrashlytics().initialize();
 }
-
 
 Future<void> startApp(Env env) async {
   _setupLogging();
@@ -115,7 +117,8 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: buildFinalyzerTheme(),
           navigatorObservers: [observer],
-          home: MarketCapSorting(), //MyHomePage(title: 'Never mind.'),
+          home: MarketCapSorting(),
+          //MyHomePage(title: 'Never mind.'),
           routes: {
             ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
             LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
@@ -129,7 +132,6 @@ class MyApp extends StatelessWidget {
 }
 
 class DynamicLinkHandler extends StatefulWidget {
-
   final Widget child;
   final GlobalKey<NavigatorState> navigatorKey;
 
@@ -140,20 +142,32 @@ class DynamicLinkHandler extends StatefulWidget {
 }
 
 class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBindingObserver {
+  StreamSubscription<GameNotification> _onNotificationSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _retrieveDynamicLink()
-      .catchError((error, stackTrace) {
-        _logger.warning('Error while retrieving dynamic link.', error, stackTrace);
+    _retrieveDynamicLinkBackgroundWithLogging();
+    _onNotificationSubscription = CloudMessagingUtil.instance.onNotification.listen((notification) {
+      if (notification == null) {
+        return;
+      }
+      CloudMessagingUtil.instance.clearNotification();
+      switch (notification.type) {
+        case GameNotificationType.ChallengeInvitationAccepted:
+        case GameNotificationType.ChallengeParticipantFinished:
+          widget.navigatorKey.currentState
+              .push(MaterialPageRoute(builder: (context) => ChallengeDetails(notification.challengeId)));
+          break;
+      }
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _onNotificationSubscription.cancel();
     super.dispose();
   }
 
@@ -161,11 +175,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   void didChangeAppLifecycleState(AppLifecycleState state) {
     _logger.fine('didChangeLifecycleState to: $state');
     if (state == AppLifecycleState.resumed) {
-      _retrieveDynamicLink().then((val) {
-        _logger.fine('retrieving dynamic link successful.');
-      }).catchError((error, stackTrace) {
-        _logger.severe('Error while retrieving dynamic link.', error, stackTrace);
-      });
+      _retrieveDynamicLinkBackgroundWithLogging();
     }
   }
 
@@ -174,10 +184,18 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
     return widget.child;
   }
 
-  Future<void> _retrieveDynamicLink() async {
-    _logger.fine('retrieving dynamic links ...');
+  void _retrieveDynamicLinkBackgroundWithLogging({int count = 0}) {
+    _retrieveDynamicLink(count).then((val) {
+      _logger.fine('retrieving dynamic link successful.');
+    }).catchError((error, stackTrace) {
+      _logger.severe('Error while retrieving dynamic link.', error, stackTrace);
+    });
+  }
+
+  Future<void> _retrieveDynamicLink(int count) async {
+    _logger.fine('retrieving dynamic links .. ($count).');
     final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.retrieveDynamicLink();
-    _logger.fine('dynamic link, Got: $data');
+    _logger.fine('dynamic link ($count), Got: $data');
     final Uri deepLink = data?.link;
 
     if (deepLink != null) {
@@ -187,13 +205,13 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
         var count = 0;
         while (widget.navigatorKey.currentState == null && count < 10) {
           _logger.fine('currentStat is null. $count');
-          await Future.delayed(Duration(milliseconds: 100*count));
+          await Future.delayed(Duration(milliseconds: 100 * count));
           count++;
         }
         await widget.navigatorKey.currentState.push(MaterialPageRoute(
             builder: (context) => ChallengeInviteInfo(
-              inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
-            )));
+                  inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
+                )));
 //        Navigator.of(context).push(MaterialPageRoute(
 //            builder: (context) => ChallengeInviteInfo(
 //              inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
@@ -202,7 +220,12 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
         _logger.warning('Unknown dynamic link $deepLink.');
         await Navigator.pushNamed(context, deepLink.path); // deeplink.path == '/helloworld'
       }
+    } else {
+      if (count < 1) {
+        unawaited(Future.delayed(Duration(milliseconds: 500)).then((val) {
+          this._retrieveDynamicLinkBackgroundWithLogging(count: count + 1);
+        }));
+      }
     }
   }
-
 }

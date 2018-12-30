@@ -6,8 +6,9 @@ import 'package:flutter/widgets.dart';
 class Avatar extends StatelessWidget {
 
   final String avatarUrl;
+  final double radius;
 
-  Avatar(this.avatarUrl);
+  Avatar(this.avatarUrl, {this.radius});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +16,7 @@ class Avatar extends StatelessWidget {
     return CircleAvatar(
 //      backgroundColor: Theme.of(context).primaryColorDark,
       backgroundImage: CachedNetworkImageProvider(url),
+      radius: radius,
     );
   }
 }

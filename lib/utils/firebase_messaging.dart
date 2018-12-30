@@ -71,5 +71,9 @@ class CloudMessagingUtil {
     _onTokenRefresh.close();
   }
 
+  void clearNotification() {
+    _onNotification.add(null);
+  }
+
 }
 
