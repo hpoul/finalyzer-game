@@ -39,7 +39,7 @@ class ApiCaller {
 
         try {
           gameSession = await _registerDevice();
-          _setGameSession(gameSession);
+          await _setGameSession(gameSession);
         } finally {
           dio.interceptor.request.unlock();
         }

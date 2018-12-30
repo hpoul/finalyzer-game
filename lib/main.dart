@@ -17,6 +17,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 import 'package:logging/logging.dart';
+import 'package:pedantic/pedantic.dart';
 
 final _logger = new Logger("app.anlage.game.main");
 
@@ -67,10 +68,10 @@ Future<void> startApp(Env env) async {
   _setupLogging();
   // TODO maybe we should check if this stuff makes startup slower? how?
   await _setupCrashlytics();
-  CloudMessagingUtil.instance.setupFirebaseMessaging();
+  unawaited(CloudMessagingUtil.instance.setupFirebaseMessaging());
   _logger.fine('Logging was set up.');
 
-  runZoned<Future<Null>>(() async {
+  await runZoned<Future<Null>>(() async {
     runApp(MyApp(env));
   }, onError: (error, stackTrace) async {
     // Whenever an error occurs, call the `reportCrash` function. This will send
@@ -199,7 +200,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
 //            )));
       } else {
         _logger.warning('Unknown dynamic link $deepLink.');
-        Navigator.pushNamed(context, deepLink.path); // deeplink.path == '/helloworld'
+        await Navigator.pushNamed(context, deepLink.path); // deeplink.path == '/helloworld'
       }
     }
   }

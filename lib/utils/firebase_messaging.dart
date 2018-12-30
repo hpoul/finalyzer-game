@@ -18,6 +18,9 @@ class CloudMessagingUtil {
   final BehaviorSubject<String> _onTokenRefresh = BehaviorSubject<String>();
   ValueObservable<String> get onTokenRefresh => _onTokenRefresh.stream;
 
+  final BehaviorSubject<GameNotification> _onNotification = BehaviorSubject<GameNotification>();
+  ValueObservable<GameNotification> get onNotification => _onNotification.stream;
+
 
   Future<void> setupFirebaseMessaging() {
     _firebaseMessaging.configure(
@@ -27,9 +30,11 @@ class CloudMessagingUtil {
       },
       onLaunch: (message) async {
         _logger.info('Received message for onLaunch. $message');
+        _handleMessage(message);
       },
       onResume: (message) async {
         _logger.info('Received message for onResume. $message');
+        _handleMessage(message);
       },
     );
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
@@ -55,7 +60,7 @@ class CloudMessagingUtil {
     if (message.containsKey('d')) {
       try {
         final notification = GameNotification.fromJson(message);
-
+        _onNotification.add(notification);
       } catch (error, stackTrace) {
         _logger.warning('Error while parsing notification.', error, stackTrace);
       }

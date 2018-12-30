@@ -14,6 +14,7 @@ import 'package:path/path.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:device_info/device_info.dart';
 import 'package:package_info/package_info.dart';
+import 'package:pedantic/pedantic.dart';
 
 final _logger = new Logger("app.anlage.game.api.api_service");
 
@@ -103,7 +104,7 @@ class ApiService {
       deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
     } else if (Platform.isAndroid) {
       final testLab = (await NativeService.instance.isFirebaseTestLab()) ? 'FIREBASE TESTLAB,' : '';
-      AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'true');
+      await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'true');
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       deviceInfo = "$testLab${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
           .manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
@@ -123,11 +124,15 @@ class ApiService {
       }
       if (retryCount < 10) {
         final duration = 10 * (retryCount+1);
-        _logger.warning('Error while updating user info. retrying in $duration seconds. Retries: $retryCount');
-        Future.delayed(Duration(seconds: duration)).then((val) {
+        _logger.warning('Error while updating user info. retrying in $duration seconds. Retries: $retryCount', error, stackTrace);
+        // retry later in the background.. do not wait for the response.
+        unawaited(Future.delayed(Duration(seconds: duration)).then((val) {
           _updateUserInfo(retryCount: retryCount - 1);
-        });
+        }));
       }
+    } catch (error, stackTrace) {
+      _logger.severe('Error while updating user info', error, stackTrace);
+      rethrow;
     }
   }
 
@@ -152,7 +157,8 @@ class ApiService {
     final result = await _apiCaller.post(GameSimpleSetLocation(), GameSimpleSetVerifyRequest(gameTurnId, guesses));
     final state = _loginState.value;
     if (state == null) {
-      this._updateUserInfo();
+      // kick off user info update.. we don't care about the response..
+      unawaited(this._updateUserInfo());
     } else {
       state.userInfo.statsCorrectAnswers = result.statsCorrectAnswers;
       state.userInfo.statsTotalTurns = result.statsTotalTurns;

@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:anlage_app_game/api/api_service.dart';
@@ -17,7 +16,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:image/image.dart' as image;
 import 'package:logging/logging.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
@@ -450,14 +448,12 @@ class MarketCapSortingResultWidget extends StatelessWidget {
               .map((resultIdx, resultDto) {
                 final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
                 var pos = 0;
-                double guessedMarketCap;
                 final guesses = _gameBloc.marketCapPositions.toList();
                 guesses.sort((a, b) => -1 * a.value.compareTo(b.value));
 
                 for (var value in guesses) {
                   pos++;
                   if (value.key == resultDto.instrumentKey) {
-                    guessedMarketCap = value.value;
                     break;
                   }
                 }
@@ -590,39 +586,6 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     }
   }
 
-  void _capturePng(BuildContext context) async {
-    try {
-      RenderRepaintBoundary boundary = drawGlobalKey.currentContext.findRenderObject();
-      ui.Image img = await boundary.toImage(pixelRatio: 2.0);
-//      await EsysFlutterShare.shareImage('result.png', await img.toByteData(format: ui.ImageByteFormat.png), 'MarketShare Game - Results');
-
-      final newImg = image.Image.fromBytes(img.width, img.height,
-          (await img.toByteData(format: ui.ImageByteFormat.rawUnmodified)).buffer.asUint32List());
-//      img.dispose();
-      final padding = 64;
-      final targetImage = image.Image(newImg.width + 2 * padding, newImg.height + 2 * padding + 24 + padding);
-      image.fill(targetImage, image.Color.fromRgb(255, 255, 255));
-      image.drawImage(targetImage, newImg, dstX: padding, dstY: padding);
-      image.drawString(
-          targetImage, image.arial_24, padding, targetImage.height - padding - 24, 'https://anlage.app/game',
-          color: 0xff000000);
-//    ByteData byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-      final byteData = ByteData.view(Uint8List.fromList(image.encodePng(targetImage)).buffer);
-      if (byteData == null) {
-        _logger.severe('byteData is null ?!');
-        return;
-      }
-      _logger.fine('Opening share dialog.');
-      await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
-//    Uint8List pngBytes = byteData.buffer.asUint8List();
-//    print(pngBytes);
-//      Scaffold.of(context)
-//    .
-    } catch (error, stackTrace) {
-      _logger.warning('Error during share', error, stackTrace);
-      rethrow;
-    }
-  }
 }
 
 class MarketCapSortingScaleWidget extends StatefulWidget {

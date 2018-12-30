@@ -5,8 +5,6 @@ import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
-import 'package:anlage_app_game/utils/firebase_messaging.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';

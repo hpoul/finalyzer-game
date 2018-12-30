@@ -43,6 +43,7 @@ dependencies:
   esys_flutter_share: ^0.0.6
   image: ^2.0.5
   timeago: ^2.0.10
+  pedantic: ^1.4.0
 
 dev_dependencies:
   flutter_test:
