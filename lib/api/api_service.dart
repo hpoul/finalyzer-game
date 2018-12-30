@@ -5,8 +5,10 @@ import 'dart:io';
 import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart';
 import 'package:rxdart/rxdart.dart';
@@ -48,6 +50,25 @@ class ApiNetworkError extends Error {
   }
 }
 
+class NativeService {
+  NativeService._(MethodChannel channel)
+      : _channel = channel;
+
+  static final _instance = NativeService._(const MethodChannel('app.anlage.anlageappgame/SystemSetting'));
+
+  static NativeService get instance => _instance;
+
+  final MethodChannel _channel;
+
+  Future<bool> isFirebaseTestLab() {
+    if (!Platform.isAndroid) {
+      return Future.value(false);
+    }
+    return _channel.invokeMethod('getString', {'name': 'firebase.test.lab'})
+        .then((value) => value == 'true');
+  }
+}
+
 class ApiService {
 
   final Env _env;
@@ -78,8 +99,10 @@ class ApiService {
       final iosInfo = await DeviceInfoPlugin().iosInfo;
       deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
     } else if (Platform.isAndroid) {
+      final testLab = (await NativeService.instance.isFirebaseTestLab()) ? 'FIREBASE TESTLAB,' : '';
+      AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'true');
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      deviceInfo = "${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
+      deviceInfo = "$testLab${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
           .manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
     }
     final packageInfo = await PackageInfo.fromPlatform();
