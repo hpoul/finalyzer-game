@@ -4,6 +4,7 @@ import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
+import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -46,6 +47,12 @@ class _ChallengeListState extends State<ChallengeList> {
   Deps _deps;
 
   Future<GameChallengeListResponse> _listFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    CloudMessagingUtil.instance.requestPermission();
+  }
 
   @override
   void didChangeDependencies() {

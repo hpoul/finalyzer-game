@@ -4,6 +4,7 @@ import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
+import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -21,6 +22,7 @@ class ChallengeInvite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    CloudMessagingUtil.instance.requestPermission();
     return Scaffold(
       appBar: AppBar(
         title: Text('Challenge Friend'),

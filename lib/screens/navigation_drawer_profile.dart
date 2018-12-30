@@ -41,6 +41,7 @@ class NavigationDrawerProfile extends StatelessWidget {
 
               final displayName = snapshot?.data?.userInfo?.displayName ?? "";
               return Column(
+                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Ink(
                     color: FinalyzerTheme.colorPrimary,
@@ -84,67 +85,88 @@ class NavigationDrawerProfile extends StatelessWidget {
                       ),
                     ),
                   ),
-                  ListTile(
-                    leading: Icon(Icons.assignment),
-                    title: Text('Completed Turns:'),
-                    trailing: Text(
-                      '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
-                      style: Theme.of(context).textTheme.display1,
+
+                  SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                ListTile(
+                                  leading: Icon(Icons.assignment),
+                                  title: Text('Completed Turns:'),
+                                  trailing: Text(
+                                    '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
+                                    style: Theme.of(context).textTheme.display1,
+                                  ),
+                                ),
+                                ListTile(
+                                  leading: Icon(
+                                    Icons.thumb_up,
+                                    color: Colors.green,
+                                  ),
+                                  title: Text('Correct Answers:'),
+                                  trailing: Text(
+                                    '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
+                                    style: Theme.of(context).textTheme.display1,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            Divider(),
+
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                            ListTile(
+                              leading: Icon(Icons.insert_invitation),
+                              title: Text('Challenge a friend.'),
+                              onTap: () {
+                                Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
+                              },
+                            ),
+                            ListTile(
+                              leading: Icon(Icons.view_list),
+                              title: Text('Challenges'),
+                              onTap: () {
+                                Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
+                              },
+                            ),
+                            ListTile(
+                              leading: Icon(Icons.list),
+                              title: Text('Leaderboard'),
+                              onTap: () {
+                                Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
+                              },
+                            ),
+                                Divider(),
+                            ListTile(
+                              leading: Icon(Icons.email),
+                              title: Text('How can we improve? Problems?'),
+                              subtitle: Text('We love to hear from you at hello@anlage.app'),
+                            ),
+                            ListTile(
+                              leading: Icon(Icons.link),
+                              title: Text('By https://Anlage.App/'),
+                              subtitle: Text('Track&Analyse your portfolio.'),
+                              onTap: () async {
+                                final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                if (await canLaunch(url)) {
+                                  await launch(url, forceSafariVC: false);
+                                } else {
+                                  _logger.severe('Unable to launch url $url');
+                                }
+                              },
+                            ),
+                              ],
+                            ),
+                      ],
                     ),
                   ),
-                  ListTile(
-                    leading: Icon(
-                      Icons.thumb_up,
-                      color: Colors.green,
-                    ),
-                    title: Text('Correct Answers:'),
-                    trailing: Text(
-                      '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
-                      style: Theme.of(context).textTheme.display1,
-                    ),
-                  ),
-                  Spacer(
-                    flex: 1,
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.insert_invitation),
-                    title: Text('Challenge a friend.'),
-                    onTap: () {
-                      Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.view_list),
-                    title: Text('Challenges'),
-                    onTap: () {
-                      Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.list),
-                    title: Text('Leaderboard'),
-                    onTap: () {
-                      Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.email),
-                    title: Text('How can we improve? Problems?'),
-                    subtitle: Text('We love to hear from you at hello@anlage.app'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.link),
-                    title: Text('By https://Anlage.App/'),
-                    subtitle: Text('Track&Analyse your portfolio.'),
-                    onTap: () async {
-                      final url = 'https://anlage.app/?utm_source=marketcap-game';
-                      if (await canLaunch(url)) {
-                        await launch(url, forceSafariVC: false);
-                      } else {
-                        _logger.severe('Unable to launch url $url');
-                      }
-                    },
-                  )
+
                 ],
               );
             }),
