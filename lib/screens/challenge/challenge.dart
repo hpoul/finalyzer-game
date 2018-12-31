@@ -1,5 +1,6 @@
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
@@ -94,8 +95,18 @@ class _ChallengeListState extends State<ChallengeList> {
                       onTap: () {
 //                        showModalBottomSheet(
 //                            context: context, builder: (context) => ChallengeListActionBottomSheet(item));
-                        Navigator.of(context).push(
-                            MaterialPageRoute(builder: (context) => ChallengeDetails(item.challengeId)));
+                        if (item.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
+                            item.inviteToken != null) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => ChallengeInviteInfo(
+                                      inviteToken: item.inviteToken,
+                                    )),
+                          );
+                        } else {
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (context) => ChallengeDetails(item.challengeId)));
+                        }
                       },
                       onLongPress: () {
                         // TODO for debugging purposes.. but we should remove this :)
@@ -190,22 +201,24 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
 
         List<Widget> actions = [];
         if (details?.baseInfo?.status == GameChallengeStatus.Accepted) {
-          if (details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.Ready
-              || details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated)
-          actions = [
-            RaisedButton(
-              child: Text('Play Now'),
-              onPressed: () {
-                _apiChallenge.startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve).then((challenge) {
-                  final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => Challenge(
-                        gameBloc: bloc,
-                      )));
-                });
-              },
-            ),
-          ];
+          if (details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.Ready ||
+              details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated)
+            actions = [
+              RaisedButton(
+                child: Text('Play Now'),
+                onPressed: () {
+                  _apiChallenge
+                      .startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve)
+                      .then((challenge) {
+                    final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => Challenge(
+                              gameBloc: bloc,
+                            )));
+                  });
+                },
+              ),
+            ];
         }
 
         return Scaffold(
@@ -217,29 +230,31 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
               : Column(
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: createdBy == null
-                          ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}')
-                          : Text(
-                              'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}'),
-                    ),
-                  ] + actions + [
-                    Expanded(
-                      child: ListView.separated(
-                        separatorBuilder: (context, index) => Divider(height: 0),
-                        itemBuilder: (context, index) {
-                          final p = details.participants[index];
-                          return LeaderboardListTile(
-                            rank: index + 1,
-                            displayName: p.baseInfo.displayName,
-                            avatarUrl: p.baseInfo.avatarUrl,
-                            statsCorrectAnswers: p.statsCorrectAnswers,
-                            isMyself: p.myself,
-                            subtitle: p.status != GameChallengeParticipantStatus.Finished
-                                ? Text('Did not finish yet.')
-                                : null,
-                          );
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: createdBy == null
+                              ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}')
+                              : Text(
+                                  'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}'),
+                        ),
+                      ] +
+                      actions +
+                      [
+                        Expanded(
+                          child: ListView.separated(
+                            separatorBuilder: (context, index) => Divider(height: 0),
+                            itemBuilder: (context, index) {
+                              final p = details.participants[index];
+                              return LeaderboardListTile(
+                                rank: index + 1,
+                                displayName: p.baseInfo.displayName,
+                                avatarUrl: p.baseInfo.avatarUrl,
+                                statsCorrectAnswers: p.statsCorrectAnswers,
+                                isMyself: p.myself,
+                                subtitle: p.status != GameChallengeParticipantStatus.Finished
+                                    ? Text('Did not finish yet.')
+                                    : null,
+                              );
 //                          return ListTile(
 //                            leading: Avatar(p.baseInfo.avatarUrl),
 //                            title: Text(p.baseInfo.displayName),
@@ -248,11 +263,11 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
 //                              style: Theme.of(context).textTheme.title.copyWith(fontWeight: FontWeight.bold, color: Colors.green),
 //                            ),
 //                          );
-                        },
-                        itemCount: details.participants.length,
-                      ),
-                    )
-                  ],
+                            },
+                            itemCount: details.participants.length,
+                          ),
+                        )
+                      ],
                 ),
         );
       },
