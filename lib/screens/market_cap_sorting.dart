@@ -614,6 +614,18 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   @override
   void initState() {
     super.initState();
+    _logger.finer('MarketCapSortingScaleState.init');
+    _precalculateRange();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _apiService = DepsProvider.of(context).api;
+    _logger.finer('MarketCapSortingScaleState.didChangeDependencies');
+  }
+
+  void _precalculateRange() {
     final simpleGameSet = widget.simpleGameSet;
     final totalRange = simpleGameSet.marketCapScaleMax - simpleGameSet.marketCapScaleMin;
     this.totalRange = totalRange;
@@ -621,9 +633,10 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _apiService = DepsProvider.of(context).api;
+  void didUpdateWidget(covariant MarketCapSortingScaleWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _logger.finer('MarketCapSortingScaleState.didUpdateWidget');
+    _precalculateRange();
   }
 
   int _calculatePriority(SimpleGameDto dto) {

@@ -1,6 +1,7 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -72,7 +73,10 @@ class MarketCapSortingGameBloc {
 
   void updateMarketCapPosition(String instrumentKey, double marketCap) {
     marketCapPositions = (marketCapPositions.where((e) => e.key != instrumentKey).toList(growable: true)
-          ..add(MapEntry(instrumentKey, marketCap)))
+          ..add(MapEntry(instrumentKey, trimToRange(
+              min: _currentSimpleGameSet.marketCapScaleMin,
+              max: _currentSimpleGameSet.marketCapScaleMax,
+              value: marketCap))))
         .toList();
   }
 

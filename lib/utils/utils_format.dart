@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart' as intl;
 import 'package:timeago/timeago.dart' as timeago;
+import 'dart:math' as math;
 
 final _marketCapFormat = intl.NumberFormat.simpleCurrency(name: 'USD', decimalDigits: 0);
 
@@ -16,4 +17,8 @@ class FormatUtil {
     }
     return timeago.format(date);
   }
+}
+
+double trimToRange({double min, double max, double value}) {
+  return math.min(max, math.max(min, value));
 }

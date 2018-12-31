@@ -97,6 +97,11 @@ class _ChallengeListState extends State<ChallengeList> {
                         Navigator.of(context).push(
                             MaterialPageRoute(builder: (context) => ChallengeDetails(item.challengeId)));
                       },
+                      onLongPress: () {
+                        // TODO for debugging purposes.. but we should remove this :)
+                        showModalBottomSheet(
+                            context: context, builder: (context) => ChallengeListActionBottomSheet(item));
+                      },
                     );
                   },
                 ),

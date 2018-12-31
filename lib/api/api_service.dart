@@ -136,6 +136,7 @@ class ApiService {
       }
     } catch (error, stackTrace) {
       _logger.severe('Error while updating user info', error, stackTrace);
+      _loginState.addError(error, stackTrace);
       rethrow;
     }
   }
