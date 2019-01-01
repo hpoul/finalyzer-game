@@ -35,7 +35,6 @@ class ApiCaller {
       if (gameSession == null) {
         dio.interceptor.request.lock();
         _logger.info('No session found, registering device.');
-        await Future.delayed(Duration(seconds: 5)); _logger.severe('DEBUG WAITING for 5 SECONDS.');
 
         try {
           gameSession = await _registerDevice();
