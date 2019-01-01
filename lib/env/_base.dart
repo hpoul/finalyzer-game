@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 
+enum EnvType {
+  production,
+  development
+}
+
 abstract class Env {
 
   static Env value;
@@ -8,8 +13,9 @@ abstract class Env {
   String get baseUrl;
   Color get primarySwatch;
   Duration get fakeLatency => null;
+  final EnvType type;
 
-  Env() {
+  Env(this.type) {
     value = this;
   }
 

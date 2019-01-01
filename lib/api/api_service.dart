@@ -78,6 +78,7 @@ class ApiService {
 
   final Env _env;
   final ApiCaller _apiCaller;
+  final CloudMessagingUtil _cloudMessaging;
 
   final _loginState = BehaviorSubject<LoginState>();
 
@@ -87,7 +88,7 @@ class ApiService {
   LoginState get currentLoginState => _loginState.value;
 
 
-  ApiService(this._env, this._apiCaller) {
+  ApiService(this._env, this._apiCaller, this._cloudMessaging) {
     _baseUri = Uri.parse(_env.baseUrl);
     _loginState.onListen = () {
       _logger.fine('Somebody listening on loginState.');
@@ -96,7 +97,7 @@ class ApiService {
 
     // some arbitrary time after staring up, request current status from the server.
     Future.delayed(Duration(seconds: 3)).then((x) async { await _updateUserInfo(); });
-    CloudMessagingUtil.instance.onTokenRefresh.listen((newToken) {
+    _cloudMessaging.onTokenRefresh.listen((newToken) {
       _updateUserInfo();
     });
   }
@@ -107,8 +108,11 @@ class ApiService {
       final iosInfo = await DeviceInfoPlugin().iosInfo;
       deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
     } else if (Platform.isAndroid) {
-      final testLab = (await NativeService.instance.isFirebaseTestLab()) ? 'FIREBASE TESTLAB,' : '';
-      await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'true');
+      final isTestLab = await NativeService.instance.isFirebaseTestLab();
+      final testLab = (isTestLab) ? 'FIREBASE TESTLAB,' : '';
+      if (isTestLab) {
+        await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'firebase');
+      }
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       deviceInfo = "$testLab${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
           .manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
@@ -119,7 +123,7 @@ class ApiService {
     _logger.finer('sending userinfo.');
 
     try {
-      final userInfo = await this._apiCaller.post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await CloudMessagingUtil.instance.getToken()));
+      final userInfo = await this._apiCaller.post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await _cloudMessaging.getToken()));
 
       _loginState.add(LoginState(_baseUri, userInfo));
     } on DioError catch (error, stackTrace)  {

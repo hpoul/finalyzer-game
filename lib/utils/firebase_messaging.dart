@@ -2,27 +2,33 @@
 import 'dart:convert';
 
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/api/preferences.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logging/logging.dart';
+import 'package:platform/platform.dart';
 import 'package:rxdart/rxdart.dart';
 
-final _logger = new Logger("app.anlage.game.main");
+final _logger = new Logger("app.anlage.game.utils.firebase_messaging");
 
 
 class CloudMessagingUtil {
 
-  static final instance = CloudMessagingUtil._();
+  final PreferenceStore _prefs;
 
-  CloudMessagingUtil._();
+  CloudMessagingUtil(this._prefs);
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   final BehaviorSubject<String> _onTokenRefresh = BehaviorSubject<String>();
   ValueObservable<String> get onTokenRefresh => _onTokenRefresh.stream;
 
+  static const Platform platform = const LocalPlatform();
+
   final BehaviorSubject<GameNotification> _onNotification = BehaviorSubject<GameNotification>();
   ValueObservable<GameNotification> get onNotification => _onNotification.stream;
 
+  bool _askedForPermissionsThisRun = false;
 
   Future<void> setupFirebaseMessaging() {
     _firebaseMessaging.configure(
@@ -43,19 +49,36 @@ class CloudMessagingUtil {
       _logger.warning('We have received a new token. Need to change it to $newToken');
       _onTokenRefresh.add(newToken);
     });
-    return null;
+    _firebaseMessaging.onIosSettingsRegistered.listen((event) {
+      _logger.info('User updated iOS Settings ${event}');
+    });
+    return Future.value(null);
   }
 
   Future<String>getToken() async {
-    return _firebaseMessaging.getToken();
+    final token = await _firebaseMessaging.getToken();
+    _logger.info('Token: ${token}.');
+    return token;
+  }
+
+  Future<bool> requiresAskPermission() async {
+    if (!platform.isIOS || _askedForPermissionsThisRun) {
+      return false;
+    }
+    return !await _prefs.getValue(Preferences.askedForPushPermission);
+//    return await getToken() == null
+//        && !await _prefs.getValue(Preferences.askedForPushPermission);
   }
 
   requestPermission() {
+    AnalyticsUtils.instance.analytics.logEvent(name: "fcm_request_permission");
     _firebaseMessaging.requestNotificationPermissions(IosNotificationSettings(
       alert: true,
       badge: true,
       sound: true,
     ));
+    _askedForPermissionsThisRun = true;
+    _prefs.setValue(Preferences.askedForPushPermission, true);
   }
 
   void _handleMessage(Map<String, dynamic> message) {
@@ -77,6 +100,7 @@ class CloudMessagingUtil {
   void clearNotification() {
     _onNotification.add(null);
   }
+
 
 }
 

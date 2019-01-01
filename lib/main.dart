@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/api/preferences.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
@@ -13,6 +14,7 @@ import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
+import 'package:anlage_app_game/utils/logging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -21,33 +23,6 @@ import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 
 final _logger = new Logger("app.anlage.game.main");
-
-void _setupLogging() {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
-
-    if (rec.level >= Level.INFO) {
-      FlutterCrashlytics().log(rec.message, priority: rec.level.value, tag: rec.loggerName);
-    }
-
-    if (rec.error != null) {
-      print(rec.error);
-    }
-    if (rec.stackTrace != null) {
-      print(rec.stackTrace);
-      if (rec.level >= Level.INFO) {
-        AnalyticsUtils.instance.analytics
-            .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': rec.stackTrace});
-        FlutterCrashlytics().logException(rec.error, rec.stackTrace);
-      }
-    } else if (rec.level >= Level.SEVERE) {
-      AnalyticsUtils.instance.analytics
-          .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': StackTrace.current.toString()});
-      FlutterCrashlytics().logException(Exception('SEVERE LOG ${rec.message}'), StackTrace.current);
-    }
-  });
-}
 
 Future<void> _setupCrashlytics() async {
   bool isInDebugMode = false;
@@ -59,6 +34,7 @@ Future<void> _setupCrashlytics() async {
     } else {
       // In production mode report to the application zone to report to
       // Crashlytics.
+      FlutterError.dumpErrorToConsole(details);
       Zone.current.handleUncaughtError(details.exception, details.stack);
     }
   };
@@ -67,10 +43,9 @@ Future<void> _setupCrashlytics() async {
 }
 
 Future<void> startApp(Env env) async {
-  _setupLogging();
+  setupLogging();
   // TODO maybe we should check if this stuff makes startup slower? how?
   await _setupCrashlytics();
-  unawaited(CloudMessagingUtil.instance.setupFirebaseMessaging());
   _logger.fine('Logging was set up.');
 
   await runZoned<Future<Null>>(() async {
@@ -93,19 +68,27 @@ class MyApp extends StatelessWidget {
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'topLevelNavigator');
 
+  Deps deps;
+
 //  final Deps deps;
 
-  MyApp(this.env);
+  MyApp(this.env) {
+    final prefs = const PreferenceStore();
+    final cloudMessaging = CloudMessagingUtil(prefs);
+    final apiCaller = ApiCaller(env);
+    this.deps = Deps(
+      apiCaller: apiCaller,
+      api: ApiService(env, apiCaller, cloudMessaging),
+      env: env,
+      prefs: prefs,
+      cloudMessaging: cloudMessaging,
+    );
+  }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final apiCaller = ApiCaller(env);
-    Deps deps = Deps(
-      apiCaller: apiCaller,
-      api: ApiService(env, apiCaller),
-      env: env,
-    );
+    unawaited(deps.cloudMessaging.setupFirebaseMessaging());
     analytics.analytics.logAppOpen();
     return DepsProvider(
       deps: deps,
@@ -147,9 +130,16 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   @override
   void initState() {
     super.initState();
+
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Deps deps = DepsProvider.of(context);
     WidgetsBinding.instance.addObserver(this);
     _retrieveDynamicLinkBackgroundWithLogging();
-    _onNotificationSubscription = CloudMessagingUtil.instance.onNotification.listen((notification) {
+    _onNotificationSubscription = deps.cloudMessaging.onNotification.listen((notification) {
       _logger.fine('Handling notification ${notification} ${notification?.toJson()}');
       if (notification == null) {
         return;
@@ -165,7 +155,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
               .push(MaterialPageRoute(builder: (context) => ChallengeDetails(notification.challengeId)));
           break;
       }
-      CloudMessagingUtil.instance.clearNotification();
+      deps.cloudMessaging.clearNotification();
     });
   }
 

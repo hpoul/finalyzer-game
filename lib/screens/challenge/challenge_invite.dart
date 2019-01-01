@@ -22,7 +22,7 @@ class ChallengeInvite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CloudMessagingUtil.instance.requestPermission();
+    DepsProvider.of(context).cloudMessaging.requestPermission();
     return Scaffold(
       appBar: AppBar(
         title: Text('Challenge Friend'),

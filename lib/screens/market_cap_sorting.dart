@@ -5,9 +5,11 @@ import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/screens/messaging.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/logging.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
@@ -17,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
+import 'package:platform/platform.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -365,6 +368,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final challengeBloc = _gameBloc is MarketCapSortingChallengeBloc ? _gameBloc as MarketCapSortingChallengeBloc : null;
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
+    final deps = DepsProvider.of(context);
     return Container(
         child: AlertDialog(
       content: StreamBuilder<GameSimpleSetResponse>(
@@ -401,6 +405,15 @@ class MarketCapSortingResultWidget extends StatelessWidget {
             } else {
               _gameBloc.nextTurn();
               Navigator.of(context).pop();
+
+              if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
+                deps.cloudMessaging.requiresAskPermission().then((askPermission) {
+                  if (askPermission) {
+//                    showDialog(context: context, builder: (context) => AskForMessagingPermission());
+                    deps.cloudMessaging.requestPermission();
+                  }
+                }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
+              }
             }
           },
         )
