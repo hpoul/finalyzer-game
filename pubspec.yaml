@@ -24,7 +24,9 @@ dependencies:
   shared_preferences: ^0.4.3
   dio: ^1.0.9
   path: ^1.6.2
-  cached_network_image: ^0.6.0-alpha.2
+  # downgraded to non-sqflite version due to https://github.com/renefloor/flutter_cache_manager/issues/60
+  # cached_network_image: ^0.6.0-alpha.2
+  cached_network_image: ^0.5.1
   intl: ^0.15.7
   url_launcher: ^4.0.2
   package_info: ^0.3.2
