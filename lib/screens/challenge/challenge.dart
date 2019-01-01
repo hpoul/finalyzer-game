@@ -221,6 +221,18 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
             ];
         }
 
+        final statusText = (GameChallengeParticipantStatus status) {
+          switch (status) {
+            case GameChallengeParticipantStatus.Invited:
+              return Text('Did not accept invitation.');
+            case GameChallengeParticipantStatus.TurnsCreated:
+            case GameChallengeParticipantStatus.Ready:
+              return Text('Did not finish yet.');
+            case GameChallengeParticipantStatus.Finished:
+              return null;
+          }
+        };
+
         return Scaffold(
           appBar: AppBar(
             title: Text('Challenge Details'),
@@ -233,9 +245,9 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: createdBy == null
-                              ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}')
+                              ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.')
                               : Text(
-                                  'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}'),
+                                  'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.'),
                         ),
                       ] +
                       actions +
@@ -251,9 +263,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                                 avatarUrl: p.baseInfo.avatarUrl,
                                 statsCorrectAnswers: p.statsCorrectAnswers,
                                 isMyself: p.myself,
-                                subtitle: p.status != GameChallengeParticipantStatus.Finished
-                                    ? Text('Did not finish yet.')
-                                    : null,
+                                subtitle: statusText(p.status),
                               );
 //                          return ListTile(
 //                            leading: Avatar(p.baseInfo.avatarUrl),

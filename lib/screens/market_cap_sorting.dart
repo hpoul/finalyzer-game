@@ -5,7 +5,6 @@ import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
-import 'package:anlage_app_game/screens/messaging.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
@@ -19,7 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
-import 'package:platform/platform.dart';
 
 final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
 
@@ -265,7 +263,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
               isVerifying = !isVerifying;
             });
             _gameBloc.verifyMarketCaps().then((val) {
-              _showVerifyResultDialog(val);
+              _showVerifyResultDialog(val, snapshot.data);
               setState(() {
                 isVerifying = false;
               });
@@ -335,8 +333,8 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
         ));
   }
 
-  void _showVerifyResultDialog(GameSimpleSetVerifyResponse response) {
-    showDialog(context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc));
+  void _showVerifyResultDialog(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet) {
+    showDialog(context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc, gameSet));
   }
 
   void _showErrorDialog(Error error) {
@@ -360,9 +358,10 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
 class MarketCapSortingResultWidget extends StatelessWidget {
   final GameSimpleSetVerifyResponse response;
   final MarketCapSortingGameBloc _gameBloc;
+  final GameSimpleSetResponse _gameSet;
   final GlobalKey drawGlobalKey = GlobalKey();
 
-  MarketCapSortingResultWidget(this.response, this._gameBloc);
+  MarketCapSortingResultWidget(this.response, this._gameBloc, this._gameSet);
 
   @override
   Widget build(BuildContext context) {
@@ -371,17 +370,12 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final deps = DepsProvider.of(context);
     return Container(
         child: AlertDialog(
-      content: StreamBuilder<GameSimpleSetResponse>(
-        stream: _gameBloc.simpleGameSet,
-        builder: (context, snapshot) => snapshot.data == null
-            ? Container()
-            : SingleChildScrollView(
+      content: SingleChildScrollView(
                 child: RepaintBoundary(
                   key: drawGlobalKey,
-                  child: _createResultScreen(response, snapshot, _gameBloc, context),
+                  child: _createResultScreen(response, _gameSet, _gameBloc, context),
                 ),
               ),
-      ),
       actions: <Widget>[
         FlatButton.icon(
           icon: Icon(Icons.share),
@@ -403,8 +397,8 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                     builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
                 );
             } else {
-              _gameBloc.nextTurn();
               Navigator.of(context).pop();
+              _gameBloc.nextTurn();
 
               if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
                 deps.cloudMessaging.requiresAskPermission().then((askPermission) {
@@ -421,7 +415,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     ));
   }
 
-  _createResultScreen(GameSimpleSetVerifyResponse response, AsyncSnapshot<GameSimpleSetResponse> snapshot,
+  _createResultScreen(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet,
       MarketCapSortingGameBloc _gameBloc, BuildContext context) {
     final _api = DepsProvider.of(context).api;
 
@@ -459,7 +453,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
               .toList()
               .asMap()
               .map((resultIdx, resultDto) {
-                final info = snapshot.data.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
+                final info = gameSet.simpleGame.firstWhere((dto) => dto.instrumentKey == resultDto.instrumentKey);
                 var pos = 0;
                 final guesses = _gameBloc.marketCapPositions.toList();
                 guesses.sort((a, b) => -1 * a.value.compareTo(b.value));

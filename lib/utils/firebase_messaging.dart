@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/api/preferences.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/stream_subscriber_mixin.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
@@ -12,7 +13,7 @@ import 'package:rxdart/rxdart.dart';
 final _logger = new Logger("app.anlage.game.utils.firebase_messaging");
 
 
-class CloudMessagingUtil {
+class CloudMessagingUtil with StreamSubscriberMixin {
 
   final PreferenceStore _prefs;
 
@@ -31,6 +32,7 @@ class CloudMessagingUtil {
   bool _askedForPermissionsThisRun = false;
 
   Future<void> setupFirebaseMessaging() {
+    cancelSubscriptions();
     _firebaseMessaging.configure(
       onMessage: (message) async {
         _logger.info('Received in app message. $message');
@@ -45,11 +47,11 @@ class CloudMessagingUtil {
         _handleMessage(message);
       },
     );
-    _firebaseMessaging.onTokenRefresh.listen((newToken) {
+    listen(_firebaseMessaging.onTokenRefresh, (newToken) {
       _logger.warning('We have received a new token. Need to change it to $newToken');
       _onTokenRefresh.add(newToken);
     });
-    _firebaseMessaging.onIosSettingsRegistered.listen((event) {
+    listen(_firebaseMessaging.onIosSettingsRegistered, (event) {
       _logger.info('User updated iOS Settings ${event}');
     });
     return Future.value(null);

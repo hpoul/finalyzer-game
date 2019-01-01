@@ -84,6 +84,8 @@ class LeaderBoardBottomSheet extends StatelessWidget {
             leading: Icon(Icons.send),
             title: Text('Send Challenge'),
             onTap: () {
+              Navigator.of(context).pop();
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text('Sending Challenge …')));
               apiChallenge.createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
                   .then((val) {
                     _logger.fine('Created Challenge.');

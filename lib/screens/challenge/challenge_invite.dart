@@ -1,7 +1,9 @@
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
@@ -55,6 +57,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
       child: FutureBuilder(
         future: _createFuture,
         builder: (context, snapshot) {
+          _logger.finer('snapshot: $snapshot');
           return Column(
             children: <Widget>[
               Text(
@@ -78,18 +81,22 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
               RaisedButton.icon(
                 icon: Icon(Icons.create),
                 color: Theme.of(context).accentColor,
+                disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),
                 label: Text('Create Challenge'),
-                onPressed: () {
+                onPressed: snapshot.connectionState == ConnectionState.waiting ? null : () {
                   _logger.fine('Creating challenge ...');
-                  _createFuture = apiChallenge.createChallengeInvite(GameChallengeInviteType.LinkInvite, displayName: _displayNameCtrl.text).then((value) {
-                    _logger.fine('Created challenge ${value.toJson()}');
-                    return _createInviteLink(deps, value);
-                  }).then((dynamicLink) {
-                    _logger.fine('Created url: $dynamicLink');
-                    Share.share('Beat me by guessing Market Caps! $dynamicLink');
-                  }).catchError((error, stackTrace) {
-                    _logger.warning('Error producing challenge invite.', error, stackTrace);
-                    return Future.error(error, stackTrace);
+                  setState(() {
+                    _createFuture = apiChallenge.createChallengeInvite(GameChallengeInviteType.LinkInvite, displayName: _displayNameCtrl.text).then((value) {
+                      _logger.fine('Created challenge ${value.toJson()}');
+                      return _createInviteLink(deps, value);
+                    }).then((dynamicLink) {
+                      _logger.fine('Created url: $dynamicLink');
+                      AnalyticsUtils.instance.analytics.logEvent(name: 'invite_create');
+                      return Share.share('Beat me by guessing Market Caps! $dynamicLink');
+                    }).catchError((error, stackTrace) {
+                      _logger.warning('Error producing challenge invite.', error, stackTrace);
+                      return Future.error(error, stackTrace);
+                    });
                   });
                 },
               ),

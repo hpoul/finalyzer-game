@@ -49,6 +49,7 @@ Future<void> startApp(Env env) async {
   _logger.fine('Logging was set up.');
 
   await runZoned<Future<Null>>(() async {
+    _logger.fine('calling runApp.');
     runApp(MyApp(env));
   }, onError: (error, stackTrace) async {
     // Whenever an error occurs, call the `reportCrash` function. This will send
@@ -68,22 +69,11 @@ class MyApp extends StatelessWidget {
 
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey(debugLabel: 'topLevelNavigator');
 
-  Deps deps;
+  final Deps deps;
 
 //  final Deps deps;
 
-  MyApp(this.env) {
-    final prefs = const PreferenceStore();
-    final cloudMessaging = CloudMessagingUtil(prefs);
-    final apiCaller = ApiCaller(env);
-    this.deps = Deps(
-      apiCaller: apiCaller,
-      api: ApiService(env, apiCaller, cloudMessaging),
-      env: env,
-      prefs: prefs,
-      cloudMessaging: cloudMessaging,
-    );
-  }
+  MyApp(this.env) : deps = env.createDeps();
 
   // This widget is the root of your application.
   @override
