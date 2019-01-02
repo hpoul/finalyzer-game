@@ -106,7 +106,12 @@ build/
 
 # android releases
 android/app/release
+
+# blackbox stuff
 /.blackbox/pubring.gpg~
 /.blackbox/pubring.kbx~
 /.blackbox/secring.gpg
+
 /android/app/google-services.json
+
+/ios/Runner/GoogleService-Info.plist
