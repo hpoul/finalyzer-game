@@ -2,6 +2,12 @@
 
 set -xe
 
+if test -d flutter/bin ; then
+  echo "Adding flutter/bin to PATH"
+  export PATH=$PATH:flutter/bin
+fi
+
+
 case "$1" in
     ios)
         flutter build ios -t lib/env/production.dart --release
