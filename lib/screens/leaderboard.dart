@@ -18,11 +18,15 @@ class LeaderboardList extends StatefulWidget {
 }
 
 class LeaderboardListState extends State<LeaderboardList> {
+
+  final leaderboardScaffold = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     final api = DepsProvider.of(context).api;
 
     return Scaffold(
+      key: leaderboardScaffold,
       appBar: AppBar(
         title: Text('Leaderboard'),
       ),
@@ -50,7 +54,9 @@ class LeaderboardListState extends State<LeaderboardList> {
                     onTap: () {
                       showModalBottomSheet(
                         context: context,
-                        builder: (context) => LeaderBoardBottomSheet(entry),
+                        builder: (context) => BottomSheet(
+                            onClosing: () { },
+                            builder: (context) => LeaderBoardBottomSheet(entry, leaderboardScaffold)),
                       );
                     },
                   );
@@ -65,8 +71,9 @@ class LeaderboardListState extends State<LeaderboardList> {
 class LeaderBoardBottomSheet extends StatelessWidget {
 
   final LeaderboardEntry entry;
+  final GlobalKey<ScaffoldState> leaderboardScaffold;
 
-  LeaderBoardBottomSheet(this.entry);
+  LeaderBoardBottomSheet(this.entry, this.leaderboardScaffold);
 
 
 
@@ -84,12 +91,15 @@ class LeaderBoardBottomSheet extends StatelessWidget {
             leading: Icon(Icons.send),
             title: Text('Send Challenge'),
             onTap: () {
+              leaderboardScaffold.currentState.showSnackBar(SnackBar(content: Text('Sending Challenge …')));
               Navigator.of(context).pop();
-              Scaffold.of(context).showSnackBar(SnackBar(content: Text('Sending Challenge …')));
               apiChallenge.createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
                   .then((val) {
                     _logger.fine('Created Challenge.');
-                    DialogUtil.showSimpleAlertDialog(context, null, 'Sent invitation.');
+                    leaderboardScaffold.currentState
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(SnackBar(content: Row(children: <Widget>[Text('Invitation sent successfully️'), Icon(Icons.check)],)));
+//                    DialogUtil.showSimpleAlertDialog(context, null, 'Sent invitation.');
                   }).catchError(DialogUtil.genericErrorDialog(context));
             },
           ),
