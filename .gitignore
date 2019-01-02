@@ -106,3 +106,6 @@ build/
 
 # android releases
 android/app/release
+/.blackbox/pubring.gpg~
+/.blackbox/pubring.kbx~
+/.blackbox/secring.gpg
