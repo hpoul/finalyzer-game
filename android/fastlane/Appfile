@@ -1,2 +1,2 @@
 json_key_file("/Users/herbert/Google Drive/dev/android/api-project-284252947431-f35dc129d015.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
-package_name("app.anlage.game.marketcap") # e.g. com.krausefx.app
+package_name("app.anlage.game.marketcap")

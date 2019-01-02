@@ -104,8 +104,16 @@ build/
 
 # HP Customizations
 
+# fastlane specific
+**/fastlane/report.xml
+**/fastlane/README.md
+
 # android releases
 android/app/release
+
+# ios releases
+ios/*.ipa
+ios/*.dSYM.zip
 
 # blackbox stuff
 /.blackbox/pubring.gpg~
