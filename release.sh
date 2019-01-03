@@ -10,7 +10,7 @@ fi
 
 case "$1" in
     ios)
-        flutter build ios -t lib/env/production.dart --release
+        flutter build -v ios -t lib/env/production.dart --release
         cd ios
         fastlane beta
     ;;
