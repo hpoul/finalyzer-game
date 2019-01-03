@@ -21,3 +21,4 @@ install:
 - cd ios && fastlane match appstore --readonly && cd ..
 script:
 - "./release.sh ios"
+
