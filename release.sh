@@ -7,6 +7,7 @@ if test -d flutter/bin ; then
   export PATH=$PATH:flutter/bin
 fi
 
+flutter doctor
 
 case "$1" in
     ios)
