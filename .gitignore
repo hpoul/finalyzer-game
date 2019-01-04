@@ -104,6 +104,11 @@ build/
 
 # HP Customizations
 
+
+# secret CI Stuff
+/.travis_sec.tar
+/.travis_sec
+
 # fastlane specific
 **/fastlane/report.xml
 **/fastlane/README.md
@@ -114,6 +119,7 @@ android/app/release
 # ios releases
 ios/*.ipa
 ios/*.dSYM.zip
+ios/**/*.lock
 
 # blackbox stuff
 /.blackbox/pubring.gpg~
