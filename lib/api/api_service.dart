@@ -112,6 +112,14 @@ class ApiService {
       final testLab = (isTestLab) ? 'FIREBASE TESTLAB,' : '';
       if (isTestLab) {
         await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'firebase');
+      } else switch (_env.type) {
+        case EnvType.production:
+          await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'prod');
+          break;
+        case EnvType.development:
+          // this is actually already set in analytics constructor.. but anyway.
+          await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'env-development');
+          break;
       }
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       deviceInfo = "$testLab${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo

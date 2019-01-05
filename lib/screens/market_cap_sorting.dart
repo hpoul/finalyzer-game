@@ -9,6 +9,7 @@ import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/logging.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
@@ -393,7 +394,8 @@ class MarketCapSortingResultWidget extends StatelessWidget {
             if (challengeBloc?.isCompleted ?? false) {
               Navigator.of(context)
                 ..pop()
-                ..pushReplacement(MaterialPageRoute(
+                ..pushReplacement(AnalyticsPageRoute(
+                  name: '/challenge/details',
                     builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
                 );
             } else {

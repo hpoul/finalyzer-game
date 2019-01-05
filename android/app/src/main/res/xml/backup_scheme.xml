@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- TODO Remove the following "exclude" elements to make them a part of the auto backup -->
+    <!-- Exclude the shared preferences file that contains the GCM registrationId -->
+    <exclude
+        domain="sharedpref"
+        path="FlutterSharedPreferences.xml" />
+
+
+
+
+    <!-- no idea if the following makes sense, copied over from https://stackoverflow.com/a/51718354/109219 -->
+    <!-- Exclude the shared preferences file that contains the GCM registrationId -->
+    <exclude
+        domain="sharedpref"
+        path="com.google.android.gms.appid.xml"/>
+    <exclude
+        domain="sharedpref"
+        path="com.google.android.gms.measurement.prefs.xml"/>
+</full-backup-content>

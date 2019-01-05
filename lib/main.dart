@@ -120,7 +120,6 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   @override
   void initState() {
     super.initState();
-
   }
 
   @override
@@ -136,13 +135,17 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
       }
       switch (notification.type) {
         case GameNotificationType.ChallengeInvitation:
-          widget.navigatorKey.currentState
-              .push(MaterialPageRoute(builder: (context) => ChallengeInviteInfo(inviteToken: notification.inviteToken)));
+          widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+            name: '/challenge/invite/info',
+            builder: (context) => ChallengeInviteInfo(inviteToken: notification.inviteToken),
+          ));
           break;
         case GameNotificationType.ChallengeInvitationAccepted:
         case GameNotificationType.ChallengeParticipantFinished:
-          widget.navigatorKey.currentState
-              .push(MaterialPageRoute(builder: (context) => ChallengeDetails(notification.challengeId)));
+          widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+            name: '/challenge/details',
+            builder: (context) => ChallengeDetails(notification.challengeId),
+          ));
           break;
       }
       deps.cloudMessaging.clearNotification();
@@ -193,10 +196,12 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
           await Future.delayed(Duration(milliseconds: 100 * count));
           count++;
         }
-        await widget.navigatorKey.currentState.push(MaterialPageRoute(
-            builder: (context) => ChallengeInviteInfo(
-                  inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
-                )));
+        await widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+          name: '/challenge/invite/info',
+          builder: (context) => ChallengeInviteInfo(
+                inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
+              ),
+        ));
 //        Navigator.of(context).push(MaterialPageRoute(
 //            builder: (context) => ChallengeInviteInfo(
 //              inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],

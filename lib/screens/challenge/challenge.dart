@@ -5,6 +5,7 @@ import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -98,14 +99,15 @@ class _ChallengeListState extends State<ChallengeList> {
                         if (item.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
                             item.inviteToken != null) {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
+                            AnalyticsPageRoute(
+                                name: '/challenge/invite/info',
                                 builder: (context) => ChallengeInviteInfo(
                                       inviteToken: item.inviteToken,
                                     )),
                           );
                         } else {
-                          Navigator.of(context)
-                              .push(MaterialPageRoute(builder: (context) => ChallengeDetails(item.challengeId)));
+                          Navigator.of(context).push(AnalyticsPageRoute(
+                              name: '/challenge/details', builder: (context) => ChallengeDetails(item.challengeId)));
                         }
                       },
                       onLongPress: () {
@@ -143,7 +145,8 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
             onTap: () {
               apiChallenge.startChallenge(this.challengeInfo.challengeId).then((challenge) {
                 final bloc = MarketCapSortingChallengeBloc(deps.api, challenge);
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                    name: '/challenge/game',
                     builder: (context) => Challenge(
                           gameBloc: bloc,
                         )));
@@ -154,8 +157,8 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
             leading: Icon(Icons.details),
             title: Text('Details/Results'),
             onTap: () {
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => ChallengeDetails(challengeInfo.challengeId)));
+              Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                  name: '/challenge/details', builder: (context) => ChallengeDetails(challengeInfo.challengeId)));
             },
           )
         ],
@@ -211,7 +214,8 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                       .startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve)
                       .then((challenge) {
                     final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
-                    Navigator.of(context).push(MaterialPageRoute(
+                    Navigator.of(context).push(AnalyticsPageRoute(
+                        name: '/challenge/game',
                         builder: (context) => Challenge(
                               gameBloc: bloc,
                             )));

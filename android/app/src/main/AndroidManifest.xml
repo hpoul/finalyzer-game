@@ -19,7 +19,8 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="MarketCap Game by Anlage.App"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:fullBackupContent="@xml/backup_scheme">
 
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
                See README(https://goo.gl/l4GJaQ) for more. -->

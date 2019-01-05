@@ -7,6 +7,7 @@ import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -211,7 +212,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                               : () {
                                   setState(() {
                                     _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
-                                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                      Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                                        name: '/challenge/game',
                                           builder: (context) => Challenge(
                                                 gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
                                               )));
