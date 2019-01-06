@@ -4,6 +4,7 @@ import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/screens/company_details.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
@@ -371,6 +372,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final deps = DepsProvider.of(context);
     return Container(
         child: AlertDialog(
+          contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       content: SingleChildScrollView(
                 child: RepaintBoundary(
                   key: drawGlobalKey,
@@ -436,7 +438,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final ret = Column(
       children: <Widget>[
             (response.correctCount == 0
-                ? Text('😞 None were correctly', style: titleTextStyle.copyWith(color: Colors.orange))
+                ? Text('😞 None were correct', style: titleTextStyle.copyWith(color: Colors.orange))
                 : response.correctCount == 1
                     ? Text('🤔 Nice try.', style: titleTextStyle)
                     : response.correctCount == 2
@@ -477,69 +479,102 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
                 return MapEntry(
                     resultIdx,
-                    Container(
-                      decoration:
-                          resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
-                      padding:
-                          EdgeInsets.only(top: resultIdx == 0 ? 0.0 : 16.0, bottom: resultIdx == null ? 0.0 : 16.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Text('${resultIdx + 1}.'),
-                          Expanded(
-                            child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                    InkWell(
+                      onTap: () {
+                        final details = response.details.firstWhere((details) => resultDto.instrumentKey == details.instrumentKey);
+                        Navigator.of(context).push(AnalyticsPageRoute(
+                          name: '/company/details',
+                          builder: (context) => CompanyDetailsScreen(details, info.logo),));
+                      },
+                      child: Container(
+                        decoration:
+                            resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
+                        padding:
+                            EdgeInsets.only(
+                              top: resultIdx == 0 ? 0.0 : 16.0,
+                              bottom: resultIdx == null ? 0.0 : 16.0,
+                              left: 16,
+                              right: 8,
+                            ),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
                               Container(
-                                alignment: Alignment.centerRight,
-                                width: 100,
-                                height: 40,
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerRight,
-                                  errorWidget: Text(info.symbol ?? 'Error ${info.logo.id}'),
-                                  width: 100,
-                                  height: 40,
-                                  imageUrl: _api.getImageUrl(info.logo),
+                                child: Stack(
+                                  alignment: Alignment.topCenter,
+                                  children: <Widget>[
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Text('${resultIdx + 1}.', style: Theme.of(context).textTheme.headline,)
+                                      ),
+                                    ),
+                                    Icon(Icons.info_outline, color: Theme.of(context).primaryColor,),
+                                  ],
                                 ),
                               ),
-                              Container(
-                                margin: EdgeInsets.only(bottom: 8.0),
-                                child: Text(
-                                  formatMarketCap(resultDto.marketCap),
-                                  style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                                  Container(
+                                    alignment: Alignment.centerRight,
+                                    width: 100,
+                                    height: 40,
+                                    child: CachedNetworkImage(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerRight,
+                                      errorWidget: Text(info.symbol ?? 'Error ${info.logo.id}'),
+                                      width: 100,
+                                      height: 40,
+                                      imageUrl: _api.getImageUrl(info.logo),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(bottom: 8.0),
+                                    child: Text(
+                                      formatMarketCap(resultDto.marketCap),
+                                      style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
 //                              Text(
 //                                "Your Guess:",
 //                                style: Theme.of(context).textTheme.caption.copyWith(fontWeight: FontWeight.bold),
 //                                textAlign: TextAlign.right,
 //                              ),
-                              Text("You ranked it: $pos ${isCorrect ? '👍️' : '👎'}",
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .body1
-                                      .copyWith(color: isCorrect ? Colors.green : Colors.red),
-                                  textAlign: TextAlign.right),
+                                  Text("You ranked it: $pos ${isCorrect ? '👍️' : '👎'}",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .body1
+                                          .copyWith(color: isCorrect ? Colors.green : Colors.red),
+                                      textAlign: TextAlign.right),
 //                              Text(
 //                                "MarketCap: ${formatMarketCap(guessedMarketCap)}",
 //                                style: Theme.of(context).textTheme.caption,
 //                                textAlign: TextAlign.right,
 //                              ),
-                            ]),
+                                ]),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(left: 8),
+                                child: isCorrect
+                                    ? Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      )
+                                    : Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                      ),
+                              )
+                            ],
                           ),
-                          Container(
-                            margin: EdgeInsets.only(left: 8),
-                            child: isCorrect
-                                ? Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                  )
-                                : Icon(
-                                    Icons.close,
-                                    color: Colors.red,
-                                  ),
-                          )
-                        ],
+                        ),
                       ),
                     ));
               })

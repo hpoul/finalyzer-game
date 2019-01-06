@@ -5,6 +5,7 @@ import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
 import 'package:anlage_app_game/screens/leaderboard.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -150,6 +151,9 @@ class NavigationDrawerProfile extends StatelessWidget {
                                         leading: Icon(Icons.email),
                                         title: Text('How can we improve? Problems?'),
                                         subtitle: Text('We love to hear from you at hello@anlage.app'),
+                                        onTap: () {
+                                          DialogUtil.openFeedback(origin: 'drawer');
+                                        },
                                       ),
                                       ListTile(
                                         leading: Icon(Icons.link),
@@ -157,11 +161,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                         subtitle: Text('Track&Analyse your portfolio.'),
                                         onTap: () async {
                                           final url = 'https://anlage.app/?utm_source=marketcap-game';
-                                          if (await canLaunch(url)) {
-                                            await launch(url, forceSafariVC: false);
-                                          } else {
-                                            _logger.severe('Unable to launch url $url');
-                                          }
+                                          DialogUtil.launchUrl(url);
                                         },
                                         onLongPress: () async {
                                           _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
