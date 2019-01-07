@@ -30,4 +30,7 @@ class ApiChallenge {
 
   Future<GameChallengeDetailsResponse> getGameChallengeDetails(String challengeId) =>
     _apiCaller.get(GameChallengeLocation(challengeId));
+  
+  Future<void> logShortLink(String challengeInviteToken, String shortLink) =>
+      _apiCaller.post(LogShortLinkLocation(), LogShortLinkRequest(challengeInviteToken, shortLink));
 }

@@ -1,12 +1,12 @@
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/env/secrets.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
-import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -125,8 +125,17 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
           campaign: 'challenge',
           medium: 'app',
           source: 'game',
-        ));
-    return params.buildShortLink().then((shortLink) => shortLink.shortUrl);
+        ),
+      itunesConnectAnalyticsParameters: ItunesConnectAnalyticsParameters(
+        affiliateToken: Secrets.ITUNES_AFFILIATE_TOKEN,
+        campaignToken: 'challenge-invite',
+        providerToken: Secrets.ITUNES_PROVIDER_TOKEN,
+      )
+    );
+    return params.buildShortLink().then((shortLink) {
+      deps.apiChallenge.logShortLink(value.inviteToken, shortLink.shortUrl.toString());
+      return shortLink.shortUrl;
+    });
 //    return params.buildUrl();
   }
 }
