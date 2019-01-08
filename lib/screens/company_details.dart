@@ -25,7 +25,7 @@ class CompanyDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 32),
+                margin: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
                 child: CachedNetworkImage(
                   imageUrl: api.getImageUrl(logo),
                   height: 100,
