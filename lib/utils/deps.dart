@@ -2,6 +2,7 @@
 
 import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_challenge_service.dart';
+import 'package:anlage_app_game/api/api_pricedata.dart';
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/preferences.dart';
 import 'package:anlage_app_game/env/_base.dart';
@@ -26,12 +27,14 @@ class Deps {
   final ApiCaller apiCaller;
   final ApiService api;
   final ApiChallenge apiChallenge;
+  final ApiPriceData apiPriceData;
   final FormatUtil formatUtil = FormatUtil();
   final PreferenceStore prefs;
   final CloudMessagingUtil cloudMessaging;
 
   Deps({@required this.apiCaller, @required this.api, @required this.env, @required this.prefs, @required this.cloudMessaging}) :
-        apiChallenge = ApiChallenge(apiCaller);
+        apiChallenge = ApiChallenge(apiCaller),
+        apiPriceData = ApiPriceData(apiCaller);
 }
 
 class DepsProvider extends InheritedWidget {

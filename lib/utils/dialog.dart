@@ -70,3 +70,26 @@ class DialogUtil {
     }
   }
 }
+
+class ErrorRetry extends StatelessWidget {
+  final VoidCallback onPressed;
+  final Error error;
+
+  ErrorRetry({this.onPressed, this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+//      mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Text('Error while contacting server.'),
+          RaisedButton.icon(onPressed: onPressed, icon: Icon(Icons.refresh), label: Text('Retry')),
+        ],
+      ),
+    );
+  }
+}
+
