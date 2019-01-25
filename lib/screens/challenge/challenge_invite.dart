@@ -191,6 +191,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
             );
           }
           final createdBy = snapshot.data.createdBy;
+          final isWeeklyChallenge = snapshot.data.challengeType == GameChallengeType.WeeklyChallenge;
           return Container(
             alignment: Alignment(0, -0.4),
             margin: EdgeInsets.all(16),
@@ -206,11 +207,13 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0, bottom: 8),
                   child: Text(
-                    createdBy.displayName,
+                    isWeeklyChallenge ? 'Weekly Challenge' : createdBy.displayName,
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
-                Text('You have been challenged by ${createdBy.displayName}. Do you want to play?'),
+                isWeeklyChallenge
+                    ? Text('Join our current weekly challenge!')
+                    : Text('You have been challenged by ${createdBy.displayName}. Do you want to play?'),
                 FutureBuilder<GameChallengeDto>(
                   future: _acceptChallengeFuture,
                   builder: (context, snapshot) => Padding(
@@ -220,7 +223,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                               ? null
                               : () {
                                   setState(() {
-                                    _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
+                                    _acceptChallengeFuture = _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
                                       Navigator.of(context).pushReplacement(AnalyticsPageRoute(
                                         name: '/challenge/game',
                                           builder: (context) => Challenge(

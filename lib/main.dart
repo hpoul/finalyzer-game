@@ -1,9 +1,6 @@
 import 'dart:async';
 
-import 'package:anlage_app_game/api/api_caller.dart';
-import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
-import 'package:anlage_app_game/api/preferences.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
@@ -13,7 +10,6 @@ import 'package:anlage_app_game/screens/market_cap_sorting.dart';
 import 'package:anlage_app_game/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
-import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/logging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -134,6 +130,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
         return;
       }
       switch (notification.type) {
+        case GameNotificationType.ChallengeWeekly:
         case GameNotificationType.ChallengeInvitation:
           widget.navigatorKey.currentState.push(AnalyticsPageRoute(
             name: '/challenge/invite/info',

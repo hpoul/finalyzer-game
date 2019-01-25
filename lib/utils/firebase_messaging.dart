@@ -54,6 +54,8 @@ class CloudMessagingUtil with StreamSubscriberMixin {
     listen(_firebaseMessaging.onIosSettingsRegistered, (event) {
       _logger.info('User updated iOS Settings ${event}');
     });
+    _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.WeeklyChallenges));
+    _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.All));
     return Future.value(null);
   }
 
