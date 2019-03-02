@@ -4,7 +4,7 @@ set -e
 # debug log
 set -x
 
-FLUTTER_VERSION=v1.0.0-stable
+FLUTTER_VERSION=v1.2.1-stable
 
 curl -o flutter.zip https://storage.googleapis.com/flutter_infra/releases/stable/macos/flutter_macos_${FLUTTER_VERSION}.zip
 

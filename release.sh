@@ -8,7 +8,7 @@ if test -d flutter/bin ; then
 fi
 
 #flutter doctor
-flutter doctor --version
+flutter --version
 
 if ! test -e ./git-buildnumber.sh ; then
     curl -s -O https://raw.githubusercontent.com/hpoul/git-buildnumber/v1.0/git-buildnumber.sh
