@@ -12,8 +12,6 @@ before_install:
 - tar xvf .travis_sec.tar
 install:
 - cat .travis_sec/blackbox_key | gpg -v --import
-#- eval $(ssh-agent -s)
-#- cat .travis_sec/certificates_id_rsa | ssh-add -
-- ./_tools/ci-install-deps.sh
+- ./_tools/ci-install-deps.sh ios
 script:
 - "./_tools/ci-release.sh ios"
