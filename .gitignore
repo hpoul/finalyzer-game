@@ -133,3 +133,4 @@ ios/**/*.lock
 
 /git-buildnumber.sh
 
+/_tools/deploy-key/github-deploy-key

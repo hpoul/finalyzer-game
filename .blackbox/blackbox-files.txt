@@ -1,3 +1,4 @@
+_tools/deploy-key/github-deploy-key
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/env/secrets.dart
