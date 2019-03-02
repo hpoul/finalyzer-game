@@ -10,14 +10,10 @@ before_install:
   -in .travis_sec.tar.enc -out .travis_sec.tar -d
 - echo Test
 - tar xvf .travis_sec.tar
-- git clone https://github.com/mipmip/blackbox && cd blackbox && make manual-install
-  && cd ..
 install:
 - cat .travis_sec/blackbox_key | gpg -v --import
-- blackbox_postdeploy
-- "./install_flutter.sh"
-- eval $(ssh-agent -s)
-- cat .travis_sec/certificates_id_rsa | ssh-add -
-- cd ios && fastlane match appstore --readonly && cd ..
+#- eval $(ssh-agent -s)
+#- cat .travis_sec/certificates_id_rsa | ssh-add -
+- ./_tools/ci-install-deps.sh
 script:
-- "./release.sh ios"
+- "./_tools/ci-release.sh ios"
