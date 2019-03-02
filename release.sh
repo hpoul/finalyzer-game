@@ -7,9 +7,14 @@ if test -d flutter/bin ; then
   export PATH=$PATH:flutter/bin
 fi
 
-flutter doctor
+#flutter doctor
+flutter doctor --version
 
-buildnumber=`git-buildnumber.sh`
+if ! test -e ./git-buildnumber.sh ; then
+    curl -s -O https://raw.githubusercontent.com/hpoul/git-buildnumber/v1.0/git-buildnumber.sh
+    chmod +x git-buildnumber.sh
+fi
+buildnumber=`./git-buildnumber.sh`
 
 case "$1" in
     ios)

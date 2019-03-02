@@ -130,3 +130,6 @@ ios/**/*.lock
 
 /ios/Runner/GoogleService-Info.plist
 /lib/env/secrets.dart
+
+/git-buildnumber.sh
+
