@@ -14,7 +14,8 @@ if ! test -e ./git-buildnumber.sh ; then
     curl -s -O https://raw.githubusercontent.com/hpoul/git-buildnumber/v1.0/git-buildnumber.sh
     chmod +x git-buildnumber.sh
 fi
-buildnumber=`./git-buildnumber.sh`
+
+buildnumber=`GIT_SSH_COMMAND='ssh -i _tools/deploy-key/github-deploy-key' GIT_PUSH_REMOTE='git@github.com:hpoul/finalyzer-game.git' ./git-buildnumber.sh`
 
 case "$1" in
     ios)
