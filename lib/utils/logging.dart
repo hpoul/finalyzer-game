@@ -7,7 +7,7 @@ final _logger = new Logger("app.anlage.game.utils.logging");
 void setupLogging() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.level.name}: ${rec.time}: ${rec.message}');
+    print('${rec.loggerName} - ${rec.level.name}: ${rec.time}: ${rec.message}');
 
     if (rec.level >= Level.INFO) {
       FlutterCrashlytics().log(rec.message, priority: rec.level.value, tag: rec.loggerName);

@@ -1,4 +1,5 @@
 import 'package:anlage_app_game/api/api_service.dart';
+import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
@@ -39,6 +40,7 @@ class NavigationDrawerProfile extends StatelessWidget {
               }
 
               final displayName = snapshot?.data?.userInfo?.displayName ?? "";
+              final userType = snapshot?.data?.userInfo?.userType ?? GameUserType.User;
               return Column(
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
@@ -80,7 +82,8 @@ class NavigationDrawerProfile extends StatelessWidget {
                                                 'Tell us a bit about you to get listed in the leaderboard!',
                                               ),
                                             ]
-                                          : [Text('Hello $displayName!')]),
+                                          : [Text('Hello $displayName!')]) +
+                                      (userType == GameUserType.User ? [] : [Text('(${convertGameUserTypeToJson(userType)})', style: Theme.of(context).textTheme.caption,)]),
                                 ),
                         ),
                       ),
@@ -126,7 +129,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: <Widget>[
                                       ListTile(
-                                        leading: Icon(Icons.insert_invitation),
+                                        leading: Icon(Icons.send),
                                         title: Text('Challenge a friend.'),
                                         onTap: () {
                                           Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
@@ -140,7 +143,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                         },
                                       ),
                                       ListTile(
-                                        leading: Icon(Icons.list),
+                                        leading: Icon(Icons.format_list_numbered),
                                         title: Text('Leaderboard'),
                                         onTap: () {
                                           Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);

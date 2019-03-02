@@ -104,6 +104,8 @@ class ApiService {
 
   Future<void> _updateUserInfo({int retryCount = 0}) async {
     var deviceInfo;
+
+    String testlabUserProperty;
     if (Platform.isIOS) {
       final iosInfo = await DeviceInfoPlugin().iosInfo;
       deviceInfo = "${iosInfo.model},${iosInfo.name},${iosInfo.systemName},${iosInfo.systemVersion}";
@@ -111,19 +113,22 @@ class ApiService {
       final isTestLab = await NativeService.instance.isFirebaseTestLab();
       final testLab = (isTestLab) ? 'FIREBASE TESTLAB,' : '';
       if (isTestLab) {
-        await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'firebase');
-      } else switch (_env.type) {
-        case EnvType.production:
-          await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'prod');
-          break;
-        case EnvType.development:
-          // this is actually already set in analytics constructor.. but anyway.
-          await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: 'env-development');
-          break;
+        testlabUserProperty = 'firebase';
       }
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       deviceInfo = "$testLab${androidInfo.model},${androidInfo.brand},${androidInfo.device},${androidInfo.board},${androidInfo
           .manufacturer},${androidInfo.product},${androidInfo.version.baseOS},${androidInfo.version.release}";
+    }
+    if (testlabUserProperty == null) {
+      switch (_env.type) {
+        case EnvType.production:
+          testlabUserProperty = null;
+          break;
+        case EnvType.development:
+        // this is actually already set in analytics constructor.. but anyway.
+          testlabUserProperty = 'env-development';
+          break;
+      }
     }
     final packageInfo = await PackageInfo.fromPlatform();
     final appVersion = "${packageInfo.version} (${packageInfo.buildNumber}) ${packageInfo.packageName} ${packageInfo
@@ -132,6 +137,9 @@ class ApiService {
 
     try {
       final userInfo = await this._apiCaller.post(UserInfoLocation(), UserInfoRequest(appVersion, deviceInfo, await _cloudMessaging.getToken()));
+      final userTypeString = convertGameUserTypeToJson(userInfo.userType);
+      await AnalyticsUtils.instance.analytics.setUserProperty(name: 'testlab', value: testlabUserProperty ?? 'prod');
+      await AnalyticsUtils.instance.analytics.setUserProperty(name: 'user_type', value: testlabUserProperty == null ? userTypeString : testlabUserProperty + ':' + userTypeString);
 
       _loginState.add(LoginState(_baseUri, userInfo));
     } on DioError catch (error, stackTrace)  {

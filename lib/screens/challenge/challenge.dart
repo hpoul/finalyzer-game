@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
@@ -45,6 +47,18 @@ class ChallengeList extends StatefulWidget {
   _ChallengeListState createState() => _ChallengeListState();
 }
 
+enum ChallengeListItemType {
+  Challenge,
+  InviteCta
+}
+
+class ChallengeListItem {
+  ChallengeListItemType type;
+  GameChallengeInfoDto challengeInfo;
+  ChallengeListItem.info(this.challengeInfo) : type = ChallengeListItemType.Challenge;
+  ChallengeListItem.type(this.type);
+}
+
 class _ChallengeListState extends State<ChallengeList> {
   Deps _deps;
 
@@ -69,12 +83,14 @@ class _ChallengeListState extends State<ChallengeList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<GameChallengeInfoDto>>(
+    return FutureBuilder<List<ChallengeListItem>>(
       future: _listFuture.then((response) {
+        final challenges = response.challenges.map((c) => ChallengeListItem.info(c)).toList(growable: true);
         if (response.currentWeeklyChallenge.myParticipantStatus == GameChallengeParticipantStatus.Invited) {
-          return [response.currentWeeklyChallenge] + response.challenges;
+          challenges.insert(0, ChallengeListItem.info(response.currentWeeklyChallenge));
         }
-        return response.challenges;
+        challenges.insert(min(challenges.length, 3), ChallengeListItem.type(ChallengeListItemType.InviteCta));
+        return challenges;
       }),
       builder: (context, snapshot) {
         return Scaffold(
@@ -90,43 +106,47 @@ class _ChallengeListState extends State<ChallengeList> {
                   itemCount: snapshot.data.length,
                   itemBuilder: (context, idx) {
                     final item = snapshot.data[idx];
-                    final isWeeklyChallenge = item.type == GameChallengeType.WeeklyChallenge;
+                    if (item.type == ChallengeListItemType.InviteCta) {
+                      return ChallengeInviteCta();
+                    }
+                    final challenge = item.challengeInfo;
+                    final isWeeklyChallenge = challenge.type == GameChallengeType.WeeklyChallenge;
                     return Theme(
                       data: Theme.of(context).copyWith(textTheme: Theme.of(context).accentTextTheme),
                       child: Ink(
-                        color: isWeeklyChallenge && item.myParticipantStatus != GameChallengeParticipantStatus.Finished ? Theme.of(context).accentColor : null,
+                        color: isWeeklyChallenge && challenge.myParticipantStatus != GameChallengeParticipantStatus.Finished ? Theme.of(context).accentColor : null,
                         child: ListTile(
                           contentPadding: EdgeInsets.symmetric(horizontal: 16),
                           leading: Avatar(
-                              item.createdBy == null ? _deps.api.currentLoginState.avatarUrl : item.createdBy.avatarUrl),
-                          title: isWeeklyChallenge ? Text('Weekly challenge!') : Text('Created ${_deps.formatUtil.formatRelativeFuzzy(item.createdAt.dateTime)}'),
-                          subtitle: isWeeklyChallenge ? Text('Participate now!') : Text(item.createdBy == null ? 'by you.' : 'by: ${item.createdBy.displayName}.'),
+                              challenge.createdBy == null ? _deps.api.currentLoginState.avatarUrl : challenge.createdBy.avatarUrl),
+                          title: challenge.title.isNotEmpty ? Text(challenge.title) : isWeeklyChallenge ? Text('Weekly challenge!') : Text('Created ${_deps.formatUtil.formatRelativeFuzzy(challenge.createdAt.dateTime)}'),
+                          subtitle: isWeeklyChallenge ? Text('Participate now!') : Text(challenge.createdBy == null ? 'by you.' : 'by: ${challenge.createdBy.displayName}.'),
                           trailing: Icon(
-                            item.myParticipantStatus == GameChallengeParticipantStatus.Finished
+                            challenge.myParticipantStatus == GameChallengeParticipantStatus.Finished
                                 ? Icons.check
-                                : item.status == GameChallengeStatus.Accepted ? Icons.play_arrow : Icons.markunread_mailbox,
+                                : challenge.status == GameChallengeStatus.Accepted ? Icons.play_arrow : Icons.markunread_mailbox,
                           ),
                           onTap: () {
-                            if (item.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
-                                item.inviteToken != null) {
+                            if (challenge.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
+                                challenge.inviteToken != null) {
                               Navigator.of(context).push(
                                 AnalyticsPageRoute(
                                     name: '/challenge/invite/info',
                                     builder: (context) => ChallengeInviteInfo(
-                                          inviteToken: item.inviteToken,
+                                          inviteToken: challenge.inviteToken,
                                         )),
                               ).then((ret) {
                                 _refresh();
                               });
                             } else {
                               Navigator.of(context).push(AnalyticsPageRoute(
-                                  name: '/challenge/details', builder: (context) => ChallengeDetails(item.challengeId)));
+                                  name: '/challenge/details', builder: (context) => ChallengeDetails(challenge.challengeId)));
                             }
                           },
                           onLongPress: () {
                             // TODO for debugging purposes.. but we should remove this :)
                             showModalBottomSheet(
-                                context: context, builder: (context) => ChallengeListActionBottomSheet(item));
+                                context: context, builder: (context) => ChallengeListActionBottomSheet(challenge));
                           },
                         ),
                       ),
@@ -138,6 +158,36 @@ class _ChallengeListState extends State<ChallengeList> {
     );
   }
 }
+
+class ChallengeInviteCta extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Ink(
+        color: Theme.of(context).primaryColorLight,
+        child: ListTile(
+          contentPadding: EdgeInsets.all(32),
+          title: Column(
+            children: <Widget>[
+              Container(
+                child: Icon(Icons.send),
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 32),
+
+                child: Text('Challenge a friend'),
+              ),
+            ],
+          ),
+          onTap: () {
+            Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
+          },
+        ),
+      ),
+    );
+  }
+}
+
 
 class ChallengeListActionBottomSheet extends StatelessWidget {
   final GameChallengeInfoDto challengeInfo;

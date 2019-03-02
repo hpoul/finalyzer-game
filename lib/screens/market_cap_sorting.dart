@@ -528,7 +528,8 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                     child: CachedNetworkImage(
                                       fit: BoxFit.scaleDown,
                                       alignment: Alignment.centerRight,
-                                      errorWidget: Text(info.symbol ?? 'Error ${info.logo.id}'),
+                                      placeholder: Center(child: LinearProgressIndicator()),
+                                      errorWidget: Center(child: Text(info.symbol ?? 'Error ${info.logo.id}')),
                                       width: 100,
                                       height: 40,
                                       imageUrl: _api.getImageUrl(info.logo),
@@ -779,7 +780,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                               padding: EdgeInsets.all(8),
                               child: CachedNetworkImage(
                                 placeholder: Center(child: LinearProgressIndicator()),
-                                errorWidget: Text(val.symbol ?? 'Error ${val.logo.id}'),
+                                errorWidget: Center(child: Text(val.symbol ?? 'Error ${val.logo.id}', style: Theme.of(context).textTheme.body2,)),
 //                              width: 100,
 //                                  height: 50,
                                 imageUrl: _apiService.getImageUrl(val.logo),
