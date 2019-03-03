@@ -20,6 +20,7 @@ ssh-keygen -F github.com > /dev/null || (mkdir -p ~/.ssh && echo "github.com,192
 if test "$1" == "ios" ; then
     eval $(ssh-agent -s)
     cat _tools/secrets/fastlane_match_certificates_id_rsa | ssh-add -
+    export MATCH_PASSWORD=`cat _tools/secrets/fastlane_match_password`
 
     cd ios && fastlane match appstore --readonly && cd ..
 fi

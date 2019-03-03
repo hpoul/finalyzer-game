@@ -11,8 +11,9 @@ matrix:
     - TARGET_PLATFORM=ios
     - GPG=gpg
   - os: linux
-    dist: xenial
     language: android
+    #dist: xenial
+    dist: trusty
     android:
       components:
       - tools
