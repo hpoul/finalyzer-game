@@ -1,2 +1,3 @@
-json_key_file("/Users/herbert/Google Drive/dev/android/api-project-284252947431-f35dc129d015.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+#json_key_file("/Users/herbert/Google Drive/dev/android/api-project-284252947431-f35dc129d015.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+json_key_file("../_tools/secrets/api-project-284252947431-f35dc129d015.json")
 package_name("app.anlage.game.marketcap")

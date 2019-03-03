@@ -138,3 +138,4 @@ ios/**/*.lock
 /_tools/secrets/fastlane_match_password
 /_tools/secrets/gradle_home/gradle.properties
 /_tools/secrets/gradle_home/anlage-app-game.jks
+/_tools/secrets/api-project-284252947431-f35dc129d015.json
