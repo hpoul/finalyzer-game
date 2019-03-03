@@ -1,6 +1,7 @@
 _tools/deploy-key/github-deploy-key
 _tools/secrets/fastlane_match_certificates_id_rsa
 _tools/secrets/fastlane_match_password
+_tools/secrets/gradle_home/gradle.properties
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/env/secrets.dart
