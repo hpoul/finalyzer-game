@@ -24,6 +24,8 @@ if test "$1" == "ios" ; then
     cd ios && fastlane match appstore --readonly && cd ..
 fi
 
+# Flutter was installed by `install_flutter.sh` in `ci-install-deps.sh`.
+export PATH=${DEPS}/flutter/bin:$PATH
 
 GIT_SSH_COMMAND='ssh -i _tools/deploy-key/github-deploy-key' \
     GIT_PUSH_REMOTE='git@github.com:hpoul/finalyzer-game.git' \
