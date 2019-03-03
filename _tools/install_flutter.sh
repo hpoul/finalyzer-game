@@ -13,7 +13,7 @@ FLUTTER_EXT=zip
 platform="$(uname -s)"
 case "${platform}" in
     Linux*)     FLUTTER_PLATFORM=linux ; FLUTTER_EXT=tar.xz ;;
-    Darwin*)    FLUTTER_PLATFORM=mac;;
+    Darwin*)    FLUTTER_PLATFORM=macos;;
     *)          echo "Unknown platform ${platform}" ; exit 1 ;;
 esac
 

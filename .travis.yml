@@ -19,18 +19,20 @@ matrix:
       - platform-tools
       - android-27
       - build-tools-28.0.3
+    before_install:
+      - sudo apt-get install -y gnupg2
     env:
     - TARGET_PLATFORM=android
-    - GPG=gpg
+    - GPG=gpg2
 before_install:
 - which gpg
 - which gpg2 || echo "gpg2 not found."
 - gpg --version
+- echo Test
+install:
 - openssl aes-256-cbc -K $encrypted_83630750896a_key -iv $encrypted_83630750896a_iv
   -in .travis_sec.tar.enc -out .travis_sec.tar -d
-- echo Test
 - tar xvf .travis_sec.tar
-install:
 - "./_tools/ci-install-deps.sh ${TARGET_PLATFORM}"
 script:
 - cat .travis_sec/blackbox_key | $GPG -v --import
