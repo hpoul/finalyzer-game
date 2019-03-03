@@ -21,7 +21,8 @@ if test "$1" == "ios" ; then
     eval $(ssh-agent -s)
     cat _tools/secrets/fastlane_match_certificates_id_rsa | ssh-add -
     set +x
-    export MATCH_PASSWORD=`cat _tools/secrets/fastlane_match_password`
+    # defines MATCH_PASSWORD and FASTLANE_PASSWORD
+    source _tools/secrets/fastlane_match_password
     set -x
 
     cd ios && fastlane match appstore --readonly && cd ..
