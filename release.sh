@@ -15,7 +15,7 @@ if ! test -e ./git-buildnumber.sh ; then
 fi
 
 
-buildnumber=`./git-buildnumber.sh`
+buildnumber=`./git-buildnumber.sh generate`
 
 case "$1" in
     ios)

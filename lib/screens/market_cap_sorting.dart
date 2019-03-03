@@ -617,7 +617,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
       final picture = recorder.endRecording();
 
-      ui.Image finalImage = picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
+      ui.Image finalImage = await picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
 
       final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {
