@@ -27,6 +27,9 @@ if test "$1" == "ios" ; then
     cd ios && fastlane match appstore --readonly && cd ..
 fi
 
+cd ${root}
+
+
 # Flutter was installed by `install_flutter.sh` in `ci-install-deps.sh`.
 export PATH=${DEPS}/flutter/bin:$PATH
 
