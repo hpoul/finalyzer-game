@@ -13,7 +13,7 @@ platform="$(uname -s)"
 case "${platform}" in
     Linux*)     FLUTTER_PLATFORM=linux;;
     Darwin*)    FLUTTER_PLATFORM=mac;;
-    *)          echo "Unknown platform ${platform} exit 1 ;;
+    *)          echo "Unknown platform ${platform}" ; exit 1 ;;
 esac
 
 pushd ${DEPS}
