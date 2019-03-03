@@ -6,7 +6,7 @@ addons:
 matrix:
   include:
   - os: osx
-    osx_image: xcode10.2
+    osx_image: xcode10.1
     env:
     - TARGET_PLATFORM=ios
     - GPG=gpg
