@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 # debug log
-set -x
+set -xeu
+
+DEPS=${DEPS} # must be defined by environment.
 
 FLUTTER_VERSION=v1.2.1-stable
 FLUTTER_PLATFORM=macos
@@ -13,9 +15,13 @@ case "${platform}" in
     Darwin*)    FLUTTER_PLATFORM=mac;;
     *)          echo "Unknown platform ${platform} exit 1 ;;
 esac
+
+pushd ${DEPS}
 curl -o flutter.zip https://storage.googleapis.com/flutter_infra/releases/stable/${FLUTTER_PLATFORM}/flutter_${FLUTTER_PLATFORM}_${FLUTTER_VERSION}.zip
 
-unzip flutter.zip | tail
+unzip ${DEPS}/flutter.zip | tail
 
-export PATH=flutter/bin:$PATH
+popd
+
+export PATH=${DEPS}/flutter/bin:$PATH
 
