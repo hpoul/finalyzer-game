@@ -10,6 +10,7 @@ matrix:
     env:
     - TARGET_PLATFORM=ios
     - GPG=gpg
+    - FASTLANE_SKIP_UPLOAD=true
   - os: linux
     language: android
     #dist: xenial

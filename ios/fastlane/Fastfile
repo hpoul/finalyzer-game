@@ -36,6 +36,12 @@ platform :ios do
       )
 
     build_app(workspace: "Runner.xcworkspace", scheme: "Runner")
+
+    if ENV["FASTLANE_SKIP_UPLOAD"] == "true" 
+      puts "Skipping fastlane upload."
+      next
+    end
+
     upload_to_testflight
   end
 end
