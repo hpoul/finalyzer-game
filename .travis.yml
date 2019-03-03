@@ -20,4 +20,5 @@ install:
 - cat .travis_sec/blackbox_key | gpg -v --import
 - "./_tools/ci-install-deps.sh ${TARGET_PLATFORM}"
 script:
+- cat .travis_sec/blackbox_key | gpg -v --import
 - "./_tools/ci-release.sh ${TARGET_PLATFORM}"
