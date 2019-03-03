@@ -15,5 +15,5 @@ popd
 
 cd ${root}
 
-_tools/install_flutter.sh
+DEPS=${DEPS} _tools/install_flutter.sh
 
