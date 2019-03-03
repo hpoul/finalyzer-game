@@ -8,7 +8,7 @@ DEPS=${DEPS:-~/deps}
 
 root=`git rev-parse --show-toplevel`
 
-cd $root
+cd ${root}
 
 
 ${DEPS}/blackbox/bin/blackbox_postdeploy
