@@ -2,7 +2,8 @@ addons:
   ssh_known_hosts: gitlab.com
 env:
   global:
-    secure: IHP2PqoriP4Rd3+j/G9kSDmcLQ5zAFzCrh+lacfl5eyTEm+dDR9f99bp8kIsyc6i6+qP8ffQKNV3O5CNjJcbfcP/pCWskQPjedSJFqeQRKPb1NzlNknXnjkhC/TrV/boTK0b749bsU87Di31NcIVDKymQMo4FBtm20PQIALJWCiAUvIl3Rpl7sHWMAdnz4EBPSSCr0R3wbOUNMe3jZ0UGm4k4NdONp5jaN4CeGAvtLHD5AG0/6ZjZ2WrmO3vALFzncxtiDHWlX+bwbdGlSNBGdRRrTLjbSp4MYGvz18h5W3wDL/S0fBdnEeNNkyGdc5ATWZc92M3VOV+4UfFTVTixX7trvpulvWx1s1/PXDrSU5vECeAtHS/3MzDPxgzsBk9LgT+sTwqRY2o6a/JLXr5fLFNKWi7ltcNL5O9LkyzqOtzR8XxWEnWGpkcOitqal/lSxhDzi4Lk2Cd/h3OSIyO7TeAGhNd7IeLeND9mhVllyXtkIRXnUIIMBaXZdOIB9i3RrgcnLNlR+yde86PnkHEKoo4Wxny5fP5QUjxT+fD6DCYNdgIWA85NAFEWE+kt0GT5TGQ5sqwFpBS+leZ3r/6Rqn28Rwk/s4WofJJRikzgRP1qtorkLovC8egTYFaAG1tdqG0cSv6rEHGeVOkUi1aVNIorbDpZ/8OOFueXvd8FI8=
+    - secure: IHP2PqoriP4Rd3+j/G9kSDmcLQ5zAFzCrh+lacfl5eyTEm+dDR9f99bp8kIsyc6i6+qP8ffQKNV3O5CNjJcbfcP/pCWskQPjedSJFqeQRKPb1NzlNknXnjkhC/TrV/boTK0b749bsU87Di31NcIVDKymQMo4FBtm20PQIALJWCiAUvIl3Rpl7sHWMAdnz4EBPSSCr0R3wbOUNMe3jZ0UGm4k4NdONp5jaN4CeGAvtLHD5AG0/6ZjZ2WrmO3vALFzncxtiDHWlX+bwbdGlSNBGdRRrTLjbSp4MYGvz18h5W3wDL/S0fBdnEeNNkyGdc5ATWZc92M3VOV+4UfFTVTixX7trvpulvWx1s1/PXDrSU5vECeAtHS/3MzDPxgzsBk9LgT+sTwqRY2o6a/JLXr5fLFNKWi7ltcNL5O9LkyzqOtzR8XxWEnWGpkcOitqal/lSxhDzi4Lk2Cd/h3OSIyO7TeAGhNd7IeLeND9mhVllyXtkIRXnUIIMBaXZdOIB9i3RrgcnLNlR+yde86PnkHEKoo4Wxny5fP5QUjxT+fD6DCYNdgIWA85NAFEWE+kt0GT5TGQ5sqwFpBS+leZ3r/6Rqn28Rwk/s4WofJJRikzgRP1qtorkLovC8egTYFaAG1tdqG0cSv6rEHGeVOkUi1aVNIorbDpZ/8OOFueXvd8FI8=
+    - GPG=gpg2
 matrix:
   include:
   - os: osx
@@ -17,8 +18,7 @@ before_install:
 - echo Test
 - tar xvf .travis_sec.tar
 install:
-- cat .travis_sec/blackbox_key | gpg -v --import
 - "./_tools/ci-install-deps.sh ${TARGET_PLATFORM}"
 script:
-- cat .travis_sec/blackbox_key | gpg -v --import
+- cat .travis_sec/blackbox_key | $GPG -v --import
 - "./_tools/ci-release.sh ${TARGET_PLATFORM}"
