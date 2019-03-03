@@ -33,6 +33,7 @@ case "$1" in
         fastlane beta
     ;;
     android)
+        export GRADLE_USER_HOME=`pwd`/_tools/secrets/gradle_home
         flutter build apk -t lib/env/production.dart --release --build-number $buildnumber
         cd android
         fastlane beta
