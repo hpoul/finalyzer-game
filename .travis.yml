@@ -1,5 +1,3 @@
-#os: osx
-#osx_image: xcode10.1
 addons:
   ssh_known_hosts: gitlab.com
 env:
@@ -20,6 +18,6 @@ before_install:
 - tar xvf .travis_sec.tar
 install:
 - cat .travis_sec/blackbox_key | gpg -v --import
-- ./_tools/ci-install-deps.sh ${TARGET_PLATFORM}
+- "./_tools/ci-install-deps.sh ${TARGET_PLATFORM}"
 script:
 - "./_tools/ci-release.sh ${TARGET_PLATFORM}"
