@@ -4,11 +4,15 @@ set -exu
 
 DEPS=${DEPS:-~/deps}
 
-mkdir -p ${DEPS} && cd ${DEPS}
+root=`git rev-parse --show-toplevel`
+
+mkdir -p ${DEPS}
+pushd ${DEPS}
 
 git clone https://github.com/mipmip/blackbox
 
-root=`git rev-parse --show-toplevel`
+popd
+
 cd ${root}
 
 _tools/install_flutter.sh
