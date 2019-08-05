@@ -190,11 +190,9 @@ class MarketCapSortingState extends State<MarketCapSorting> {
           return MarketCapSortingScreen(_gameBloc, snapshot);
         });
   }
-
 }
 
 class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
-
   final ApiService api;
   final ui.Size preferredSize = const Size.fromHeight(kToolbarHeight);
 
@@ -211,9 +209,8 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
               icon: CircleAvatar(
                   maxRadius: 18,
                   backgroundColor: Colors.white,
-                  backgroundImage: snapshot.data?.avatarUrl == null
-                      ? null
-                      : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
+                  backgroundImage:
+                      snapshot.data?.avatarUrl == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
               onPressed: () {
                 AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
                 Scaffold.of(context).openEndDrawer();
@@ -223,9 +220,7 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
       ],
     );
   }
-
 }
-
 
 class MarketCapSortingScreen extends StatefulWidget {
   final MarketCapSortingGameBloc gameBloc;
@@ -247,36 +242,38 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
     final _api = _gameBloc.api;
     return Scaffold(
         endDrawer: NavigationDrawerProfile(),
-        appBar: MarketCapAppBar(api: _api,),
+        appBar: MarketCapAppBar(
+          api: _api,
+        ),
         floatingActionButton: FloatingActionButton.extended(
           label: Text(isVerifying || snapshot.data == null ? 'Loading …' : 'Check'),
           icon: isVerifying || snapshot.data == null
               ? Container(
-              height: 16.0,
-              width: 16.0,
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-              ))
+                  height: 16.0,
+                  width: 16.0,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                  ))
               : Icon(Icons.check),
           onPressed: isVerifying || snapshot.data == null
               ? null
               : () {
-            setState(() {
-              isVerifying = !isVerifying;
-            });
-            _gameBloc.verifyMarketCaps().then((val) {
-              _showVerifyResultDialog(val, snapshot.data);
-              setState(() {
-                isVerifying = false;
-              });
-            }).catchError((error, stackTrace) {
-              _logger.severe('Error while verifying market caps.', error, stackTrace);
-              setState(() {
-                isVerifying = false;
-              });
-              _showErrorDialog(error);
-            });
-          },
+                  setState(() {
+                    isVerifying = !isVerifying;
+                  });
+                  _gameBloc.verifyMarketCaps().then((val) {
+                    _showVerifyResultDialog(val, snapshot.data);
+                    setState(() {
+                      isVerifying = false;
+                    });
+                  }).catchError((error, stackTrace) {
+                    _logger.severe('Error while verifying market caps.', error, stackTrace);
+                    setState(() {
+                      isVerifying = false;
+                    });
+                    _showErrorDialog(error);
+                  });
+                },
           isExtended: true,
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -290,72 +287,80 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text(
-                  widget.gameBloc.maxTurns == null ? 'Sort the companies based on their Market Cap.'
-                      : 'Sort the companies based on their Market Cap.',
-                  style: Theme.of(context).textTheme.body2,
-                ),
-              ] + (widget.gameBloc.maxTurns == null ? [] : [
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text('Turn ${widget.gameBloc.currentTurn+1} of ${widget.gameBloc.maxTurns}', style: Theme.of(context).textTheme.caption, textAlign: TextAlign.center,),
-                ),
-                LinearProgressIndicator(value:(widget.gameBloc.currentTurn+1) /  widget.gameBloc.maxTurns),
-              ]),
+                    Text(
+                      widget.gameBloc.maxTurns == null
+                          ? 'Sort the companies based on their Market Cap.'
+                          : 'Sort the companies based on their Market Cap.',
+                      style: Theme.of(context).textTheme.body2,
+                    ),
+                  ] +
+                  (widget.gameBloc.maxTurns == null
+                      ? []
+                      : [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Turn ${widget.gameBloc.currentTurn + 1} of ${widget.gameBloc.maxTurns}',
+                              style: Theme.of(context).textTheme.caption,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          LinearProgressIndicator(value: (widget.gameBloc.currentTurn + 1) / widget.gameBloc.maxTurns),
+                        ]),
             ),
           ),
         ),
         body: SafeArea(
           child: snapshot.hasData
               ? Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Expanded(
-                  child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data)),
-            ],
-          )
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Expanded(child: MarketCapSortingScaleWidget(_gameBloc, snapshot.data)),
+                  ],
+                )
               : snapshot.hasError
-              ? Container(
-            margin: EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                    "Error occurred while fetching data. Please check your network connection and try again."),
-                RaisedButton(
-                  child: Text('Retry'),
-                  onPressed: () {
-                    _gameBloc.nextTurn();
-                  },
-                ),
-              ],
-            ),
-          )
-              : Center(child: CircularProgressIndicator()),
+                  ? Container(
+                      margin: EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                              "Error occurred while fetching data. Please check your network connection and try again."),
+                          RaisedButton(
+                            child: Text('Retry'),
+                            onPressed: () {
+                              _gameBloc.nextTurn();
+                            },
+                          ),
+                        ],
+                      ),
+                    )
+                  : Center(child: CircularProgressIndicator()),
         ));
   }
 
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet) {
-    showDialog(context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc, gameSet));
+    showDialog(
+        context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc, gameSet));
   }
 
   void _showErrorDialog(Error error) {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('There was an error during the request.\nPlease try again later.\n$error'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Dismiss'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ],
-        ));
-  }}
-
+              title: Text('Error'),
+              content: Text('There was an error during the request.\nPlease try again later.\n$error'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('Dismiss'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ));
+  }
+}
 
 class MarketCapSortingResultWidget extends StatelessWidget {
   final GameSimpleSetVerifyResponse response;
@@ -367,38 +372,39 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final challengeBloc = _gameBloc is MarketCapSortingChallengeBloc ? _gameBloc as MarketCapSortingChallengeBloc : null;
+    final challengeBloc =
+        _gameBloc is MarketCapSortingChallengeBloc ? _gameBloc as MarketCapSortingChallengeBloc : null;
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
     final deps = DepsProvider.of(context);
     return Container(
         child: AlertDialog(
-          contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+      contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       content: SingleChildScrollView(
-                child: RepaintBoundary(
-                  key: drawGlobalKey,
-                  child: _createResultScreen(response, _gameSet, _gameBloc, context),
-                ),
-              ),
+        child: RepaintBoundary(
+          key: drawGlobalKey,
+          child: _createResultScreen(response, _gameSet, _gameBloc, context),
+        ),
+      ),
       actions: <Widget>[
         FlatButton.icon(
           icon: Icon(Icons.share),
           label: Text('Share'),
           onPressed: () {
-            AnalyticsUtils.instance.analytics.logShare(contentType: 'result_sorting', itemId: 'sort');
+            AnalyticsUtils.instance.analytics.logShare(contentType: 'result_sorting', itemId: 'sort', method: 'share');
             _capturePngWithPicture(context);
           },
         ),
         FlatButton(
-          child: Text(
-              challengeBloc == null ? 'New Game'
-                  : challengeBloc.isCompleted ? 'Finish Challenge' : 'Next Turn'),
+          child:
+              Text(challengeBloc == null ? 'New Game' : challengeBloc.isCompleted ? 'Finish Challenge' : 'Next Turn'),
           onPressed: () {
             if (challengeBloc?.isCompleted ?? false) {
               Navigator.of(context)
                 ..pop()
-                ..pushReplacement(AnalyticsPageRoute(
-                  name: '/challenge/details',
-                    builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
+                ..pushReplacement(
+                  AnalyticsPageRoute(
+                      name: '/challenge/details',
+                      builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
                 );
             } else {
               Navigator.of(context).pop();
@@ -471,31 +477,33 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
                 final isCorrect = pos == resultIdx + 1;
                 if (isCorrect) {
-                  trace.incrementCounter('correct');
+                  trace.incrementMetric('correct', 1);
                   score++;
                 } else {
-                  trace.incrementCounter('wrong');
+                  trace.incrementMetric('wrong', 1);
                 }
 
                 return MapEntry(
                     resultIdx,
                     InkWell(
                       onTap: () {
-                        final details = response.details.firstWhere((details) => resultDto.instrumentKey == details.instrumentKey);
+                        final details =
+                            response.details.firstWhere((details) => resultDto.instrumentKey == details.instrumentKey);
                         Navigator.of(context).push(AnalyticsPageRoute(
                           name: '/company/details',
-                          builder: (context) => CompanyDetailsScreen(details, info.logo),));
+                          builder: (context) => CompanyDetailsScreen(details, info.logo),
+                        ));
                       },
                       child: Container(
-                        decoration:
-                            resultIdx == 0 ? null : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
-                        padding:
-                            EdgeInsets.only(
-                              top: resultIdx == 0 ? 0.0 : 16.0,
-                              bottom: resultIdx == null ? 0.0 : 16.0,
-                              left: 16,
-                              right: 8,
-                            ),
+                        decoration: resultIdx == 0
+                            ? null
+                            : BoxDecoration(border: Border(top: BorderSide(color: Colors.black12))),
+                        padding: EdgeInsets.only(
+                          top: resultIdx == 0 ? 0.0 : 16.0,
+                          bottom: resultIdx == null ? 0.0 : 16.0,
+                          left: 16,
+                          right: 8,
+                        ),
                         child: IntrinsicHeight(
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
@@ -512,10 +520,15 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                       bottom: 0,
                                       child: Align(
                                           alignment: Alignment.centerRight,
-                                          child: Text('${resultIdx + 1}.', style: Theme.of(context).textTheme.headline,)
-                                      ),
+                                          child: Text(
+                                            '${resultIdx + 1}.',
+                                            style: Theme.of(context).textTheme.headline,
+                                          )),
                                     ),
-                                    Icon(Icons.info_outline, color: Theme.of(context).primaryColor,),
+                                    Icon(
+                                      Icons.info_outline,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -528,8 +541,9 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                     child: CachedNetworkImage(
                                       fit: BoxFit.scaleDown,
                                       alignment: Alignment.centerRight,
-                                      placeholder: Center(child: LinearProgressIndicator()),
-                                      errorWidget: Center(child: Text(info.symbol ?? 'Error ${info.logo.id}')),
+                                      placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                                      errorWidget: (context, url, error) =>
+                                          Center(child: Text(info.symbol ?? 'Error ${info.logo.id}')),
                                       width: 100,
                                       height: 40,
                                       imageUrl: _api.getImageUrl(info.logo),
@@ -625,13 +639,13 @@ class MarketCapSortingResultWidget extends StatelessWidget {
         return;
       }
       _logger.fine('Opening share dialog.');
-      await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
+      await Share.file('MarketCap Game - Results', 'result.png', byteData.buffer.asUint8List(), 'image/png');
+//      await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
     } catch (error, stackTrace) {
       _logger.warning('Error during share', error, stackTrace);
       rethrow;
     }
   }
-
 }
 
 class MarketCapSortingScaleWidget extends StatefulWidget {
@@ -779,8 +793,12 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                             child: Container(
                               padding: EdgeInsets.all(8),
                               child: CachedNetworkImage(
-                                placeholder: Center(child: LinearProgressIndicator()),
-                                errorWidget: Center(child: Text(val.symbol ?? 'Error ${val.logo.id}', style: Theme.of(context).textTheme.body2,)),
+                                placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                                errorWidget: (context, url, error) => Center(
+                                    child: Text(
+                                  val.symbol ?? 'Error ${val.logo.id}',
+                                  style: Theme.of(context).textTheme.body2,
+                                )),
 //                              width: 100,
 //                                  height: 50,
                                 imageUrl: _apiService.getImageUrl(val.logo),

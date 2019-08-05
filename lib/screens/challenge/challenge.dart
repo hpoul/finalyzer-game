@@ -270,7 +270,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
         List<Widget> actions = [];
         if (details?.baseInfo?.status == GameChallengeStatus.Accepted) {
           if (details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.Ready ||
-              details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated)
+              details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated) {
             actions = [
               RaisedButton(
                 child: Text('Play Now'),
@@ -281,13 +281,15 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                     final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
                     Navigator.of(context).push(AnalyticsPageRoute(
                         name: '/challenge/game',
-                        builder: (context) => Challenge(
+                        builder: (context) =>
+                            Challenge(
                               gameBloc: bloc,
                             )));
                   });
                 },
               ),
             ];
+          }
         }
 
         final statusText = (GameChallengeParticipantStatus status) {
@@ -300,6 +302,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
             case GameChallengeParticipantStatus.Finished:
               return null;
           }
+          throw StateError('Invalid status $status');
         };
 
         return Scaffold(

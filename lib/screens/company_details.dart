@@ -126,11 +126,11 @@ class CompanyDetailsScreen extends StatelessWidget {
 }
 
 class StockChart extends StatefulWidget {
-  String symbol;
-  DateTime start = DateTime.now().subtract(Duration(days: 7 * 52));
-  DateTime end = DateTime.now();
-
   StockChart(this.symbol);
+
+  final String symbol;
+  final DateTime start = DateTime.now().subtract(Duration(days: 7 * 52));
+  final DateTime end = DateTime.now();
 
   @override
   _StockChartState createState() => _StockChartState();

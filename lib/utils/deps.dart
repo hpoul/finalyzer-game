@@ -9,7 +9,6 @@ import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:flutter/widgets.dart';
-import 'package:platform/platform.dart';
 
 class FirebaseConfig {
   final domain = 'anlageapp.page.link';

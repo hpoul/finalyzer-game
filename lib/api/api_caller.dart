@@ -1,5 +1,6 @@
 
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:anlage_app_game/api/api_service.dart';
@@ -10,6 +11,51 @@ import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _logger = Logger("app.anlage.game.api.api_caller");
+
+class ApiCallerInterceptor implements Interceptor {
+
+  ApiCallerInterceptor(this._apiCaller, this._dio);
+
+  final ApiCaller _apiCaller;
+  final Dio _dio;
+
+  @override
+  FutureOr onError(DioError error) async {
+    if (error.response != null && error.response.statusCode == HttpStatus.unauthorized) {
+      _logger.severe('It seems session got invalid. at least remove session so on next request it is working again. ${await this._apiCaller._getGameSessionFromPreferences()}');
+      await _apiCaller._setGameSession(null);
+    }
+    return error;
+  }
+
+  @override
+  FutureOr onRequest(RequestOptions options) async {
+    var gameSession = await _apiCaller._getGameSessionFromPreferences();
+
+    if (gameSession == null) {
+      _dio.interceptors.requestLock.lock();
+      _logger.info('No session found, registering device.');
+
+      try {
+        gameSession = await _apiCaller._registerDevice();
+        await _apiCaller._setGameSession(gameSession);
+      } finally {
+        _dio.interceptors.requestLock.unlock();
+      }
+    }
+
+    options.headers[ApiCaller.GAME_SESSION_HEADER] = gameSession;
+
+    return options;
+  }
+
+  @override
+  FutureOr onResponse(Response response) {
+    // TODO: implement onResponse
+    return null;
+  }
+
+}
 
 class ApiCaller {
   static const PREF_GAME_SESSION = 'GAME_SESSION';
@@ -29,32 +75,7 @@ class ApiCaller {
 
   Dio _createSessionDio() {
     final dio = Dio();
-    dio.interceptor.request.onSend = (Options options) async {
-      var gameSession = await _getGameSessionFromPreferences();
-
-      if (gameSession == null) {
-        dio.interceptor.request.lock();
-        _logger.info('No session found, registering device.');
-
-        try {
-          gameSession = await _registerDevice();
-          await _setGameSession(gameSession);
-        } finally {
-          dio.interceptor.request.unlock();
-        }
-      }
-
-      options.headers[GAME_SESSION_HEADER] = gameSession;
-
-      return options;
-    };
-    dio.interceptor.response.onError = (DioError error) async {
-      if (error.response != null && error.response.statusCode == HttpStatus.unauthorized) {
-        _logger.severe('It seems session got invalid. at least remove session so on next request it is working again. ${await this._getGameSessionFromPreferences()}');
-        await _setGameSession(null);
-      }
-      return error;
-    };
+    dio.interceptors.add(ApiCallerInterceptor(this, dio));
     return dio;
   }
 
@@ -98,7 +119,7 @@ class ApiCaller {
     }
     final dio = _dio;
     try {
-      final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.JSON));
+      final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.json));
       return location.bodyFromGetJson(response.data);
     } on DioError catch (dioError, stackTrace) {
       _logger.finer('Error during api call', dioError, stackTrace);

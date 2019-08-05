@@ -25,7 +25,8 @@ platform :android do
   lane :beta do
     #gradle(task: "clean assembleRelease")
     #upload_to_play_store(apk: '../build/app/outputs/apk/release/app-release.apk', track: 'beta')
-    upload_to_play_store(apk: '../build/app/outputs/apk/release/app-release.apk', track: 'internal')
+    #upload_to_play_store(apk: '../build/app/outputs/apk/release/app-release.apk', track: 'internal')
+    upload_to_play_store(aab: '../build/app/outputs/aab/release/app-release.aab', track: 'internal')
   
     # sh "your_script.sh"
     # You can also use other beta testing services here

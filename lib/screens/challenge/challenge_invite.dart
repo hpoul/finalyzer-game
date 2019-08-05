@@ -110,7 +110,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
 
   Future<Uri> _createInviteLink(Deps deps, GameChallengeInviteResponse value) {
     final params = DynamicLinkParameters(
-        domain: deps.firebaseConfig.domain,
+        uriPrefix: deps.firebaseConfig.domain,
         link: Uri.parse('https://anlage.app${ChallengeInvite.URL_PATH}')
             .replace(queryParameters: {ChallengeInvite.URL_QUERY_PARAM_TOKEN: value.inviteToken}),
         androidParameters: AndroidParameters(

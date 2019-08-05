@@ -116,6 +116,15 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   @override
   void initState() {
     super.initState();
+    FirebaseDynamicLinks.instance.onLink(
+      onSuccess: (linkData) async {
+        _logger.fine('Received dynamic link $linkData');
+        await _handleLink(linkData);
+      },
+      onError: (error) async {
+        _logger.severe('Error while handling dynamic link?', error);
+      },
+    );
   }
 
   @override
@@ -179,8 +188,12 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
 
   Future<void> _retrieveDynamicLink(int count) async {
     _logger.fine('retrieving dynamic links .. ($count).');
-    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.retrieveDynamicLink();
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
     _logger.fine('dynamic link ($count), Got: $data');
+    await _handleLink(data);
+  }
+
+  Future<void> _handleLink(PendingDynamicLinkData data) async {
     final Uri deepLink = data?.link;
 
     if (deepLink != null) {
@@ -196,8 +209,8 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
         await widget.navigatorKey.currentState.push(AnalyticsPageRoute(
           name: '/challenge/invite/info',
           builder: (context) => ChallengeInviteInfo(
-                inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
-              ),
+            inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
+          ),
         ));
 //        Navigator.of(context).push(MaterialPageRoute(
 //            builder: (context) => ChallengeInviteInfo(
@@ -206,12 +219,6 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
       } else {
         _logger.warning('Unknown dynamic link $deepLink.');
         await Navigator.pushNamed(context, deepLink.path); // deeplink.path == '/helloworld'
-      }
-    } else {
-      if (count < 1) {
-        unawaited(Future.delayed(Duration(milliseconds: 500)).then((val) {
-          this._retrieveDynamicLinkBackgroundWithLogging(count: count + 1);
-        }));
       }
     }
   }
