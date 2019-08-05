@@ -19,6 +19,7 @@ case "${platform}" in
 esac
 
 pushd ${DEPS}
+echo "Downloading ${FLUTTER_PLATFORM}/flutter_${FLUTTER_PLATFORM}_${FLUTTER_VERSION}.${FLUTTER_EXT}"
 curl -o flutter.${FLUTTER_EXT} https://storage.googleapis.com/flutter_infra/releases/stable/${FLUTTER_PLATFORM}/flutter_${FLUTTER_PLATFORM}_${FLUTTER_VERSION}.${FLUTTER_EXT}
 
 if test "${FLUTTER_EXT}" = "zip" ; then
