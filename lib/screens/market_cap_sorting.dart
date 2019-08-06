@@ -130,12 +130,12 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
       Rect virtualRect;
       do {
         collisions++;
-        virtualRect = Offset(size.width - (MarketCapSortingScaleState.STOCK_CARD_WIDTH * collisions), localPos) &
-            Size(MarketCapSortingScaleState.STOCK_CARD_WIDTH, MarketCapSortingScaleState.STOCK_CARD_HEIGHT);
+        virtualRect = Offset(size.width - (_STOCK_CARD_WIDTH * collisions), localPos) &
+            Size(_STOCK_CARD_WIDTH, _STOCK_CARD_HEIGHT);
       } while (positions.where((r) => r.overlaps(virtualRect)).isNotEmpty);
       positions.add(virtualRect);
 
-      final marginRight = MarketCapSortingScaleState.STOCK_CARD_WIDTH * (collisions - 1);
+      final marginRight = _STOCK_CARD_WIDTH * (collisions - 1);
 
       var s = layoutChild(i.key, BoxConstraints.loose(Size(size.width - marginRight, size.height)));
 
@@ -663,12 +663,6 @@ class MarketCapSortingScaleWidget extends StatefulWidget {
 }
 
 class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
-  ApiService _apiService;
-
-  static const STOCK_CARD_WIDTH = 100.0;
-  static const STOCK_CARD_HEIGHT = 50.0;
-  static const STOCK_CARD_DRAGGED_RATIO = 1.4;
-
   bool moved = false;
   double totalRange;
   String draggedInstrument;
@@ -683,7 +677,6 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _apiService = DepsProvider.of(context).api;
     _logger.finer('MarketCapSortingScaleState.didChangeDependencies');
   }
 
@@ -721,30 +714,6 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
         children: instruments.map((val) {
           var isDragged = draggedInstrument == val.instrumentKey;
 
-          final arrows = <Widget>[
-            Positioned(
-              top: -30,
-              right: STOCK_CARD_WIDTH / 2 - 12,
-              child: AnimatedOpacity(
-                  opacity: moved ? 0 : 1,
-                  duration: Duration(milliseconds: 500),
-                  child: Icon(Icons.arrow_upward, size: 24, color: Colors.black26)),
-            ),
-            Positioned(
-              bottom: -30,
-              right: STOCK_CARD_WIDTH / 2 - 12,
-              child: AnimatedOpacity(
-                opacity: moved ? 0 : 1,
-                duration: Duration(milliseconds: 500),
-                child: Icon(
-                  Icons.arrow_downward,
-                  size: 24,
-                  color: Colors.black26,
-                ),
-              ),
-            ),
-          ];
-
           return LayoutId(
               id: val.instrumentKey,
               child: GestureDetector(
@@ -780,38 +749,11 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
                         this.widget.simpleGameSet.marketCapScaleMax - this.totalRange / context.size.height * local.dy);
                   });
                 },
-                child: Stack(
-                  alignment: Alignment.centerRight,
-                  overflow: Overflow.visible,
-                  children: arrows +
-                      [
-//                      Text('Lorem ipsum'),
-
-                        Container(
-                          width: isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH,
-                          height: isDragged ? STOCK_CARD_HEIGHT * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_HEIGHT,
-                          child: Card(
-                            elevation: isDragged ? 8 : 1,
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              child: CachedNetworkImage(
-                                placeholder: (context, url) => Center(child: LinearProgressIndicator()),
-                                errorWidget: (context, url, error) => Center(
-                                    child: Text(
-                                  val.symbol ?? 'Error ${val.logo.id}',
-                                  style: Theme.of(context).textTheme.body2,
-                                )),
-//                              width: 100,
-//                                  height: 50,
-                                imageUrl: _apiService.getImageUrl(val.logo),
-                              ),
-                            ),
-                          ),
-                        ),
-                        buildMarketCapLabel(
-                            gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value),
-                        buildLine(isDragged ? STOCK_CARD_WIDTH * STOCK_CARD_DRAGGED_RATIO : STOCK_CARD_WIDTH),
-                      ],
+                child: MarketCapInstrumentCard(
+                  instrument: val,
+                  marketCapValue: gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value,
+                  moved: moved,
+                  isDragged: isDragged,
                 ),
               ));
         }).toList(),
@@ -826,8 +768,88 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     double maxWidth = constraints?.maxWidth ?? 0.0;
     return maxWidth;
   }
+}
 
-  Widget buildMarketCapLabel(double marketCap) {
+const _STOCK_CARD_WIDTH = 100.0;
+const _STOCK_CARD_HEIGHT = 50.0;
+const _STOCK_CARD_DRAGGED_RATIO = 1.4;
+
+class MarketCapInstrumentCard extends StatelessWidget {
+  const MarketCapInstrumentCard({
+    Key key,
+    @required this.instrument,
+    @required this.marketCapValue,
+    @required this.moved,
+    @required this.isDragged,
+  }) : super(key: key);
+
+  final SimpleGameDto instrument;
+  final double marketCapValue;
+  final bool moved;
+  final bool isDragged;
+
+  @override
+  Widget build(BuildContext context) {
+    final deps = DepsProvider.of(context);
+    final _apiService = deps.api;
+    final arrows = <Widget>[
+      Positioned(
+        top: -30,
+        right: _STOCK_CARD_WIDTH / 2 - 12,
+        child: AnimatedOpacity(
+            opacity: moved ? 0 : 1,
+            duration: Duration(milliseconds: 500),
+            child: Icon(Icons.arrow_upward, size: 24, color: Colors.black26)),
+      ),
+      Positioned(
+        bottom: -30,
+        right: _STOCK_CARD_WIDTH / 2 - 12,
+        child: AnimatedOpacity(
+          opacity: moved ? 0 : 1,
+          duration: Duration(milliseconds: 500),
+          child: Icon(
+            Icons.arrow_downward,
+            size: 24,
+            color: Colors.black26,
+          ),
+        ),
+      ),
+    ];
+    return Stack(
+      alignment: Alignment.centerRight,
+      overflow: Overflow.visible,
+      children: arrows +
+          [
+//                      Text('Lorem ipsum'),
+
+            Container(
+              width: isDragged ? _STOCK_CARD_WIDTH * _STOCK_CARD_DRAGGED_RATIO : _STOCK_CARD_WIDTH,
+              height: isDragged ? _STOCK_CARD_HEIGHT * _STOCK_CARD_DRAGGED_RATIO : _STOCK_CARD_HEIGHT,
+              child: Card(
+                elevation: isDragged ? 8 : 1,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  child: CachedNetworkImage(
+                    placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                    errorWidget: (context, url, error) => Center(
+                        child: Text(
+                      instrument.symbol ?? 'Error ${instrument.logo.id}',
+                      style: Theme.of(context).textTheme.body2,
+                    )),
+//                              width: 100,
+//                                  height: 50,
+                    imageUrl: _apiService.getImageUrl(instrument.logo),
+                  ),
+                ),
+              ),
+            ),
+            buildMarketCapLabel(context, marketCapValue),
+            buildLine(isDragged ? _STOCK_CARD_WIDTH * _STOCK_CARD_DRAGGED_RATIO : _STOCK_CARD_WIDTH),
+          ],
+    );
+  }
+
+  Widget buildMarketCapLabel(BuildContext context, double marketCap) {
     return Container(
       margin: EdgeInsets.only(left: MarketCapScalePainter.MARGIN_LEFT + MarketCapScalePainter.SCALE_WIDTH + 4.0),
       child: Align(
