@@ -377,52 +377,54 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 //    final _gameBloc = MarketCapSortingGameProvider.of(context);
     final deps = DepsProvider.of(context);
     return Container(
-        child: AlertDialog(
-      contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
-      content: SingleChildScrollView(
-        child: RepaintBoundary(
-          key: drawGlobalKey,
-          child: _createResultScreen(response, _gameSet, _gameBloc, context),
+      child: AlertDialog(
+        contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+        content: SingleChildScrollView(
+          child: RepaintBoundary(
+            key: drawGlobalKey,
+            child: _createResultScreen(response, _gameSet, _gameBloc, context),
+          ),
         ),
-      ),
-      actions: <Widget>[
-        FlatButton.icon(
-          icon: Icon(Icons.share),
-          label: Text('Share'),
-          onPressed: () {
-            AnalyticsUtils.instance.analytics.logShare(contentType: 'result_sorting', itemId: 'sort', method: 'share');
-            _capturePngWithPicture(context);
-          },
-        ),
-        FlatButton(
-          child:
-              Text(challengeBloc == null ? 'New Game' : challengeBloc.isCompleted ? 'Finish Challenge' : 'Next Turn'),
-          onPressed: () {
-            if (challengeBloc?.isCompleted ?? false) {
-              Navigator.of(context)
-                ..pop()
-                ..pushReplacement(
-                  AnalyticsPageRoute(
-                      name: '/challenge/details',
-                      builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
-                );
-            } else {
-              Navigator.of(context).pop();
-              _gameBloc.nextTurn();
+        actions: <Widget>[
+          FlatButton.icon(
+            icon: Icon(Icons.share),
+            label: Text('Share'),
+            onPressed: () {
+              AnalyticsUtils.instance.analytics
+                  .logShare(contentType: 'result_sorting', itemId: 'sort', method: 'share');
+              _capturePngWithPicture(context);
+            },
+          ),
+          FlatButton(
+            child:
+                Text(challengeBloc == null ? 'New Game' : challengeBloc.isCompleted ? 'Finish Challenge' : 'Next Turn'),
+            onPressed: () {
+              if (challengeBloc?.isCompleted ?? false) {
+                Navigator.of(context)
+                  ..pop()
+                  ..pushReplacement(
+                    AnalyticsPageRoute(
+                        name: '/challenge/details',
+                        builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
+                  );
+              } else {
+                Navigator.of(context).pop();
+                _gameBloc.nextTurn();
 
-              if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
-                deps.cloudMessaging.requiresAskPermission().then((askPermission) {
-                  if (askPermission) {
+                if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
+                  deps.cloudMessaging.requiresAskPermission().then((askPermission) {
+                    if (askPermission) {
 //                    showDialog(context: context, builder: (context) => AskForMessagingPermission());
-                    deps.cloudMessaging.requestPermission();
-                  }
-                }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
+                      deps.cloudMessaging.requestPermission();
+                    }
+                  }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
+                }
               }
-            }
-          },
-        )
-      ],
-    ));
+            },
+          )
+        ],
+      ),
+    );
   }
 
   _createResultScreen(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet,
