@@ -704,7 +704,9 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     instruments.sort((a, b) => _calculatePriority(a) - _calculatePriority(b));
     final gameBloc = widget.gameBloc;
     final simpleGameSet = widget.simpleGameSet;
-    return MarketCapPositionScale(
+    return CustomPaint(
+      foregroundPainter: MarketCapScalePainter(simpleGameSet.marketCapScaleMin, simpleGameSet.marketCapScaleMax),
+      child: MarketCapPositionScale(
       moved: moved,
       instruments: instruments,
       marketCapScaleMin: simpleGameSet.marketCapScaleMin,
@@ -722,6 +724,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
           gameBloc.updateMarketCapPosition(instrumentKey, marketCap);
         });
       },
+      ),
     );
   }
 
@@ -758,9 +761,7 @@ class MarketCapPositionScale extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      foregroundPainter: MarketCapScalePainter(marketCapScaleMin, marketCapScaleMax),
-      child: CustomMultiChildLayout(
+    return CustomMultiChildLayout(
         delegate: MarketPriceLayoutDelegate(marketCapPositions.entries, marketCapScaleMin, marketCapScaleMax),
         children: instruments.map((val) {
           var isDragged = draggedInstrument == val.instrumentKey;
@@ -798,7 +799,6 @@ class MarketCapPositionScale extends StatelessWidget {
                 ),
               ));
         }).toList(),
-      ),
     );
   }
 }
