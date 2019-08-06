@@ -11,7 +11,9 @@ import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:flutter/widgets.dart';
 
 class FirebaseConfig {
+  final schema = 'https';
   final domain = 'anlageapp.page.link';
+  String get uriPrefix => '$schema://$domain';
   final androidPackageName = 'app.anlage.game.marketcap';
   final iosPackageName = 'app.anlage.game.marketcap';
   final iosAppStoreId = '1446255350';
