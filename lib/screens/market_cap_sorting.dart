@@ -111,19 +111,20 @@ class OneDimensionalRange {
 }
 
 class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
-  Iterable<MapEntry<String, double>> marketCapPositions;
-  GameSimpleSetResponse simpleGameSet;
+  final Iterable<MapEntry<String, double>> marketCapPositions;
+  final double marketCapScaleMin;
+  final double marketCapScaleMax;
 
-  MarketPriceLayoutDelegate(this.marketCapPositions, this.simpleGameSet);
+  MarketPriceLayoutDelegate(this.marketCapPositions, this.marketCapScaleMin, this.marketCapScaleMax);
 
   @override
   void performLayout(Size size) {
-    var range = simpleGameSet.marketCapScaleMax - simpleGameSet.marketCapScaleMin;
+    var range = marketCapScaleMax - marketCapScaleMin;
     var widgetRange = size.height / range;
 
     var positions = List<Rect>();
     marketCapPositions.forEach((i) {
-      var marketCapPos = this.simpleGameSet.marketCapScaleMax - i.value;
+      var marketCapPos = marketCapScaleMax - i.value;
       var localPos = widgetRange * marketCapPos;
 //      final yRange = OneDimensionalRange(localPos, localPos + MarketCapSortingScaleState.STOCK_CARD_HEIGHT);
       int collisions = 0;
@@ -664,7 +665,6 @@ class MarketCapSortingScaleWidget extends StatefulWidget {
 
 class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   bool moved = false;
-  double totalRange;
   String draggedInstrument;
 
   @override
@@ -681,9 +681,6 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
   }
 
   void _precalculateRange() {
-    final simpleGameSet = widget.simpleGameSet;
-    final totalRange = simpleGameSet.marketCapScaleMax - simpleGameSet.marketCapScaleMin;
-    this.totalRange = totalRange;
     this.moved = false;
   }
 
@@ -706,58 +703,25 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     final instruments = widget.simpleGameSet.simpleGame.toList();
     instruments.sort((a, b) => _calculatePriority(a) - _calculatePriority(b));
     final gameBloc = widget.gameBloc;
-    return CustomPaint(
-      foregroundPainter:
-          MarketCapScalePainter(widget.simpleGameSet.marketCapScaleMin, widget.simpleGameSet.marketCapScaleMax),
-      child: CustomMultiChildLayout(
-        delegate: MarketPriceLayoutDelegate(gameBloc.marketCapPositions, widget.simpleGameSet),
-        children: instruments.map((val) {
-          var isDragged = draggedInstrument == val.instrumentKey;
-
-          return LayoutId(
-              id: val.instrumentKey,
-              child: GestureDetector(
-                onVerticalDragStart: (event) {
-                  _logger.fine('started vertical dragging.');
-                  setState(() {
-                    draggedInstrument = val.instrumentKey;
-                  });
-                },
-                onVerticalDragDown: (event) {
-                  _logger.fine('vertical drag down');
-                },
-                onVerticalDragCancel: () {
-                  _logger.fine('vertical drag cancel.');
-                  setState(() {
-                    draggedInstrument = null;
-                  });
-                },
-                onVerticalDragEnd: (event) {
-                  _logger.fine('vertical drag end.');
-                  setState(() {
-                    draggedInstrument = null;
-                  });
-                },
-                onVerticalDragUpdate: (event) {
-//                      _logger.fine('vertical drag update');
-                  setState(() {
-                    RenderBox renderBox = context.findRenderObject();
-                    final local = renderBox.globalToLocal(event.globalPosition);
-//                        ;
-                    moved = true;
-                    gameBloc.updateMarketCapPosition(val.instrumentKey,
-                        this.widget.simpleGameSet.marketCapScaleMax - this.totalRange / context.size.height * local.dy);
-                  });
-                },
-                child: MarketCapInstrumentCard(
-                  instrument: val,
-                  marketCapValue: gameBloc.marketCapPositions.firstWhere((pos) => pos.key == val.instrumentKey).value,
-                  moved: moved,
-                  isDragged: isDragged,
-                ),
-              ));
-        }).toList(),
-      ),
+    final simpleGameSet = widget.simpleGameSet;
+    return MarketCapPositionScale(
+      moved: moved,
+      instruments: instruments,
+      marketCapScaleMin: simpleGameSet.marketCapScaleMin,
+      marketCapScaleMax: simpleGameSet.marketCapScaleMax,
+      marketCapPositions: Map.fromEntries(gameBloc.marketCapPositions),
+      draggedInstrument: draggedInstrument,
+      changedDraggedInstrument: (instrumentKey) {
+        setState(() {
+          draggedInstrument = instrumentKey;
+        });
+      },
+      draggedInstrumentToMarketCap: (instrumentKey, marketCap) {
+        setState(() {
+          moved = true;
+          gameBloc.updateMarketCapPosition(instrumentKey, marketCap);
+        });
+      },
     );
   }
 
@@ -767,6 +731,113 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> {
     BoxConstraints constraints = renderBox?.constraints;
     double maxWidth = constraints?.maxWidth ?? 0.0;
     return maxWidth;
+  }
+}
+
+class MarketCapPositionScale extends StatelessWidget {
+  const MarketCapPositionScale({
+    Key key,
+    @required this.moved,
+    @required this.instruments,
+    @required this.marketCapScaleMin,
+    @required this.marketCapScaleMax,
+    @required this.marketCapPositions,
+    @required this.draggedInstrument,
+    @required this.changedDraggedInstrument,
+    @required this.draggedInstrumentToMarketCap,
+  }) : super(key: key);
+
+  final bool moved;
+  final String draggedInstrument;
+  final List<SimpleGameDto> instruments;
+  final Map<String, double> marketCapPositions;
+  final double marketCapScaleMin;
+  final double marketCapScaleMax;
+  final void Function(String instrumentKey) changedDraggedInstrument;
+  final void Function(String instrumentKey, double newMarketValue) draggedInstrumentToMarketCap;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: MarketCapScalePainter(marketCapScaleMin, marketCapScaleMax),
+      child: CustomMultiChildLayout(
+        delegate: MarketPriceLayoutDelegate(marketCapPositions.entries, marketCapScaleMin, marketCapScaleMax),
+        children: instruments.map((val) {
+          var isDragged = draggedInstrument == val.instrumentKey;
+
+          return LayoutId(
+              id: val.instrumentKey,
+              child: GestureDetector(
+                onVerticalDragStart: (event) {
+                  _logger.fine('started vertical dragging.');
+                  changedDraggedInstrument(val.instrumentKey);
+                },
+                onVerticalDragDown: (event) {
+                  _logger.fine('vertical drag down');
+                },
+                onVerticalDragCancel: () {
+                  _logger.fine('vertical drag cancel.');
+                  changedDraggedInstrument(null);
+                },
+                onVerticalDragEnd: (event) {
+                  _logger.fine('vertical drag end.');
+                  changedDraggedInstrument(null);
+                },
+                onVerticalDragUpdate: (event) {
+                  RenderBox renderBox = context.findRenderObject();
+                  final local = renderBox.globalToLocal(event.globalPosition);
+                  final totalRange = marketCapScaleMax - marketCapScaleMin;
+                  draggedInstrumentToMarketCap(
+                      val.instrumentKey, marketCapScaleMax - totalRange / context.size.height * local.dy);
+                },
+                child: MarketCapInstrumentCard(
+                  instrument: val,
+                  marketCapValue: marketCapPositions[val.instrumentKey],
+                  moved: moved,
+                  isDragged: isDragged,
+                ),
+              ));
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class MarketCapAnimationTween extends StatefulWidget {
+  const MarketCapAnimationTween({Key key, @required this.startMarketCap, this.endMarketCap, @required this.builder})
+      : assert(startMarketCap != null),
+        assert(builder != null),
+        super(key: key);
+
+  final Map<String, double> startMarketCap;
+  final Map<String, double> endMarketCap;
+  final Widget Function(BuildContext context, Map<String, double> marketCap) builder;
+
+  @override
+  _MarketCapAnimationTweenState createState() => _MarketCapAnimationTweenState();
+}
+
+class _MarketCapAnimationTweenState extends State<MarketCapAnimationTween> with SingleTickerProviderStateMixin {
+  Map<String, Tween<double>> _tweenMarketCap;
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.endMarketCap != null) {
+      _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this);
+      _tweenMarketCap = Map.fromEntries(widget.startMarketCap.keys
+          .map((key) => MapEntry(key, Tween(begin: widget.startMarketCap[key], end: widget.endMarketCap[key]))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_controller == null || _tweenMarketCap == null) {
+      return widget.builder(context, widget.startMarketCap);
+    }
+    final marketCaps = _tweenMarketCap.map((entry, tween) => MapEntry(entry, tween.evaluate(_controller)));
+    return widget.builder(context, marketCaps);
   }
 }
 
