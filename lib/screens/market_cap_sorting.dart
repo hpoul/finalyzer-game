@@ -3,11 +3,13 @@ import 'dart:ui' as ui;
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/company_details.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting_result.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
@@ -321,9 +323,9 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                     Text(
-                      widget.gameBloc.maxTurns == null
+                      verification == null || isVerifying
                           ? 'Sort the companies based on their Market Cap.'
-                          : 'Sort the companies based on their Market Cap.',
+                          : 'Hint: Tap on Company Logo for more information!',
                       style: Theme.of(context).textTheme.body2,
                     ),
                   ] +
@@ -416,6 +418,15 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
   bool moved = false;
   String draggedInstrument;
 
+  static const List<String> emoji = ['🤔', '🤷️', '😎️', '😎️', '🎉️'];
+  static const List<String> correctLabels = [
+    'None were correct',
+    'Nice try!',
+    'Almost!',
+    'Almost!',
+    'WOW! All Correct!',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -456,6 +467,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
     instruments.sort((a, b) => _calculatePriority(a) - _calculatePriority(b));
     final gameBloc = widget.gameBloc;
     final simpleGameSet = widget.simpleGameSet;
+    final finishAnimation = widget.verificationAnimation?.drive(_slotAnimation(9, 10));
     return CustomPaint(
       foregroundPainter: MarketCapScalePainter(simpleGameSet.marketCapScaleMin, simpleGameSet.marketCapScaleMax),
       child: Stack(
@@ -495,57 +507,96 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
               },
             ),
           ),
-          if (widget.verification != null)
-            MarketCapAnimationTween(
-              animation: _slotAnimation(1, 10, slotSpan: 9.0).animate(widget.verificationAnimation),
-              startMarketCap: Map.fromEntries(gameBloc.marketCapPositions),
-              endMarketCap: widget.verification?.response?.actual
-                  ?.map((guessDto) => MapEntry(guessDto.instrumentKey, guessDto.marketCap)),
-              builder: (context, marketCapPositions) => MarketCapPositionScale(
-                moved: true,
-                instruments: instruments
-                    .map(
-                      (instrument) => MarketCapPositionScaleChild(
-                        instrumentKey: instrument.instrumentKey,
-                        builder: (context, marketCapValue, isDragged) {
-                          final isCorrect =
-                              widget.verification.guessedCorrectInstrumentKeys.contains(instrument.instrumentKey);
-                          final animation = marketCapPositions[instrument.instrumentKey];
-                          final colorTween = ColorTween(begin: Colors.grey, end: isCorrect ? Colors.green : Colors.red)
-                              .animate(animation.subAnimation);
-                          return Padding(
-                            padding: EdgeInsets.only(
-                              right: animation.subAnimation
-                                  .drive(_slotAnimation(0, 4))
-                                  .drive(Tween(begin: 0.0, end: 32.0))
-                                  .value,
+          ...(widget.verification == null
+              ? []
+              : [
+                  AnimatedBuilder(
+                    animation: finishAnimation,
+                    builder: (BuildContext context, Widget child) =>
+                        Opacity(opacity: finishAnimation.value, child: child),
+                    child: Center(
+                        child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          emoji[widget.verification.response.correctCount] ?? '',
+                          textScaleFactor: 10,
+                        ),
+                        Card(
+                          elevation: 2,
+                          child: Container(
+//                            decoration:
+//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
+                            padding: EdgeInsets.all(8),
+                            child: Text(
+                              correctLabels[widget.verification.response.correctCount],
+                              textScaleFactor: 2,
                             ),
-                            child: MarketCapInstrumentCard(
-                              instrument: instrument,
-                              marketCapValue: marketCapValue,
-                              moved: null,
-                              isDragged: isDragged,
-                              lineColor: colorTween.value,
-                              circleReplacement: animation.subAnimation.value < 1
-                                  ? null
-                                  : Container(
-                                      alignment: Alignment.topCenter,
-                                      child: isCorrect
-                                          ? Icon(Icons.check_circle, color: colorTween.value)
-                                          : Icon(Icons.swap_vertical_circle, color: colorTween.value),
-                                    ),
+                          ),
+                        ),
+                      ],
+                    )),
+                  ),
+                  MarketCapAnimationTween(
+                    animation: _slotAnimation(1, 10, slotSpan: 9.0).animate(widget.verificationAnimation),
+                    startMarketCap: Map.fromEntries(gameBloc.marketCapPositions),
+                    endMarketCap: widget.verification?.response?.actual
+                        ?.map((guessDto) => MapEntry(guessDto.instrumentKey, guessDto.marketCap)),
+                    builder: (context, marketCapPositions) => MarketCapPositionScale(
+                      moved: true,
+                      instruments: instruments
+                          .map(
+                            (instrument) => MarketCapPositionScaleChild(
+                              instrumentKey: instrument.instrumentKey,
+                              builder: (context, marketCapValue, isDragged) {
+                                final isCorrect =
+                                    widget.verification.guessedCorrectInstrumentKeys.contains(instrument.instrumentKey);
+                                final animation = marketCapPositions[instrument.instrumentKey];
+                                final colorTween =
+                                    ColorTween(begin: Colors.grey, end: isCorrect ? Colors.green : Colors.red)
+                                        .animate(animation.subAnimation);
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    right: animation.subAnimation
+                                        .drive(_slotAnimation(0, 4))
+                                        .drive(Tween(begin: 0.0, end: 32.0))
+                                        .value,
+                                  ),
+                                  child: MarketCapInstrumentCard(
+                                    instrument: instrument,
+                                    marketCapValue: marketCapValue,
+                                    moved: null,
+                                    isDragged: isDragged,
+                                    lineColor: colorTween.value,
+                                    circleReplacement: animation.subAnimation.value < 1
+                                        ? null
+                                        : Container(
+                                            alignment: Alignment.topCenter,
+                                            child: isCorrect
+                                                ? Icon(Icons.check_circle, color: colorTween.value)
+                                                : Icon(Icons.swap_vertical_circle, color: colorTween.value),
+                                          ),
+                                    onTap: () {
+                                      final details = widget.verification.response.details
+                                          .firstWhere((details) => details.instrumentKey == instrument.instrumentKey);
+                                      Navigator.of(context).push(AnalyticsPageRoute(
+                                        name: '/company/details',
+                                        builder: (context) => CompanyDetailsScreen(details, instrument.logo),
+                                      ));
+                                    },
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                    )
-                    .toList(),
-                marketCapScaleMin: simpleGameSet.marketCapScaleMin,
-                marketCapScaleMax: simpleGameSet.marketCapScaleMax,
-                marketCapPositions: marketCapPositions.map((key, value) => MapEntry(
-                    key, value.subAnimation.drive(_slotAnimation(1, 4, slotSpan: 3)).drive(value.marketCap).value)),
-              ),
-            ),
+                          )
+                          .toList(),
+                      marketCapScaleMin: simpleGameSet.marketCapScaleMin,
+                      marketCapScaleMax: simpleGameSet.marketCapScaleMax,
+                      marketCapPositions: marketCapPositions.map((key, value) => MapEntry(key,
+                          value.subAnimation.drive(_slotAnimation(1, 4, slotSpan: 3)).drive(value.marketCap).value)),
+                    ),
+                  ),
+                ]),
         ],
       ),
     );
@@ -754,6 +805,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
     @required this.isDragged,
     this.circleReplacement,
     this.lineColor = FinalyzerTheme.colorSecondary,
+    this.onTap,
   }) : super(key: key);
 
   final SimpleGameDto instrument;
@@ -762,6 +814,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
   final bool isDragged;
   final Color lineColor;
   final Widget circleReplacement;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -805,18 +858,21 @@ class MarketCapInstrumentCard extends StatelessWidget {
               child: Card(
                 elevation: isDragged ? 8 : 1,
 //                color: Colors.green,
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  child: CachedNetworkImage(
-                    placeholder: (context, url) => Center(child: LinearProgressIndicator()),
-                    errorWidget: (context, url, error) => Center(
-                        child: Text(
-                      instrument.symbol ?? 'Error ${instrument.logo.id}',
-                      style: Theme.of(context).textTheme.body2,
-                    )),
+                child: InkWell(
+                  onTap: onTap,
+                  child: Container(
+                    padding: EdgeInsets.all(8),
+                    child: CachedNetworkImage(
+                      placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                      errorWidget: (context, url, error) => Center(
+                          child: Text(
+                        instrument.symbol ?? 'Error ${instrument.logo.id}',
+                        style: Theme.of(context).textTheme.body2,
+                      )),
 //                              width: 100,
 //                                  height: 50,
-                    imageUrl: _apiService.getImageUrl(instrument.logo),
+                      imageUrl: _apiService.getImageUrl(instrument.logo),
+                    ),
                   ),
                 ),
               ),

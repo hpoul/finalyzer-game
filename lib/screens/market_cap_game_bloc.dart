@@ -24,7 +24,8 @@ class MarketCapSortingGameBloc {
   final int currentTurn = null;
 
   MarketCapSortingGameBloc(this._apiService) {
-    _simpleGameSetFetcher = BehaviorSubject<GameSimpleSetResponse>(onListen: () {
+    _logger.finer('New MarketCapSortingGameBloc created. $runtimeType');
+    _simpleGameSetFetcher = BehaviorSubject<GameSimpleSetResponse>.seeded(null, onListen: () {
       _logger.fine('_simpleGameSetFetcher is being listened to.');
 //      fetchGame();
     });
