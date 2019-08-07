@@ -73,26 +73,36 @@ class MarketCapSortingGameBloc {
 
   void updateMarketCapPosition(String instrumentKey, double marketCap) {
     marketCapPositions = (marketCapPositions.where((e) => e.key != instrumentKey).toList(growable: true)
-          ..add(MapEntry(instrumentKey, trimToRange(
-              min: _currentSimpleGameSet.marketCapScaleMin,
-              max: _currentSimpleGameSet.marketCapScaleMax,
-              value: marketCap))))
+          ..add(MapEntry(
+              instrumentKey,
+              trimToRange(
+                  min: _currentSimpleGameSet.marketCapScaleMin,
+                  max: _currentSimpleGameSet.marketCapScaleMax,
+                  value: marketCap))))
         .toList();
   }
 
-  Future<GameSimpleSetVerifyResponse> verifyMarketCaps() {
-    return _apiService.verifySimpleGameSet(
-        _currentSimpleGameSet.gameTurnId,
-        marketCapPositions
-            .map((pos) => GameSimpleSetGuessDto(pos.key, pos.value))
-            .toList()
-          ..sort((a, b) => -a.marketCap.compareTo(b.marketCap) )
-    );
+  Future<GameSimpleSetVerifyResponseWrapper> verifyMarketCaps() {
+    final guess = marketCapPositions.map((pos) => GameSimpleSetGuessDto(pos.key, pos.value)).toList()
+      ..sort((a, b) => -a.marketCap.compareTo(b.marketCap));
+    return _apiService.verifySimpleGameSet(_currentSimpleGameSet.gameTurnId, guess).then((response) {
+      final guessMap = Map.from(guess.asMap());
+      final actualMap = response.actual.toList()..sort((a, b) => -a.marketCap.compareTo(b.marketCap));
+      guessMap.removeWhere((key, value) => actualMap[key].instrumentKey != value.instrumentKey);
+      return GameSimpleSetVerifyResponseWrapper(
+          response: response,
+          guessedCorrectInstrumentKeys: guessMap.values.map<String>((i) => i.instrumentKey).toSet());
+    });
   }
 }
 
-class MarketCapSortingChallengeBloc extends MarketCapSortingGameBloc {
+class GameSimpleSetVerifyResponseWrapper {
+  GameSimpleSetVerifyResponseWrapper({this.response, this.guessedCorrectInstrumentKeys});
+  final GameSimpleSetVerifyResponse response;
+  final Set<String> guessedCorrectInstrumentKeys;
+}
 
+class MarketCapSortingChallengeBloc extends MarketCapSortingGameBloc {
   GameChallengeDto challenge;
   @override
   int currentTurn = -1;
@@ -103,7 +113,6 @@ class MarketCapSortingChallengeBloc extends MarketCapSortingGameBloc {
   bool get isCompleted => currentTurn + 1 == maxTurns;
 
   MarketCapSortingChallengeBloc(ApiService apiService, this.challenge) : super(apiService);
-
 
   @override
   void nextTurn() {
