@@ -43,6 +43,7 @@ jobs:
       - sudo apt-get install -y gnupg2
     env:
       - TARGET_PLATFORM=android
+      - GPG=gpg2
     script:
       - "./_tools/ci-test.sh coverage"
 before_install:
