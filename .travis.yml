@@ -48,3 +48,13 @@ install:
 script:
 - cat .travis_sec/blackbox_key | $GPG -v --import
 - "./_tools/ci-release.sh ${TARGET_PLATFORM}"
+
+jobs:
+  include:
+    - stage: mytest
+      script:
+      - fail=false
+      - flutter test --coverage || fail=true
+      - echo "fail=$fail"
+      after_success:
+      - source _tools/secrets/secrets.env && export CODECOV_TOKEN && bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
