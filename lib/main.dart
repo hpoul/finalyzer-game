@@ -14,7 +14,6 @@ import 'package:anlage_app_game/utils/logging.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 
@@ -24,6 +23,7 @@ Future<void> _setupCrashlytics() async {
   bool isInDebugMode = false;
 
   FlutterError.onError = (FlutterErrorDetails details) {
+    _logger.severe('Unhandled FlutterError. ${details.toString()}', details.exception, details.stack);
     if (isInDebugMode) {
       // In development mode simply print to console.
       FlutterError.dumpErrorToConsole(details);
@@ -34,8 +34,6 @@ Future<void> _setupCrashlytics() async {
       Zone.current.handleUncaughtError(details.exception, details.stack);
     }
   };
-
-  await FlutterCrashlytics().initialize();
 }
 
 Future<void> startApp(Env env) async {
@@ -44,13 +42,11 @@ Future<void> startApp(Env env) async {
   await _setupCrashlytics();
   _logger.fine('Logging was set up.');
 
-  await runZoned<Future<Null>>(() async {
+  await runZoned<Future<void>>(() async {
     _logger.fine('calling runApp.');
     runApp(MyApp(env));
   }, onError: (error, stackTrace) async {
-    // Whenever an error occurs, call the `reportCrash` function. This will send
-    // Dart errors to our dev console or Crashlytics depending on the environment.
-    await FlutterCrashlytics().reportCrash(error, stackTrace, forceCrash: false);
+    _logger.shout('Error during main run loop of application', error, stackTrace);
   });
 }
 
@@ -83,7 +79,7 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'MarketCap Game',
           navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
+//          debugShowCheckedModeBanner: false,
           theme: buildFinalyzerTheme(),
           navigatorObservers: [observer],
           home: MarketCapSorting(),
