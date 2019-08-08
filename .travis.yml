@@ -35,12 +35,14 @@ jobs:
     env:
     - TARGET_PLATFORM=android
     - GPG=gpg2
-  - stage: mytest
+  - stage: test
     os: linux
     language: android
     dist: trusty
     before_install:
       - sudo apt-get install -y gnupg2
+    env:
+      - TARGET_PLATFORM=android
     script:
       - fail=false
       - flutter test --coverage || fail=true
