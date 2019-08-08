@@ -44,11 +44,7 @@ jobs:
     env:
       - TARGET_PLATFORM=android
     script:
-      - fail=false
-      - flutter test --coverage || fail=true
-      - echo "fail=$fail"
-    after_success:
-      - source _tools/secrets/secrets.env && export CODECOV_TOKEN && bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
+      - "./_tools/ci-test.sh coverage"
 before_install:
 - which gpg
 - which gpg2 || echo "gpg2 not found."
