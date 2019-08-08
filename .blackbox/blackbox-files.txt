@@ -4,6 +4,7 @@ _tools/secrets/fastlane_match_certificates_id_rsa
 _tools/secrets/fastlane_match_password
 _tools/secrets/gradle_home/anlage-app-game.jks
 _tools/secrets/gradle_home/gradle.properties
+_tools/secrets/secrets.env
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
 lib/env/secrets.dart
