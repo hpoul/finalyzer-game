@@ -3,7 +3,7 @@ addons:
 #env:
 #  global:
 #    - secure: IHP2PqoriP4Rd3+j/G9kSDmcLQ5zAFzCrh+lacfl5eyTEm+dDR9f99bp8kIsyc6i6+qP8ffQKNV3O5CNjJcbfcP/pCWskQPjedSJFqeQRKPb1NzlNknXnjkhC/TrV/boTK0b749bsU87Di31NcIVDKymQMo4FBtm20PQIALJWCiAUvIl3Rpl7sHWMAdnz4EBPSSCr0R3wbOUNMe3jZ0UGm4k4NdONp5jaN4CeGAvtLHD5AG0/6ZjZ2WrmO3vALFzncxtiDHWlX+bwbdGlSNBGdRRrTLjbSp4MYGvz18h5W3wDL/S0fBdnEeNNkyGdc5ATWZc92M3VOV+4UfFTVTixX7trvpulvWx1s1/PXDrSU5vECeAtHS/3MzDPxgzsBk9LgT+sTwqRY2o6a/JLXr5fLFNKWi7ltcNL5O9LkyzqOtzR8XxWEnWGpkcOitqal/lSxhDzi4Lk2Cd/h3OSIyO7TeAGhNd7IeLeND9mhVllyXtkIRXnUIIMBaXZdOIB9i3RrgcnLNlR+yde86PnkHEKoo4Wxny5fP5QUjxT+fD6DCYNdgIWA85NAFEWE+kt0GT5TGQ5sqwFpBS+leZ3r/6Rqn28Rwk/s4WofJJRikzgRP1qtorkLovC8egTYFaAG1tdqG0cSv6rEHGeVOkUi1aVNIorbDpZ/8OOFueXvd8FI8=
-matrix:
+jobs:
   include:
   - os: osx
     osx_image: xcode11
@@ -35,6 +35,18 @@ matrix:
     env:
     - TARGET_PLATFORM=android
     - GPG=gpg2
+  - stage: mytest
+    os: linux
+    language: android
+    dist: trusty
+    before_install:
+      - sudo apt-get install -y gnupg2
+    script:
+      - fail=false
+      - flutter test --coverage || fail=true
+      - echo "fail=$fail"
+    after_success:
+      - source _tools/secrets/secrets.env && export CODECOV_TOKEN && bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
 before_install:
 - which gpg
 - which gpg2 || echo "gpg2 not found."
@@ -48,13 +60,3 @@ install:
 script:
 - cat .travis_sec/blackbox_key | $GPG -v --import
 - "./_tools/ci-release.sh ${TARGET_PLATFORM}"
-
-jobs:
-  include:
-    - stage: mytest
-      script:
-      - fail=false
-      - flutter test --coverage || fail=true
-      - echo "fail=$fail"
-      after_success:
-      - source _tools/secrets/secrets.env && export CODECOV_TOKEN && bash <(curl -s https://codecov.io/bash) -f coverage/lcov.info
