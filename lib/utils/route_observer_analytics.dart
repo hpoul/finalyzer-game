@@ -23,7 +23,7 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
 
   final AnalyticsUtils analytics;
 
-  _extractScreenName(Route<dynamic> route) =>
+  String _extractScreenName(Route<dynamic> route) =>
       route.settings.name ?? (route is AnalyticsPageRoute ? route.name : null) ?? route.runtimeType.toString();
 
   void _sendScreenView(Route<dynamic> route) {
@@ -36,7 +36,7 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
     }
   }
 
-  shouldTrackRouteType(Route route) => route is PageRoute || route is PopupRoute;
+  bool shouldTrackRouteType(Route route) => route is PageRoute || route is PopupRoute;
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {

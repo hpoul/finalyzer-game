@@ -141,25 +141,25 @@ class _ChallengeListState extends State<ChallengeList> {
                             if (challenge.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
                                 challenge.inviteToken != null) {
                               Navigator.of(context)
-                                  .push(
-                                AnalyticsPageRoute(
+                                  .push<dynamic>(
+                                AnalyticsPageRoute<dynamic>(
                                     name: '/challenge/invite/info',
                                     builder: (context) => ChallengeInviteInfo(
                                           inviteToken: challenge.inviteToken,
                                         )),
                               )
-                                  .then((ret) {
+                                  .then((dynamic ret) {
                                 _refresh();
                               });
                             } else {
-                              Navigator.of(context).push(AnalyticsPageRoute(
+                              Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
                                   name: '/challenge/details',
                                   builder: (context) => ChallengeDetails(challenge.challengeId)));
                             }
                           },
                           onLongPress: () {
                             // TODO for debugging purposes.. but we should remove this :)
-                            showModalBottomSheet(
+                            showModalBottomSheet<dynamic>(
                                 context: context, builder: (context) => ChallengeListActionBottomSheet(challenge));
                           },
                         ),
@@ -222,7 +222,7 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
             onTap: () {
               apiChallenge.startChallenge(this.challengeInfo.challengeId).then((challenge) {
                 final bloc = MarketCapSortingChallengeBloc(deps.api, challenge);
-                Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                     name: '/challenge/game',
                     builder: (context) => Challenge(
                           gameBloc: bloc,
@@ -234,7 +234,7 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
             leading: Icon(Icons.details),
             title: Text('Details/Results'),
             onTap: () {
-              Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+              Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                   name: '/challenge/details', builder: (context) => ChallengeDetails(challengeInfo.challengeId)));
             },
           )
@@ -291,7 +291,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                       .startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve)
                       .then((challenge) {
                     final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
-                    Navigator.of(context).push(AnalyticsPageRoute(
+                    Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
                         name: '/challenge/game',
                         builder: (context) => Challenge(
                               gameBloc: bloc,

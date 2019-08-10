@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/api/preferences.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
-import 'package:anlage_app_game/utils/stream_subscriber_mixin.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_async_utils/flutter_async_utils.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 import 'package:rxdart/rxdart.dart';
 
 final _logger = Logger("app.anlage.game.utils.firebase_messaging");
 
-class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
+class CloudMessagingUtil with StreamSubscriberBase {
   final PreferenceStore _prefs;
 
   CloudMessagingUtil(this._prefs);
@@ -44,13 +44,13 @@ class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
         _handleMessage(message);
       },
     );
-    listen(_firebaseMessaging.onTokenRefresh, (newToken) {
+    handle(_firebaseMessaging.onTokenRefresh.listen((newToken) {
       _logger.warning('We have received a new token. Need to change it to $newToken');
       _onTokenRefresh.add(newToken);
-    });
-    listen(_firebaseMessaging.onIosSettingsRegistered, (event) {
+    }));
+    handle(_firebaseMessaging.onIosSettingsRegistered.listen((event) {
       _logger.info('User updated iOS Settings ${event}');
-    });
+    }));
     _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.WeeklyChallenges));
     _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.All));
     return Future.value(null);
@@ -71,7 +71,7 @@ class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
 //        && !await _prefs.getValue(Preferences.askedForPushPermission);
   }
 
-  requestPermission() {
+  void requestPermission() {
     AnalyticsUtils.instance.analytics.logEvent(name: "fcm_request_permission");
     _firebaseMessaging.requestNotificationPermissions(IosNotificationSettings(
       alert: true,
@@ -85,7 +85,7 @@ class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
   void _handleMessage(Map<String, dynamic> message) {
     if (message.containsKey('d')) {
       try {
-        final messageMap = jsonDecode(message['d']);
+        final messageMap = jsonDecode(message['d'] as String) as Map<String, dynamic>;
         final notification = GameNotification.fromJson(messageMap);
         _onNotification.add(notification);
       } catch (error, stackTrace) {

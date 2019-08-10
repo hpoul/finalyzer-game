@@ -55,7 +55,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
     final apiChallenge = deps.apiChallenge;
     return Form(
       key: _formKey,
-      child: FutureBuilder(
+      child: FutureBuilder<dynamic>(
         future: _createFuture,
         builder: (context, snapshot) {
           _logger.finer('snapshot: $snapshot');
@@ -99,9 +99,9 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
                             _logger.fine('Created url: $dynamicLink');
                             AnalyticsUtils.instance.analytics.logEvent(name: 'invite_create');
                             return Share.share('Beat me by guessing Market Caps! $dynamicLink');
-                          }).catchError((error, stackTrace) {
+                          }).catchError((dynamic error, StackTrace stackTrace) {
                             _logger.warning('Error producing challenge invite.', error, stackTrace);
-                            return Future.error(error, stackTrace);
+                            return Future<dynamic>.error(error, stackTrace);
                           });
                         });
                       },
@@ -117,7 +117,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
     final params = DynamicLinkParameters(
         uriPrefix: deps.firebaseConfig.uriPrefix,
         link: Uri.parse('https://anlage.app${ChallengeInvite.URL_PATH}')
-            .replace(queryParameters: {ChallengeInvite.URL_QUERY_PARAM_TOKEN: value.inviteToken}),
+            .replace(queryParameters: <String, dynamic>{ChallengeInvite.URL_QUERY_PARAM_TOKEN: value.inviteToken}),
         androidParameters: AndroidParameters(
           packageName: deps.firebaseConfig.androidPackageName,
         ),
@@ -229,7 +229,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                               setState(() {
                                 _acceptChallengeFuture =
                                     _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
-                                  Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                                  Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                                       name: '/challenge/game',
                                       builder: (context) => Challenge(
                                             gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
@@ -252,9 +252,10 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
 
   void _requestInfo() {
     _logger.finer('Requesting invite info.');
-    _inviteInfoFuture = _apiChallenge.getChallengeInviteInfo(widget.inviteToken).catchError((error, stackTrace) {
+    _inviteInfoFuture =
+        _apiChallenge.getChallengeInviteInfo(widget.inviteToken).catchError((dynamic error, StackTrace stackTrace) {
       _logger.warning('Error while requesting info', error, stackTrace);
-      return Future.error(error, stackTrace);
+      return Future<dynamic>.error(error, stackTrace);
     });
   }
 }

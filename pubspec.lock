@@ -260,6 +260,15 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_async_utils:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: c0205050e93a5a31aa0843a3f25773e09c118261
+      resolved-ref: c0205050e93a5a31aa0843a3f25773e09c118261
+      url: "https://github.com/hpoul/flutter_async_utils.git"
+    source: git
+    version: "0.0.1"
   flutter_cache_manager:
     dependency: transitive
     description:

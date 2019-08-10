@@ -19,22 +19,23 @@ void setupLogging() {
       print(rec.stackTrace);
       if (rec.level >= Level.INFO) {
         AnalyticsUtils.instance.analytics
-            .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': rec.stackTrace});
+            .logEvent(name: 'logerror', parameters: <String, dynamic>{'message': rec.message, 'stack': rec.stackTrace});
 //        FlutterCrashlytics().logException(rec.error, rec.stackTrace);
       }
     } else if (rec.level >= Level.SEVERE) {
-      AnalyticsUtils.instance.analytics
-          .logEvent(name: 'logerror', parameters: {'message': rec.message, 'stack': StackTrace.current.toString()});
+      AnalyticsUtils.instance.analytics.logEvent(
+          name: 'logerror',
+          parameters: <String, dynamic>{'message': rec.message, 'stack': StackTrace.current.toString()});
 //      FlutterCrashlytics().logException(Exception('SEVERE LOG ${rec.message}'), StackTrace.current);
     }
   });
 }
 
 class LoggingUtil {
-  static Function futureCatchErrorLog(message) {
-    return (error, stackTrace) {
+  static Function futureCatchErrorLog(String message) {
+    return (dynamic error, StackTrace stackTrace) {
       _logger.warning("Error during future: ${message}", error, stackTrace);
-      return Future.error(error, stackTrace);
+      return Future<dynamic>.error(error, stackTrace);
     };
   }
 }

@@ -45,7 +45,7 @@ Future<void> startApp(Env env) async {
   await runZoned<Future<void>>(() async {
     _logger.fine('calling runApp.');
     runApp(MyApp(env));
-  }, onError: (error, stackTrace) async {
+  }, onError: (dynamic error, StackTrace stackTrace) async {
     _logger.shout('Error during main run loop of application', error, stackTrace);
   });
 }
@@ -137,14 +137,14 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
       switch (notification.type) {
         case GameNotificationType.ChallengeWeekly:
         case GameNotificationType.ChallengeInvitation:
-          widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+          widget.navigatorKey.currentState.push<dynamic>(AnalyticsPageRoute<dynamic>(
             name: '/challenge/invite/info',
             builder: (context) => ChallengeInviteInfo(inviteToken: notification.inviteToken),
           ));
           break;
         case GameNotificationType.ChallengeInvitationAccepted:
         case GameNotificationType.ChallengeParticipantFinished:
-          widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+          widget.navigatorKey.currentState.push<dynamic>(AnalyticsPageRoute<dynamic>(
             name: '/challenge/details',
             builder: (context) => ChallengeDetails(notification.challengeId),
           ));
@@ -177,7 +177,7 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   void _retrieveDynamicLinkBackgroundWithLogging({int count = 0}) {
     _retrieveDynamicLink(count).then((val) {
       _logger.fine('retrieving dynamic link successful.');
-    }).catchError((error, stackTrace) {
+    }).catchError((dynamic error, StackTrace stackTrace) {
       _logger.severe('Error while retrieving dynamic link.', error, stackTrace);
     });
   }
@@ -199,10 +199,10 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
         var count = 0;
         while (widget.navigatorKey.currentState == null && count < 10) {
           _logger.fine('currentStat is null. $count');
-          await Future.delayed(Duration(milliseconds: 100 * count));
+          await Future<dynamic>.delayed(Duration(milliseconds: 100 * count));
           count++;
         }
-        await widget.navigatorKey.currentState.push(AnalyticsPageRoute(
+        await widget.navigatorKey.currentState.push<dynamic>(AnalyticsPageRoute<dynamic>(
           name: '/challenge/invite/info',
           builder: (context) => ChallengeInviteInfo(
             inviteToken: deepLink.queryParameters[ChallengeInvite.URL_QUERY_PARAM_TOKEN],
