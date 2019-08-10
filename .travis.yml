@@ -35,17 +35,17 @@ jobs:
     env:
     - TARGET_PLATFORM=android
     - GPG=gpg2
-  - stage: test
-    os: linux
-    language: android
-    dist: trusty
-    before_install:
-      - sudo apt-get install -y gnupg2
-    env:
-      - TARGET_PLATFORM=android
-      - GPG=gpg2
-    script:
-      - "./_tools/ci-test.sh coverage"
+#  - stage: test
+#    os: linux
+#    language: android
+#    dist: trusty
+#    before_install:
+#      - sudo apt-get install -y gnupg2
+#    env:
+#      - TARGET_PLATFORM=android
+#      - GPG=gpg2
+#    script:
+#      - "./_tools/ci-test.sh coverage"
 before_install:
 - which gpg
 - which gpg2 || echo "gpg2 not found."
