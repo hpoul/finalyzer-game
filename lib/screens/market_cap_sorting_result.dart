@@ -60,8 +60,8 @@ class MarketCapSortingResultWidget extends StatelessWidget {
               if (challengeBloc?.isCompleted ?? false) {
                 Navigator.of(context)
                   ..pop()
-                  ..pushReplacement(
-                    AnalyticsPageRoute(
+                  ..pushReplacement<dynamic, dynamic>(
+                    AnalyticsPageRoute<dynamic>(
                         name: '/challenge/details',
                         builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
                   );
@@ -78,7 +78,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     );
   }
 
-  _createResultScreen(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet,
+  Widget _createResultScreen(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet,
       MarketCapSortingGameBloc _gameBloc, BuildContext context) {
     final _api = DepsProvider.of(context).api;
 
@@ -142,7 +142,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                       onTap: () {
                         final details =
                             response.details.firstWhere((details) => resultDto.instrumentKey == details.instrumentKey);
-                        Navigator.of(context).push(AnalyticsPageRoute(
+                        Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
                           name: '/company/details',
                           builder: (context) => CompanyDetailsScreen(details, info.logo),
                         ));
@@ -251,7 +251,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     );
 
     trace.stop();
-    AnalyticsUtils.instance.analytics.logEvent(name: "verify_sort", parameters: {'score': score});
+    AnalyticsUtils.instance.analytics.logEvent(name: 'verify_sort', parameters: <String, dynamic>{'score': score});
 
     return ret;
   }
@@ -264,7 +264,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
       final painter = new TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
       painter.layout();
 
-      RenderRepaintBoundary boundary = drawGlobalKey.currentContext.findRenderObject();
+      final boundary = drawGlobalKey.currentContext.findRenderObject() as RenderRepaintBoundary;
       ui.Image img = await boundary.toImage(pixelRatio: 2.0);
 
       final padding = 64.0;

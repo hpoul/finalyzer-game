@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 import 'package:anlage_app_game/api/dtos.generated.dart';
@@ -12,9 +11,7 @@ import 'package:rxdart/rxdart.dart';
 
 final _logger = new Logger("app.anlage.game.utils.firebase_messaging");
 
-
-class CloudMessagingUtil with StreamSubscriberMixin {
-
+class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
   final PreferenceStore _prefs;
 
   CloudMessagingUtil(this._prefs);
@@ -59,7 +56,7 @@ class CloudMessagingUtil with StreamSubscriberMixin {
     return Future.value(null);
   }
 
-  Future<String>getToken() async {
+  Future<String> getToken() async {
     final token = await _firebaseMessaging.getToken();
     _logger.info('Token: ${token}.');
     return token;
@@ -104,7 +101,4 @@ class CloudMessagingUtil with StreamSubscriberMixin {
   void clearNotification() {
     _onNotification.add(null);
   }
-
-
 }
-

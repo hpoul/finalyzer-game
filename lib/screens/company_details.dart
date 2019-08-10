@@ -25,7 +25,7 @@ class CompanyDetailsScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Container(
-          margin: EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -69,7 +69,7 @@ class CompanyDetailsScreen extends StatelessWidget {
                   : Column(
                       children: [
                         Container(
-                            margin: EdgeInsets.only(top: 16),
+                            margin: const EdgeInsets.only(top: 16),
                             child: Text(
                               details.extractText.content,
                               style:
@@ -82,13 +82,13 @@ class CompanyDetailsScreen extends StatelessWidget {
                             onPressed: () {
                               DialogUtil.launchUrl(details.extractText.sourceUrl);
                             },
-                            padding: EdgeInsets.all(0),
+                            padding: const EdgeInsets.all(0),
                             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             icon: Icon(
                               Icons.open_in_new,
                               size: 16,
                             ),
-                            label: Text('Wikipedia'),
+                            label: const Text('Wikipedia'),
                           ),
                         ),
                       ],
@@ -103,7 +103,7 @@ class CompanyDetailsScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               Container(
-                padding: EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.only(top: 16),
                 child: FlatButton(
                   onPressed: () {
                     DialogUtil.openFeedback(origin: 'company_details');
@@ -141,11 +141,6 @@ class _StockChartState extends State<StockChart> {
   Future<charts.Series<double, DateTime>> stockDataFuture;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     this._apiPriceData = DepsProvider.of(context).apiPriceData;
@@ -153,20 +148,18 @@ class _StockChartState extends State<StockChart> {
   }
 
   void _loadData() {
-    if (stockDataFuture == null) {
-      stockDataFuture = _apiPriceData.getEodStockData(
-        symbols: [this.widget.symbol],
-        start: widget.start,
-        end: widget.end,
-      ).then((response) {
-        return charts.Series<double, DateTime>(
-          id: widget.symbol,
-          data: response.data[widget.symbol],
-          domainFn: (value, index) => widget.start.add(Duration(days: response.sampleEveryNth * index)),
-          measureFn: (value, index) => value,
-        );
-      });
-    }
+    stockDataFuture ??= _apiPriceData.getEodStockData(
+      symbols: [this.widget.symbol],
+      start: widget.start,
+      end: widget.end,
+    ).then((response) {
+      return charts.Series<double, DateTime>(
+        id: widget.symbol,
+        data: response.data[widget.symbol],
+        domainFn: (value, index) => widget.start.add(Duration(days: response.sampleEveryNth * index)),
+        measureFn: (value, index) => value,
+      );
+    });
   }
 
   @override

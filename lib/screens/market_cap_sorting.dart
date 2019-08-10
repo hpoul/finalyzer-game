@@ -142,11 +142,7 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
 
       var s = layoutChild(i.key, BoxConstraints.loose(Size(size.width - marginRight, size.height)));
 
-      var origin;
-
-      origin = Offset(size.width - s.width - marginRight, localPos - s.height / 2);
-
-      positionChild(i.key, origin);
+      positionChild(i.key, Offset(size.width - s.width - marginRight, localPos - s.height / 2));
     });
   }
 
@@ -186,7 +182,7 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<GameSimpleSetResponse>(
         stream: _gameBloc.simpleGameSet,
         builder: (context, snapshot) {
           return MarketCapSortingScreen(_gameBloc, snapshot);
@@ -208,7 +204,7 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
             icon: Icon(Icons.help),
             onPressed: () async {
-              await showDialog(context: context, builder: (context) => MarketCapSortingHelpDialog());
+              await showDialog<dynamic>(context: context, builder: (context) => MarketCapSortingHelpDialog());
             }),
         StreamBuilder<LoginState>(
           builder: (context, snapshot) => IconButton(
@@ -286,8 +282,8 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
                         icon: Icon(Icons.navigate_next),
                         onPressed: () async {
                           if (challengeBloc?.isCompleted ?? false) {
-                            await Navigator.of(context).pushReplacement(
-                              AnalyticsPageRoute(
+                            await Navigator.of(context).pushReplacement<dynamic, dynamic>(
+                              AnalyticsPageRoute<dynamic>(
                                   name: '/challenge/details',
                                   builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
                             );
@@ -317,14 +313,14 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
 //                          isVerifying = false;
                               _verificationAnimation ??=
                                   AnimationController(duration: const Duration(seconds: 8), vsync: this);
-                              _verificationAnimation.forward(from: 0).then((val) {
+                              _verificationAnimation.forward(from: 0).then<void>((dynamic val) {
                                 setState(() {
                                   isVerifying = false;
                                 });
                               });
                               verification = val;
                             });
-                          }).catchError((error, stackTrace) {
+                          }).catchError((dynamic error, StackTrace stackTrace) {
                             _logger.severe('Error while verifying market caps.', error, stackTrace);
                             setState(() {
                               isVerifying = false;
@@ -408,12 +404,12 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
 
   // ignore: unused_element
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet) {
-    showDialog(
+    showDialog<dynamic>(
         context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc, gameSet));
   }
 
-  void _showErrorDialog(Error error) {
-    showDialog(
+  void _showErrorDialog(dynamic error) {
+    showDialog<dynamic>(
         context: context,
         builder: (context) => AlertDialog(
               title: Text('Error'),
@@ -620,7 +616,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                                     onTap: () {
                                       final details = widget.verification.response.details
                                           .firstWhere((details) => details.instrumentKey == instrument.instrumentKey);
-                                      Navigator.of(context).push(AnalyticsPageRoute(
+                                      Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
                                         name: '/company/details',
                                         builder: (context) => CompanyDetailsScreen(details, instrument.logo),
                                       ));
@@ -645,10 +641,9 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
 
   // some inspiration from https://github.com/MarcinusX/flutter_ui_challenge_flight_search/blob/v0.5/lib/price_tab/flight_stop_card.dart
   double get maxWidth {
-    RenderBox renderBox = context.findRenderObject();
-    BoxConstraints constraints = renderBox?.constraints;
-    double maxWidth = constraints?.maxWidth ?? 0.0;
-    return maxWidth;
+    final renderBox = context.findRenderObject() as RenderBox;
+    final constraints = renderBox?.constraints;
+    return constraints?.maxWidth ?? 0.0;
   }
 }
 
@@ -716,7 +711,7 @@ class MarketCapPositionScale extends StatelessWidget {
               onVerticalDragUpdate: draggedInstrumentToMarketCap == null
                   ? null
                   : (event) {
-                      RenderBox renderBox = context.findRenderObject();
+                      final renderBox = context.findRenderObject() as RenderBox;
                       final local = renderBox.globalToLocal(event.globalPosition);
                       final totalRange = marketCapScaleMax - marketCapScaleMin;
                       draggedInstrumentToMarketCap(

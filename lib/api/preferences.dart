@@ -1,7 +1,7 @@
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _logger = new Logger("app.anlage.game.api.preferences");
+final _logger = Logger('app.anlage.game.api.preferences');
 
 abstract class _Preference<T> {
   final String name;
@@ -10,7 +10,7 @@ abstract class _Preference<T> {
 
   Future<T> get(SharedPreferences prefs);
 
-  Future<bool> set(SharedPreferences prefs, value);
+  Future<bool> set(SharedPreferences prefs, T value);
 }
 
 // ignore: unused_element
@@ -33,19 +33,19 @@ class _BoolPreference extends _Preference<bool> {
 
   @override
   Future<bool> get(SharedPreferences prefs) {
-    final val = prefs.get(name);
+    final dynamic val = prefs.get(name);
     _logger.fine('Value for $name = $val');
     return Future.value(val is bool && val);
   }
 
   @override
-  Future<bool> set(SharedPreferences prefs, value) {
+  Future<bool> set(SharedPreferences prefs, bool value) {
     return prefs.setBool(name, value);
   }
 }
 
 class Preferences {
-  static const askedForPushPermission = const _BoolPreference("asked_for_push");
+  static const askedForPushPermission = _BoolPreference("asked_for_push");
 
   const Preferences();
 }

@@ -18,7 +18,6 @@ class LeaderboardList extends StatefulWidget {
 }
 
 class LeaderboardListState extends State<LeaderboardList> {
-
   final leaderboardScaffold = GlobalKey<ScaffoldState>();
 
   @override
@@ -52,11 +51,10 @@ class LeaderboardListState extends State<LeaderboardList> {
                     isMyself: entry.loggedInUser,
                     statsCorrectAnswers: entry.statsCorrectAnswers,
                     onTap: () {
-                      showModalBottomSheet(
+                      showModalBottomSheet<dynamic>(
                         context: context,
                         builder: (context) => BottomSheet(
-                            onClosing: () { },
-                            builder: (context) => LeaderBoardBottomSheet(entry, leaderboardScaffold)),
+                            onClosing: () {}, builder: (context) => LeaderBoardBottomSheet(entry, leaderboardScaffold)),
                       );
                     },
                   );
@@ -69,13 +67,10 @@ class LeaderboardListState extends State<LeaderboardList> {
 }
 
 class LeaderBoardBottomSheet extends StatelessWidget {
+  LeaderBoardBottomSheet(this.entry, this.leaderboardScaffold);
 
   final LeaderboardEntry entry;
   final GlobalKey<ScaffoldState> leaderboardScaffold;
-
-  LeaderBoardBottomSheet(this.entry, this.leaderboardScaffold);
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -93,14 +88,18 @@ class LeaderBoardBottomSheet extends StatelessWidget {
             onTap: () {
               leaderboardScaffold.currentState.showSnackBar(SnackBar(content: Text('Sending Challenge …')));
               Navigator.of(context).pop();
-              apiChallenge.createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
+              apiChallenge
+                  .createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
                   .then((val) {
-                    _logger.fine('Created Challenge.');
-                    leaderboardScaffold.currentState
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(SnackBar(content: Row(children: <Widget>[Text('Invitation sent successfully️'), Icon(Icons.check)],)));
+                _logger.fine('Created Challenge.');
+                leaderboardScaffold.currentState
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(SnackBar(
+                      content: Row(
+                    children: <Widget>[Text('Invitation sent successfully️'), Icon(Icons.check)],
+                  )));
 //                    DialogUtil.showSimpleAlertDialog(context, null, 'Sent invitation.');
-                  }).catchError(DialogUtil.genericErrorDialog(context));
+              }).catchError(DialogUtil.genericErrorDialog(context));
             },
           ),
         ],
@@ -108,7 +107,6 @@ class LeaderBoardBottomSheet extends StatelessWidget {
     );
   }
 }
-
 
 class LeaderboardListTile extends StatelessWidget {
   final int rank;

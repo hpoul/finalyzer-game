@@ -125,12 +125,12 @@ class ApiCaller {
 
   Future<U> get<U>(GetLocation<U> location) async {
     if (_env.fakeLatency != null) {
-      await Future.delayed(_env.fakeLatency);
+      await Future<dynamic>.delayed(_env.fakeLatency);
     }
     final dio = _dio;
     try {
-      final response =
-          await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.json));
+      final response = await dio.get<dynamic>(_baseUri.resolve(location.path).toString(),
+          options: Options(responseType: ResponseType.json));
       return location.bodyFromGetJson(response.data);
     } on DioError catch (dioError, stackTrace) {
       _logger.finer('Error during api call', dioError, stackTrace);
@@ -145,7 +145,7 @@ class ApiCaller {
   Future<ResponseWrapper<U>> _post<T, U>(PostBodyLocation<T, U> location, T args, {Dio dio}) async {
     final client = dio ?? _dio;
     try {
-      final response = await client.post(_baseUri.resolve(location.path).toString(), data: args);
+      final response = await client.post<dynamic>(_baseUri.resolve(location.path).toString(), data: args);
       return ResponseWrapper(response, location.bodyFromPostJson(response.data));
     } on DioError catch (dioError) {
       throw ApiNetworkError.fromError(dioError);
@@ -158,7 +158,7 @@ class ApiCaller {
   Future<U> put<T, U>(PutBodyLocation<T, U> location, T args) async {
     final client = _dio;
     try {
-      final response = await client.put(_baseUri.resolve(location.path).toString(), data: args);
+      final response = await client.put<dynamic>(_baseUri.resolve(location.path).toString(), data: args);
       return location.bodyFromPutJson(response.data);
     } on DioError catch (dioError) {
       throw ApiNetworkError.fromError(dioError);
@@ -171,7 +171,7 @@ class ApiCaller {
   Future<ResponseWrapper<U>> upload<T, U>(PostBodyLocation<T, U> location, FormData data) async {
     final client = _dio;
     try {
-      final response = await client.post(_baseUri.resolve(location.path).toString(), data: data);
+      final response = await client.post<dynamic>(_baseUri.resolve(location.path).toString(), data: data);
       return ResponseWrapper(response, location.bodyFromPostJson(response.data));
     } on DioError catch (dioError) {
       throw ApiNetworkError.fromError(dioError);

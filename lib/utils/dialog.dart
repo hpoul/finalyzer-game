@@ -13,7 +13,7 @@ class DialogUtil {
     return (dynamic error, StackTrace stackTrace) {
       _logger.warning('Got an error for request', error, stackTrace);
 //    Scaffold.of(context).
-      showDialog(
+      showDialog<dynamic>(
           context: context,
           builder: (context) {
             return AlertDialog(
@@ -29,12 +29,12 @@ class DialogUtil {
               ],
             );
           });
-      return Future.error(error, stackTrace);
+      return Future<dynamic>.error(error, stackTrace);
     };
   }
 
   static void showSimpleAlertDialog(BuildContext context, String title, String content) {
-    showDialog(
+    showDialog<dynamic>(
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -54,7 +54,7 @@ class DialogUtil {
 
   static void launchUrl(String url) async {
     if (await canLaunch(url)) {
-      await AnalyticsUtils.instance.analytics.logEvent(name: "launch_url", parameters: {"url": url});
+      await AnalyticsUtils.instance.analytics.logEvent(name: 'launch_url', parameters: <String, dynamic>{'url': url});
       await launch(url, forceSafariVC: false);
     } else {
       _logger.severe('Unable to launch url $url');
@@ -63,7 +63,7 @@ class DialogUtil {
 
   static void openFeedback({String origin}) async {
     await AnalyticsUtils.instance.analytics
-        .logEvent(name: "launch_feedback", parameters: {"origin": origin ?? "unknown"});
+        .logEvent(name: "launch_feedback", parameters: <String, dynamic>{'origin': origin ?? 'unknown'});
     final url = 'mailto:hello@anlage.app';
     if (await canLaunch(url)) {
       await launch(url, forceSafariVC: false);
@@ -86,7 +86,7 @@ class DialogUtil {
 
 class ErrorRetry extends StatelessWidget {
   final VoidCallback onPressed;
-  final Error error;
+  final Object error;
 
   ErrorRetry({this.onPressed, this.error});
 
@@ -98,8 +98,8 @@ class ErrorRetry extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Text('Error while contacting server.'),
-          RaisedButton.icon(onPressed: onPressed, icon: Icon(Icons.refresh), label: Text('Retry')),
+          const Text('Error while contacting server.'),
+          RaisedButton.icon(onPressed: onPressed, icon: Icon(Icons.refresh), label: const Text('Retry')),
         ],
       ),
     );
