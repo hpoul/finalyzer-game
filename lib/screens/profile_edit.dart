@@ -69,7 +69,10 @@ class ProfileEditState extends State<ProfileEdit> {
                       padding: EdgeInsets.all(16.0),
                       child: Column(
                         children: <Widget>[
-                          Text('Tell us a bit about yourself so you are immortalized in the MarketCap Leaderboard!', style: Theme.of(context).primaryTextTheme.body1,),
+                          Text(
+                            'Tell us a bit about yourself so you are immortalized in the MarketCap Leaderboard!',
+                            style: Theme.of(context).primaryTextTheme.body1,
+                          ),
                           InkWell(
                             onTap: selectProfileImage,
                             child: Container(
@@ -82,13 +85,16 @@ class ProfileEditState extends State<ProfileEdit> {
                                   future: _uploadFuture,
                                   builder: (context, snapshot) => snapshot.connectionState == ConnectionState.waiting
                                       ? Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: <Widget>[
-                                      CircularProgressIndicator(),
-                                      Text('Uploading …'),
-                                    ],
-                                  )
-                                      : AvatarWithEditIcon(state.avatarUrl, minRadius: 40,),
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: <Widget>[
+                                            CircularProgressIndicator(),
+                                            Text('Uploading …'),
+                                          ],
+                                        )
+                                      : AvatarWithEditIcon(
+                                          state.avatarUrl,
+                                          minRadius: 40,
+                                        ),
                                 ),
                               ),
                             ),
@@ -112,7 +118,9 @@ class ProfileEditState extends State<ProfileEdit> {
                           TextFormField(
                             controller: _emailCtrl,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(labelText: 'Your email address', helperText: 'You can use your email address to log in later.'),
+                            decoration: InputDecoration(
+                                labelText: 'Your email address',
+                                helperText: 'You can use your email address to log in later.'),
                             validator: (value) {
                               if (value.isEmpty || emailRegexp.hasMatch(value)) {
                                 _logger.fine('has match. $value');
@@ -125,32 +133,38 @@ class ProfileEditState extends State<ProfileEdit> {
                             future: _userUpdateFuture,
                             builder: (context, snapshot) => Padding(
                               padding: EdgeInsets.only(top: 8),
-                              child: snapshot.connectionState == ConnectionState.waiting ? RaisedButton(onPressed: null, child: Text('Loading …'), disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),) : RaisedButton(
-                                child:  Text('Save'),
-                                color: Theme.of(context).accentColor,
-                                onPressed: snapshot.connectionState == ConnectionState.waiting ? null : () {
-                                  if (!_formKey.currentState.validate()) {
-                                    Scaffold
-                                        .of(context)
-                                        .showSnackBar(SnackBar(content: Text('Please fix the errors.')));
-                                    return;
-                                  }
-                                  setState(() {
-                                    _userUpdateFuture = _api.updateUserInfo(displayName: _displayNameCtrl.text, email: _emailCtrl.text);
-                                  });
-                                  _userUpdateFuture.then((val) {
-                                    Scaffold
-                                        .of(context)
-                                        .showSnackBar(SnackBar(content: Text('Saved successfully.')));
-                                  });
-                                },
-                              ),
+                              child: snapshot.connectionState == ConnectionState.waiting
+                                  ? RaisedButton(
+                                      onPressed: null,
+                                      child: Text('Loading …'),
+                                      disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),
+                                    )
+                                  : RaisedButton(
+                                      child: Text('Save'),
+                                      color: Theme.of(context).accentColor,
+                                      onPressed: snapshot.connectionState == ConnectionState.waiting
+                                          ? null
+                                          : () {
+                                              if (!_formKey.currentState.validate()) {
+                                                Scaffold.of(context)
+                                                    .showSnackBar(SnackBar(content: Text('Please fix the errors.')));
+                                                return;
+                                              }
+                                              setState(() {
+                                                _userUpdateFuture = _api.updateUserInfo(
+                                                    displayName: _displayNameCtrl.text, email: _emailCtrl.text);
+                                              });
+                                              _userUpdateFuture.then((val) {
+                                                Scaffold.of(context)
+                                                    .showSnackBar(SnackBar(content: Text('Saved successfully.')));
+                                              });
+                                            },
+                                    ),
                             ),
                           ),
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),
@@ -173,7 +187,6 @@ class ProfileEditState extends State<ProfileEdit> {
 }
 
 class AvatarWithEditIcon extends StatelessWidget {
-
   final String avatarUrl;
   final double radius;
   final double minRadius;
@@ -181,38 +194,43 @@ class AvatarWithEditIcon extends StatelessWidget {
   AvatarWithEditIcon(this.avatarUrl, {this.radius, this.minRadius});
 
   @override
-  Widget build(BuildContext context) =>
-    Stack(
-      children: [
-        Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(500),boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))]),
-          child: CircleAvatar(
-            backgroundColor: Colors.white,
-            backgroundImage: CachedNetworkImageProvider(avatarUrl),
-            minRadius: minRadius,
-            radius: radius,
-          ),
-        ),
-        Align(
-          alignment: Alignment.bottomRight,
-          child: FractionallySizedBox(
-            widthFactor: 0.25,
-            child: Container(
-              padding: EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(),
-                ],
-                border: Border.all(color: FinalyzerTheme.colorPrimary),
-                borderRadius: BorderRadius.circular(200),
-              ),
-              child: FittedBox(fit: BoxFit.contain, child: Icon(Icons.edit, color: FinalyzerTheme.colorSecondary,)),
+  Widget build(BuildContext context) => Stack(
+        children: [
+          Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(500),
+                boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))]),
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              backgroundImage: CachedNetworkImageProvider(avatarUrl),
+              minRadius: minRadius,
+              radius: radius,
             ),
           ),
-        ),
-      ],
-    );
+          Align(
+            alignment: Alignment.bottomRight,
+            child: FractionallySizedBox(
+              widthFactor: 0.25,
+              child: Container(
+                padding: EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(),
+                  ],
+                  border: Border.all(color: FinalyzerTheme.colorPrimary),
+                  borderRadius: BorderRadius.circular(200),
+                ),
+                child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Icon(
+                      Icons.edit,
+                      color: FinalyzerTheme.colorSecondary,
+                    )),
+              ),
+            ),
+          ),
+        ],
+      );
 }
-

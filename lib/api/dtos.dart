@@ -1,8 +1,6 @@
 // hand made dto :-) copied from kotlin code
 // need to find a way to automate this..
 
-
-
 //class InstrumentImageDto {
 //  String id;
 //  String mimeType;
@@ -99,4 +97,3 @@
 //}
 //
 //
-

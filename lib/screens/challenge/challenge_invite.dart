@@ -84,22 +84,27 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
                 color: Theme.of(context).accentColor,
                 disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),
                 label: Text('Create Challenge'),
-                onPressed: snapshot.connectionState == ConnectionState.waiting ? null : () {
-                  _logger.fine('Creating challenge ...');
-                  setState(() {
-                    _createFuture = apiChallenge.createChallengeInvite(GameChallengeInviteType.LinkInvite, displayName: _displayNameCtrl.text).then((value) {
-                      _logger.fine('Created challenge ${value.toJson()}');
-                      return _createInviteLink(deps, value);
-                    }).then((dynamicLink) {
-                      _logger.fine('Created url: $dynamicLink');
-                      AnalyticsUtils.instance.analytics.logEvent(name: 'invite_create');
-                      return Share.share('Beat me by guessing Market Caps! $dynamicLink');
-                    }).catchError((error, stackTrace) {
-                      _logger.warning('Error producing challenge invite.', error, stackTrace);
-                      return Future.error(error, stackTrace);
-                    });
-                  });
-                },
+                onPressed: snapshot.connectionState == ConnectionState.waiting
+                    ? null
+                    : () {
+                        _logger.fine('Creating challenge ...');
+                        setState(() {
+                          _createFuture = apiChallenge
+                              .createChallengeInvite(GameChallengeInviteType.LinkInvite,
+                                  displayName: _displayNameCtrl.text)
+                              .then((value) {
+                            _logger.fine('Created challenge ${value.toJson()}');
+                            return _createInviteLink(deps, value);
+                          }).then((dynamicLink) {
+                            _logger.fine('Created url: $dynamicLink');
+                            AnalyticsUtils.instance.analytics.logEvent(name: 'invite_create');
+                            return Share.share('Beat me by guessing Market Caps! $dynamicLink');
+                          }).catchError((error, stackTrace) {
+                            _logger.warning('Error producing challenge invite.', error, stackTrace);
+                            return Future.error(error, stackTrace);
+                          });
+                        });
+                      },
               ),
             ],
           );
@@ -126,12 +131,11 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
           medium: 'app',
           source: 'game',
         ),
-      itunesConnectAnalyticsParameters: ItunesConnectAnalyticsParameters(
-        affiliateToken: Secrets.ITUNES_AFFILIATE_TOKEN,
-        campaignToken: 'challenge-invite',
-        providerToken: Secrets.ITUNES_PROVIDER_TOKEN,
-      )
-    );
+        itunesConnectAnalyticsParameters: ItunesConnectAnalyticsParameters(
+          affiliateToken: Secrets.ITUNES_AFFILIATE_TOKEN,
+          campaignToken: 'challenge-invite',
+          providerToken: Secrets.ITUNES_PROVIDER_TOKEN,
+        ));
     return params.buildShortLink().then((shortLink) {
       deps.apiChallenge.logShortLink(value.inviteToken, shortLink.shortUrl.toString());
       return shortLink.shortUrl;
@@ -217,25 +221,26 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                 FutureBuilder<GameChallengeDto>(
                   future: _acceptChallengeFuture,
                   builder: (context, snapshot) => Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: RaisedButton.icon(
-                          onPressed: snapshot.connectionState == ConnectionState.waiting
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _acceptChallengeFuture = _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
-                                      Navigator.of(context).pushReplacement(AnalyticsPageRoute(
-                                        name: '/challenge/game',
-                                          builder: (context) => Challenge(
-                                                gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
-                                              )));
-                                    }).catchError(DialogUtil.genericErrorDialog(context));
-                                  });
-                                },
-                          icon: Icon(Icons.check),
-                          label: Text('Accept'),
-                        ),
-                      ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: RaisedButton.icon(
+                      onPressed: snapshot.connectionState == ConnectionState.waiting
+                          ? null
+                          : () {
+                              setState(() {
+                                _acceptChallengeFuture =
+                                    _apiChallenge.acceptChallengeInvite(widget.inviteToken).then((value) {
+                                  Navigator.of(context).pushReplacement(AnalyticsPageRoute(
+                                      name: '/challenge/game',
+                                      builder: (context) => Challenge(
+                                            gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
+                                          )));
+                                }).catchError(DialogUtil.genericErrorDialog(context));
+                              });
+                            },
+                      icon: Icon(Icons.check),
+                      label: Text('Accept'),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -253,5 +258,3 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
     });
   }
 }
-
-

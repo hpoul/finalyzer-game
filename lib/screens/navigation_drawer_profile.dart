@@ -83,7 +83,14 @@ class NavigationDrawerProfile extends StatelessWidget {
                                               ),
                                             ]
                                           : [Text('Hello $displayName!')]) +
-                                      (userType == GameUserType.User ? [] : [Text('(${convertGameUserTypeToJson(userType)})', style: Theme.of(context).textTheme.caption,)]),
+                                      (userType == GameUserType.User
+                                          ? []
+                                          : [
+                                              Text(
+                                                '(${convertGameUserTypeToJson(userType)})',
+                                                style: Theme.of(context).textTheme.caption,
+                                              )
+                                            ]),
                                 ),
                         ),
                       ),
@@ -92,96 +99,96 @@ class NavigationDrawerProfile extends StatelessWidget {
                   Flexible(
                     child: LayoutBuilder(
                       builder: (context, constraints) => SingleChildScrollView(
-                            child: Container(
-                              constraints: BoxConstraints(
-                                minHeight: constraints.maxHeight,
-                              ),
-                              child: Column(
+                        child: Container(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Column(
                                 mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      ListTile(
-                                        leading: Icon(Icons.assignment),
-                                        title: Text('Completed Turns:'),
-                                        trailing: Text(
-                                          '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
-                                          style: Theme.of(context).textTheme.display1,
-                                        ),
-                                      ),
-                                      ListTile(
-                                        leading: Icon(
-                                          Icons.thumb_up,
-                                          color: Colors.green,
-                                        ),
-                                        title: Text('Correct Answers:'),
-                                        trailing: Text(
-                                          '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
-                                          style: Theme.of(context).textTheme.display1,
-                                        ),
-                                      ),
-                                      Divider(),
-                                    ],
+                                  ListTile(
+                                    leading: Icon(Icons.assignment),
+                                    title: Text('Completed Turns:'),
+                                    trailing: Text(
+                                      '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
+                                      style: Theme.of(context).textTheme.display1,
+                                    ),
                                   ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      ListTile(
-                                        leading: Icon(Icons.send),
-                                        title: Text('Challenge a friend.'),
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.view_list),
-                                        title: Text('Challenges'),
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.format_list_numbered),
-                                        title: Text('Leaderboard'),
-                                        onTap: () {
-                                          Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
-                                        },
-                                      ),
-                                      Divider(),
-                                      ListTile(
-                                        leading: Icon(Icons.email),
-                                        title: Text('How can we improve? Problems?'),
-                                        subtitle: Text('We love to hear from you at hello@anlage.app'),
-                                        onTap: () {
-                                          DialogUtil.openFeedback(origin: 'drawer');
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: Icon(Icons.link),
-                                        title: Text('By https://Anlage.App/'),
-                                        subtitle: Text('Track&Analyse your portfolio.'),
-                                        onTap: () async {
-                                          final url = 'https://anlage.app/?utm_source=marketcap-game';
-                                          DialogUtil.launchUrl(url);
-                                        },
-                                        onLongPress: () async {
-                                          _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
-                                          final url = 'https://anlage.app/?utm_source=marketcap-game';
-                                          if (await canLaunch(url)) {
-                                          await launch(url, forceSafariVC: false);
-                                          } else {
-                                          _logger.severe('Unable to launch url $url');
-                                          }
-                                        },
-                                      ),
-                                    ],
+                                  ListTile(
+                                    leading: Icon(
+                                      Icons.thumb_up,
+                                      color: Colors.green,
+                                    ),
+                                    title: Text('Correct Answers:'),
+                                    trailing: Text(
+                                      '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
+                                      style: Theme.of(context).textTheme.display1,
+                                    ),
+                                  ),
+                                  Divider(),
+                                ],
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Icon(Icons.send),
+                                    title: Text('Challenge a friend.'),
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.view_list),
+                                    title: Text('Challenges'),
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.format_list_numbered),
+                                    title: Text('Leaderboard'),
+                                    onTap: () {
+                                      Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
+                                    },
+                                  ),
+                                  Divider(),
+                                  ListTile(
+                                    leading: Icon(Icons.email),
+                                    title: Text('How can we improve? Problems?'),
+                                    subtitle: Text('We love to hear from you at hello@anlage.app'),
+                                    onTap: () {
+                                      DialogUtil.openFeedback(origin: 'drawer');
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.link),
+                                    title: Text('By https://Anlage.App/'),
+                                    subtitle: Text('Track&Analyse your portfolio.'),
+                                    onTap: () async {
+                                      final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                      DialogUtil.launchUrl(url);
+                                    },
+                                    onLongPress: () async {
+                                      _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
+                                      final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                      if (await canLaunch(url)) {
+                                        await launch(url, forceSafariVC: false);
+                                      } else {
+                                        _logger.severe('Unable to launch url $url');
+                                      }
+                                    },
                                   ),
                                 ],
                               ),
-                            ),
+                            ],
                           ),
+                        ),
+                      ),
                     ),
                   ),
                 ],

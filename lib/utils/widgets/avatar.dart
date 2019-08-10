@@ -7,7 +7,6 @@ import 'package:logging/logging.dart';
 final _logger = Logger('app.anlage.game.utils.widgets.avatar');
 
 class Avatar extends StatelessWidget {
-
   final String avatarUrl;
   final double radius;
 

@@ -47,10 +47,7 @@ class ChallengeList extends StatefulWidget {
   _ChallengeListState createState() => _ChallengeListState();
 }
 
-enum ChallengeListItemType {
-  Challenge,
-  InviteCta
-}
+enum ChallengeListItemType { Challenge, InviteCta }
 
 class ChallengeListItem {
   ChallengeListItemType type;
@@ -101,8 +98,8 @@ class _ChallengeListState extends State<ChallengeList> {
               ? Center(child: CircularProgressIndicator())
               : ListView.separated(
                   separatorBuilder: (context, index) => Divider(
-                        height: 0,
-                      ),
+                    height: 0,
+                  ),
                   itemCount: snapshot.data.length,
                   itemBuilder: (context, idx) {
                     final item = snapshot.data[idx];
@@ -114,33 +111,50 @@ class _ChallengeListState extends State<ChallengeList> {
                     return Theme(
                       data: Theme.of(context).copyWith(textTheme: Theme.of(context).accentTextTheme),
                       child: Ink(
-                        color: isWeeklyChallenge && challenge.myParticipantStatus != GameChallengeParticipantStatus.Finished ? Theme.of(context).accentColor : null,
+                        color: isWeeklyChallenge &&
+                                challenge.myParticipantStatus != GameChallengeParticipantStatus.Finished
+                            ? Theme.of(context).accentColor
+                            : null,
                         child: ListTile(
                           contentPadding: EdgeInsets.symmetric(horizontal: 16),
-                          leading: Avatar(
-                              challenge.createdBy == null ? _deps.api.currentLoginState.avatarUrl : challenge.createdBy.avatarUrl),
-                          title: challenge.title.isNotEmpty ? Text(challenge.title) : isWeeklyChallenge ? Text('Weekly challenge!') : Text('Created ${_deps.formatUtil.formatRelativeFuzzy(challenge.createdAt.dateTime)}'),
-                          subtitle: isWeeklyChallenge ? Text('Participate now!') : Text(challenge.createdBy == null ? 'by you.' : 'by: ${challenge.createdBy.displayName}.'),
+                          leading: Avatar(challenge.createdBy == null
+                              ? _deps.api.currentLoginState.avatarUrl
+                              : challenge.createdBy.avatarUrl),
+                          title: challenge.title.isNotEmpty
+                              ? Text(challenge.title)
+                              : isWeeklyChallenge
+                                  ? Text('Weekly challenge!')
+                                  : Text(
+                                      'Created ${_deps.formatUtil.formatRelativeFuzzy(challenge.createdAt.dateTime)}'),
+                          subtitle: isWeeklyChallenge
+                              ? Text('Participate now!')
+                              : Text(
+                                  challenge.createdBy == null ? 'by you.' : 'by: ${challenge.createdBy.displayName}.'),
                           trailing: Icon(
                             challenge.myParticipantStatus == GameChallengeParticipantStatus.Finished
                                 ? Icons.check
-                                : challenge.status == GameChallengeStatus.Accepted ? Icons.play_arrow : Icons.markunread_mailbox,
+                                : challenge.status == GameChallengeStatus.Accepted
+                                    ? Icons.play_arrow
+                                    : Icons.markunread_mailbox,
                           ),
                           onTap: () {
                             if (challenge.myParticipantStatus == GameChallengeParticipantStatus.Invited &&
                                 challenge.inviteToken != null) {
-                              Navigator.of(context).push(
+                              Navigator.of(context)
+                                  .push(
                                 AnalyticsPageRoute(
                                     name: '/challenge/invite/info',
                                     builder: (context) => ChallengeInviteInfo(
                                           inviteToken: challenge.inviteToken,
                                         )),
-                              ).then((ret) {
+                              )
+                                  .then((ret) {
                                 _refresh();
                               });
                             } else {
                               Navigator.of(context).push(AnalyticsPageRoute(
-                                  name: '/challenge/details', builder: (context) => ChallengeDetails(challenge.challengeId)));
+                                  name: '/challenge/details',
+                                  builder: (context) => ChallengeDetails(challenge.challengeId)));
                             }
                           },
                           onLongPress: () {
@@ -174,7 +188,6 @@ class ChallengeInviteCta extends StatelessWidget {
               ),
               Container(
                 margin: EdgeInsets.only(top: 32),
-
                 child: Text('Challenge a friend'),
               ),
             ],
@@ -187,7 +200,6 @@ class ChallengeInviteCta extends StatelessWidget {
     );
   }
 }
-
 
 class ChallengeListActionBottomSheet extends StatelessWidget {
   final GameChallengeInfoDto challengeInfo;
@@ -281,8 +293,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                     final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
                     Navigator.of(context).push(AnalyticsPageRoute(
                         name: '/challenge/game',
-                        builder: (context) =>
-                            Challenge(
+                        builder: (context) => Challenge(
                               gameBloc: bloc,
                             )));
                   });
@@ -319,9 +330,9 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                           child: createdBy == null
                               ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.')
                               : details.baseInfo.type == GameChallengeType.WeeklyChallenge
-                              ? Text('Weekly Challenge')
-                              : Text(
-                                  'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.'),
+                                  ? Text('Weekly Challenge')
+                                  : Text(
+                                      'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.'),
                         ),
                       ] +
                       [] +

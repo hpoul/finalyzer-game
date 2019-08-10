@@ -7,7 +7,5 @@ class Production extends Env {
   final String baseUrl = 'http://api.anlage.app';
   final Color primarySwatch = Colors.pink;
 
-
   Production() : super(EnvType.production);
-
 }

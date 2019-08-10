@@ -19,8 +19,7 @@ abstract class StreamSubscriberMixin<T> {
 
   /// Cancels all streams that were previously added with listen().
   void cancelSubscriptions() {
-    _subscriptions
-        .forEach((StreamSubscription<T> subscription) => subscription.cancel());
+    _subscriptions.forEach((StreamSubscription<T> subscription) => subscription.cancel());
     _subscriptions.clear();
   }
 }

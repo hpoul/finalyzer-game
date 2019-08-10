@@ -16,7 +16,9 @@ class AskForMessagingPermission extends StatelessWidget {
         actions: <Widget>[
           FlatButton(
             child: Text('Cancel'),
-            onPressed: () { Navigator.of(context).pop(); },
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
           ),
           FlatButton(
             child: Text('Okay'),

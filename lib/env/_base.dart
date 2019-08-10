@@ -6,13 +6,9 @@ import 'package:anlage_app_game/utils/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
 
-enum EnvType {
-  production,
-  development
-}
+enum EnvType { production, development }
 
 abstract class Env {
-
   static Env value;
 
   String get baseUrl;
