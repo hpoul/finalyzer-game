@@ -26,6 +26,9 @@ if test "$1" == "ios" ; then
     set -x
 
     cd ios && fastlane match appstore --readonly && cd ..
+
+    # make sure cocoapods is up to date.
+    pod repo update
 fi
 
 cd ${root}
