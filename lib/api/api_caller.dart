@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:io';
 
@@ -7,13 +5,13 @@ import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _logger = Logger("app.anlage.game.api.api_caller");
 
 class ApiCallerInterceptor implements Interceptor {
-
   ApiCallerInterceptor(this._apiCaller, this._dio);
 
   final ApiCaller _apiCaller;
@@ -22,7 +20,8 @@ class ApiCallerInterceptor implements Interceptor {
   @override
   FutureOr onError(DioError error) async {
     if (error.response != null && error.response.statusCode == HttpStatus.unauthorized) {
-      _logger.severe('It seems session got invalid. at least remove session so on next request it is working again. ${await this._apiCaller._getGameSessionFromPreferences()}');
+      _logger.severe(
+          'It seems session got invalid. at least remove session so on next request it is working again. ${await this._apiCaller._getGameSessionFromPreferences()}');
       await _apiCaller._setGameSession(null);
     }
     return error;
@@ -54,13 +53,11 @@ class ApiCallerInterceptor implements Interceptor {
     // TODO: implement onResponse
     return null;
   }
-
 }
 
 class ApiCaller {
   static const PREF_GAME_SESSION = 'GAME_SESSION';
   static const GAME_SESSION_HEADER = 'GAME-SESSION';
-
 
   final Env _env;
   final Uri _baseUri;
@@ -68,8 +65,7 @@ class ApiCaller {
 
   String _gameSession;
 
-  ApiCaller(this._env)
-      : _baseUri = Uri.parse(_env.baseUrl) {
+  ApiCaller(this._env) : _baseUri = Uri.parse(_env.baseUrl) {
     _dio = _createSessionDio();
   }
 
@@ -82,12 +78,16 @@ class ApiCaller {
   Future<String> _registerDevice() async {
     final dio = Dio();
     final location = RegisterDeviceLocation();
-    final response = await _post(location, RegisterDeviceRequest(
-        "TODO",
-        "${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}",
-        Platform.isIOS ? DevicePlatform.iOS : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown).toJson(),
-        dio: dio
-    );
+    final response = await _post(
+        location,
+        RegisterDeviceRequest(
+                "TODO",
+                "${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}",
+                Platform.isIOS
+                    ? DevicePlatform.iOS
+                    : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown)
+            .toJson(),
+        dio: dio);
     final gameSession = response.response.headers.value(GAME_SESSION_HEADER);
     _logger.finer('Got Game Session: $gameSession');
     if (gameSession == null) {
@@ -96,20 +96,30 @@ class ApiCaller {
     return gameSession;
   }
 
-
   Future<String> _getGameSessionFromPreferences() async {
     if (_gameSession != null) {
       return _gameSession;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    _gameSession = prefs.getString(PREF_GAME_SESSION);
+    final storage = FlutterSecureStorage();
+    _gameSession = await storage.read(key: PREF_GAME_SESSION);
+
+    if (_gameSession == null) {
+      // for backward compatibility check shared preferences.
+      final prefs = await SharedPreferences.getInstance();
+      _gameSession = prefs.getString(PREF_GAME_SESSION);
+      if (_gameSession != null) {
+        await storage.write(key: PREF_GAME_SESSION, value: _gameSession);
+        await prefs.remove(PREF_GAME_SESSION);
+      }
+    }
+
     return _gameSession;
   }
 
   Future<void> _setGameSession(String gameSession) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(PREF_GAME_SESSION, gameSession);
+    final storage = FlutterSecureStorage();
+    await storage.write(key: PREF_GAME_SESSION, value: gameSession);
     _gameSession = gameSession;
   }
 
@@ -119,7 +129,8 @@ class ApiCaller {
     }
     final dio = _dio;
     try {
-      final response = await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.json));
+      final response =
+          await dio.get(_baseUri.resolve(location.path).toString(), options: Options(responseType: ResponseType.json));
       return location.bodyFromGetJson(response.data);
     } on DioError catch (dioError, stackTrace) {
       _logger.finer('Error during api call', dioError, stackTrace);
@@ -169,6 +180,4 @@ class ApiCaller {
       rethrow;
     }
   }
-
-
 }
