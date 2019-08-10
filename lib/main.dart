@@ -55,7 +55,7 @@ void main() => throw Exception('Run some env/*.dart');
 
 class MyApp extends StatelessWidget {
   static AnalyticsUtils analytics = AnalyticsUtils.instance;
-  static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics.analytics);
+  static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics);
 
   final Env env;
 

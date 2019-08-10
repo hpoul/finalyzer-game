@@ -1,10 +1,7 @@
-
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 final _logger = new Logger("app.anlage.game.api.preferences");
-
 
 abstract class _Preference<T> {
   final String name;
@@ -16,6 +13,7 @@ abstract class _Preference<T> {
   Future<bool> set(SharedPreferences prefs, value);
 }
 
+// ignore: unused_element
 class _StringPreference extends _Preference<String> {
   const _StringPreference(String name) : super(name);
 
@@ -53,17 +51,13 @@ class Preferences {
 }
 
 class PreferenceStore {
-
   const PreferenceStore();
 
   Future<T> getValue<T>(_Preference<T> pref) {
-
-    return SharedPreferences.getInstance()
-        .then((prefs) => pref.get(prefs));
+    return SharedPreferences.getInstance().then((prefs) => pref.get(prefs));
   }
 
   Future<bool> setValue<T>(_Preference<T> pref, T value) {
     return SharedPreferences.getInstance().then((prefs) => pref.set(prefs, value));
   }
-
 }

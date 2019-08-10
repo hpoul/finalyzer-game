@@ -154,7 +154,6 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
 }
 
 class MarketCapSortingState extends State<MarketCapSorting> {
-  bool isVerifying = false;
   MarketCapSortingGameBloc _gameBloc;
   ApiService _api;
 
@@ -289,6 +288,10 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
                         isVerifying = !isVerifying;
                       });
                       _gameBloc.verifyMarketCaps().then((val) {
+                        DepsProvider.of(context)
+                            .analytics
+                            .events
+                            .trackTurnVerify(gameType: GameType.sorting, score: val.response.correctCount);
 //                    _showVerifyResultDialog(val, snapshot.data);
                         setState(() {
 //                          isVerifying = false;
@@ -377,6 +380,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         ));
   }
 
+  // ignore: unused_element
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet) {
     showDialog(
         context: context, builder: (context) => MarketCapSortingResultWidget(response, widget.gameBloc, gameSet));
@@ -574,7 +578,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                                             alignment: Alignment.topCenter,
                                             child: isCorrect
                                                 ? Icon(Icons.check_circle, color: colorTween.value)
-                                                : Icon(Icons.swap_vertical_circle, color: colorTween.value),
+                                                : Icon(Icons.cancel, color: colorTween.value),
                                           ),
                                     onTap: () {
                                       final details = widget.verification.response.details
@@ -713,7 +717,9 @@ class MarketCapAnimationTween extends StatefulWidget {
 
 class _MarketCapAnimationTweenStateAnimation {
   const _MarketCapAnimationTweenStateAnimation._(this.subAnimation, this.marketCap);
+
   _MarketCapAnimationTweenStateAnimation.drive(this.subAnimation, this.marketCap);
+
   _MarketCapAnimationTweenStateAnimation.constantValue(double value)
       : this._(const AlwaysStoppedAnimation(1), ConstantTween(value));
 
@@ -723,6 +729,7 @@ class _MarketCapAnimationTweenStateAnimation {
 
 class _MarketCapAnimationTweenState extends State<MarketCapAnimationTween> {
   Map<String, _MarketCapAnimationTweenStateAnimation> _tweenMarketCap;
+
 //  AnimationController _controller;
 
   @override

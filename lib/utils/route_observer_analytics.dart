@@ -1,5 +1,4 @@
-
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -22,11 +21,10 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
     @required this.analytics,
   });
 
-  final FirebaseAnalytics analytics;
+  final AnalyticsUtils analytics;
 
   _extractScreenName(Route<dynamic> route) =>
-    route.settings.name ?? (route is AnalyticsPageRoute ? route.name : null) ?? route.runtimeType.toString();
-
+      route.settings.name ?? (route is AnalyticsPageRoute ? route.name : null) ?? route.runtimeType.toString();
 
   void _sendScreenView(Route<dynamic> route) {
     final String screenName = _extractScreenName(route);
@@ -55,5 +53,4 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
       _sendScreenView(previousRoute);
     }
   }
-
 }
