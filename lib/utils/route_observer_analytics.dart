@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger("app.anlage.game.main");
+final _logger = Logger('app.anlage.game.main');
 
 class AnalyticsPageRoute<T> extends MaterialPageRoute<T> {
   AnalyticsPageRoute({

@@ -21,7 +21,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger("app.anlage.game.screens.market_cap_sorting");
+final _logger = Logger('app.anlage.game.screens.market_cap_sorting');
 
 class MarketCapSorting extends StatefulWidget {
   @override
@@ -31,6 +31,13 @@ class MarketCapSorting extends StatefulWidget {
 }
 
 class MarketCapScalePainter extends CustomPainter {
+  MarketCapScalePainter(this.marketCapScaleMin, this.marketCapScaleMax)
+      : assert(marketCapScaleMin != null),
+        assert(marketCapScaleMax != null) {
+    minTextPainter = _createMarketCapPainter(marketCapScaleMin);
+    maxTextPainter = _createMarketCapPainter(marketCapScaleMax);
+  }
+
   static const MARGIN_LEFT = 16.0;
   static const MARGIN_VERTICAL = 8.0;
   static const TEXT_MARGIN_VERTICAL = 8.0;
@@ -46,15 +53,8 @@ class MarketCapScalePainter extends CustomPainter {
   TextPainter minTextPainter;
   TextPainter maxTextPainter;
 
-  MarketCapScalePainter(this.marketCapScaleMin, this.marketCapScaleMax)
-      : assert(marketCapScaleMin != null),
-        assert(marketCapScaleMax != null) {
-    this.minTextPainter = _createMarketCapPainter(marketCapScaleMin);
-    this.maxTextPainter = _createMarketCapPainter(marketCapScaleMax);
-  }
-
   TextPainter _createMarketCapPainter(double marketCap) {
-    TextSpan span = TextSpan(
+    final TextSpan span = TextSpan(
         style: TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 12, fontFamily: 'RobotoMono'),
         text: formatMarketCap(marketCap));
     final painter = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
@@ -65,16 +65,16 @@ class MarketCapScalePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bottomY = size.height - (2 * MARGIN_VERTICAL);
-    var rect = Offset(MARGIN_LEFT, MARGIN_VERTICAL + 4) & Size(SCALE_WIDTH, bottomY - 16);
-    canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(SCALE_WIDTH / 2)), Paint()..color = FinalyzerTheme.colorPrimary);
+    final rect = const Offset(MARGIN_LEFT, MARGIN_VERTICAL + 4) & Size(SCALE_WIDTH, bottomY - 16);
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(SCALE_WIDTH / 2)),
+        Paint()..color = FinalyzerTheme.colorPrimary);
     final paint = Paint();
     paint.color = FinalyzerTheme.colorPrimary;
     paint.strokeWidth = 1;
 
     canvas.drawPath(
         Path()
-          ..addPolygon([
+          ..addPolygon(const [
             Offset(MARGIN_LEFT - ARROW_ARM_WIDTH, MARGIN_VERTICAL + ARROW_LENGTH),
             Offset(MARGIN_LEFT + (SCALE_WIDTH / 2), MARGIN_VERTICAL),
             Offset(MARGIN_LEFT + SCALE_WIDTH + ARROW_ARM_WIDTH, MARGIN_VERTICAL + ARROW_LENGTH)
@@ -90,7 +90,7 @@ class MarketCapScalePainter extends CustomPainter {
           ], true),
         paint);
 
-    maxTextPainter.paint(canvas, Offset(MARGIN_LEFT + SCALE_WIDTH + 4, TEXT_MARGIN_VERTICAL));
+    maxTextPainter.paint(canvas, const Offset(MARGIN_LEFT + SCALE_WIDTH + 4, TEXT_MARGIN_VERTICAL));
     minTextPainter.paint(
         canvas, Offset(MARGIN_LEFT + SCALE_WIDTH + 4, size.height - minTextPainter.height - TEXT_MARGIN_VERTICAL));
 //    minTextPainter.paint(canvas, new Offset(MARGIN_LEFT + SCALE_WIDTH + 4, 600));
@@ -104,29 +104,29 @@ class MarketCapScalePainter extends CustomPainter {
 }
 
 class OneDimensionalRange {
+  OneDimensionalRange(this.begin, this.end) : assert(begin < end);
+
   final double begin;
   final double end;
 
-  OneDimensionalRange(this.begin, this.end) : assert(begin < end);
-
-  bool overlaps(OneDimensionalRange other) => !(this.begin > other.end || this.end < other.begin);
+  bool overlaps(OneDimensionalRange other) => !(begin > other.end || end < other.begin);
 }
 
 class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
+  MarketPriceLayoutDelegate(this.marketCapPositions, this.marketCapScaleMin, this.marketCapScaleMax);
+
   final Iterable<MapEntry<String, double>> marketCapPositions;
   final double marketCapScaleMin;
   final double marketCapScaleMax;
 
-  MarketPriceLayoutDelegate(this.marketCapPositions, this.marketCapScaleMin, this.marketCapScaleMax);
-
   @override
   void performLayout(Size size) {
-    var range = marketCapScaleMax - marketCapScaleMin;
-    var widgetRange = (size.height - 2 * MarketCapScalePainter.MARGIN_VERTICAL) / range;
+    final range = marketCapScaleMax - marketCapScaleMin;
+    final widgetRange = (size.height - 2 * MarketCapScalePainter.MARGIN_VERTICAL) / range;
 
-    var positions = List<Rect>();
-    marketCapPositions.forEach((i) {
-      var marketCapPos = marketCapScaleMax - i.value;
+    final positions = <Rect>[];
+    for (final i in marketCapPositions) {
+      final marketCapPos = marketCapScaleMax - i.value;
       final localPos = widgetRange * marketCapPos + MarketCapScalePainter.MARGIN_VERTICAL;
 //      final yRange = OneDimensionalRange(localPos, localPos + MarketCapSortingScaleState.STOCK_CARD_HEIGHT);
       int collisions = 0;
@@ -134,16 +134,16 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
       do {
         collisions++;
         virtualRect = Offset(size.width - (_STOCK_CARD_WIDTH * collisions), localPos) &
-            Size(_STOCK_CARD_WIDTH, _STOCK_CARD_HEIGHT);
+            const Size(_STOCK_CARD_WIDTH, _STOCK_CARD_HEIGHT);
       } while (positions.where((r) => r.overlaps(virtualRect)).isNotEmpty);
       positions.add(virtualRect);
 
       final marginRight = _STOCK_CARD_WIDTH * (collisions - 1);
 
-      var s = layoutChild(i.key, BoxConstraints.loose(Size(size.width - marginRight, size.height)));
+      final s = layoutChild(i.key, BoxConstraints.loose(Size(size.width - marginRight, size.height)));
 
       positionChild(i.key, Offset(size.width - s.width - marginRight, localPos - s.height / 2));
-    });
+    }
   }
 
   @override
@@ -155,13 +155,6 @@ class MarketPriceLayoutDelegate extends MultiChildLayoutDelegate {
 class MarketCapSortingState extends State<MarketCapSorting> {
   MarketCapSortingGameBloc _gameBloc;
   ApiService _api;
-
-  @override
-  void initState() {
-    super.initState();
-//    final gameBloc = MarketCapSortingGameProvider.of(context);
-//    gameBloc.fetchGame();
-  }
 
   @override
   void didChangeDependencies() {
@@ -191,15 +184,16 @@ class MarketCapSortingState extends State<MarketCapSorting> {
 }
 
 class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final ApiService api;
-  final ui.Size preferredSize = const Size.fromHeight(kToolbarHeight);
-
   const MarketCapAppBar({Key key, this.api}) : super(key: key);
+
+  final ApiService api;
+  @override
+  ui.Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text('Market Cap Game'),
+      title: const Text('Market Cap Game'),
       actions: <Widget>[
         IconButton(
             icon: Icon(Icons.help),
@@ -226,10 +220,10 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class MarketCapSortingScreen extends StatefulWidget {
+  const MarketCapSortingScreen(this.gameBloc, this.snapshot);
+
   final MarketCapSortingGameBloc gameBloc;
   final AsyncSnapshot<GameSimpleSetResponse> snapshot;
-
-  MarketCapSortingScreen(this.gameBloc, this.snapshot);
 
   @override
   _MarketCapSortingScreenState createState() => _MarketCapSortingScreenState();
@@ -239,11 +233,6 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
   bool isVerifying = false;
   GameSimpleSetVerifyResponseWrapper verification;
   AnimationController _verificationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void dispose() {
@@ -264,21 +253,21 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         ),
         floatingActionButton: isVerifying
             ? FloatingActionButton.extended(
-                label: Text('Checking …'),
+                label: const Text('Checking …'),
                 icon: FabProgressCircle(),
                 onPressed: null,
               )
             : !snapshot.hasData
                 ? FloatingActionButton.extended(
-                    label: Text('Loading …'),
+                    label: const Text('Loading …'),
                     icon: FabProgressCircle(),
                     onPressed: null,
                   )
                 : verification != null
                     ? FloatingActionButton.extended(
                         label: (challengeBloc == null
-                            ? Text('New Game')
-                            : challengeBloc.isCompleted ? Text('Finish') : Text('Next Turn')),
+                            ? const Text('New Game')
+                            : challengeBloc.isCompleted ? const Text('Finish') : const Text('Next Turn')),
                         icon: Icon(Icons.navigate_next),
                         onPressed: () async {
                           if (challengeBloc?.isCompleted ?? false) {
@@ -297,8 +286,8 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
                         },
                       )
                     : FloatingActionButton.extended(
-                        label: Text('Check'),
-                        icon: Icon(Icons.check),
+                        label: const Text('Check'),
+                        icon: const Icon(Icons.check),
                         onPressed: () {
                           setState(() {
                             isVerifying = true;
@@ -333,16 +322,16 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: Card(
           elevation: 16.0,
-          margin: EdgeInsets.only(top: 0.0),
+          margin: const EdgeInsets.only(top: 0.0),
           child: Container(
-            margin: EdgeInsets.all(16.0).copyWith(bottom: 16.0 + MediaQuery.of(context).padding.bottom),
-            padding: EdgeInsets.only(top: 16.0),
+            margin: const EdgeInsets.all(16.0).copyWith(bottom: 16.0 + MediaQuery.of(context).padding.bottom),
+            padding: const EdgeInsets.only(top: 16.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 ...(verification == null || isVerifying
-                    ? [Text('Sort the companies based on their Market Cap.')]
+                    ? const [Text('Sort the companies based on their Market Cap.')]
                     : [
                         Text(
                           'You got ${verification.response.correctCount} of ${verification.response.actual.length} correct!',
@@ -373,7 +362,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         body: SafeArea(
           child: snapshot.hasData
               ? Padding(
-                  padding: EdgeInsets.only(top: 8, bottom: 16),
+                  padding: const EdgeInsets.only(top: 8, bottom: 16),
                   child: MarketCapSortingScaleWidget(
                     _gameBloc,
                     snapshot.data,
@@ -383,14 +372,14 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
                 )
               : snapshot.hasError
                   ? Container(
-                      margin: EdgeInsets.all(16),
+                      margin: const EdgeInsets.all(16),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
-                          Text(
-                              "Error occurred while fetching data. Please check your network connection and try again."),
+                          const Text(
+                              'Error occurred while fetching data. Please check your network connection and try again.'),
                           RaisedButton(
-                            child: Text('Retry'),
+                            child: const Text('Retry'),
                             onPressed: () {
                               _gameBloc.nextTurn();
                             },
@@ -398,7 +387,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
                         ],
                       ),
                     )
-                  : Center(child: CircularProgressIndicator()),
+                  : const Center(child: CircularProgressIndicator()),
         ));
   }
 
@@ -412,11 +401,11 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
     showDialog<dynamic>(
         context: context,
         builder: (context) => AlertDialog(
-              title: Text('Error'),
+              title: const Text('Error'),
               content: Text('There was an error during the request.\nPlease try again later.\n$error'),
               actions: <Widget>[
                 FlatButton(
-                  child: Text('Dismiss'),
+                  child: const Text('Dismiss'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -438,12 +427,12 @@ class FabProgressCircle extends StatelessWidget {
 }
 
 class MarketCapSortingScaleWidget extends StatefulWidget {
+  const MarketCapSortingScaleWidget(this.gameBloc, this.simpleGameSet, {this.verification, this.verificationAnimation});
+
   final MarketCapSortingGameBloc gameBloc;
   final GameSimpleSetResponse simpleGameSet;
   final GameSimpleSetVerifyResponseWrapper verification;
   final Animation<double> verificationAnimation;
-
-  MarketCapSortingScaleWidget(this.gameBloc, this.simpleGameSet, {this.verification, this.verificationAnimation});
 
   @override
   State<StatefulWidget> createState() {
@@ -468,12 +457,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
   void initState() {
     super.initState();
     _logger.finer('MarketCapSortingScaleState.init');
-    this.moved = false;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+    moved = false;
   }
 
   @override
@@ -564,7 +548,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                           child: Container(
 //                            decoration:
 //                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Text(
                               correctLabels[widget.verification.response.correctCount],
                               textScaleFactor: 2,
@@ -682,7 +666,7 @@ class MarketCapPositionScale extends StatelessWidget {
     return CustomMultiChildLayout(
       delegate: MarketPriceLayoutDelegate(marketCapPositions.entries, marketCapScaleMin, marketCapScaleMax),
       children: instruments.map((val) {
-        var isDragged = draggedInstrument == val.instrumentKey;
+        final isDragged = draggedInstrument == val.instrumentKey;
 
         return LayoutId(
             id: val.instrumentKey,
@@ -784,7 +768,7 @@ class _MarketCapAnimationTweenState extends State<MarketCapAnimationTween> {
 //      _controller = AnimationController(duration: const Duration(seconds: 5), vsync: this);
 //      _controller.forward();
 
-      int delay = 0;
+      const delay = 0;
 
       final slotCount = widget.endMarketCap.length + delay;
       int slot = delay;
@@ -824,11 +808,6 @@ class _MarketCapAnimationTweenState extends State<MarketCapAnimationTween> {
       },
     );
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 const _STOCK_CARD_WIDTH = 100.0;
@@ -867,7 +846,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
               right: _STOCK_CARD_WIDTH / 2 - 12,
               child: AnimatedOpacity(
                   opacity: moved ? 0 : 1,
-                  duration: Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 500),
                   child: Icon(Icons.arrow_upward, size: 24, color: Colors.black26)),
             ),
             Positioned(
@@ -875,7 +854,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
               right: _STOCK_CARD_WIDTH / 2 - 12,
               child: AnimatedOpacity(
                 opacity: moved ? 0 : 1,
-                duration: Duration(milliseconds: 500),
+                duration: const Duration(milliseconds: 500),
                 child: Icon(
                   Icons.arrow_downward,
                   size: 24,
@@ -900,14 +879,15 @@ class MarketCapInstrumentCard extends StatelessWidget {
                 child: InkWell(
                   onTap: onTap,
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     child: CachedNetworkImage(
-                      placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                      placeholder: (context, url) => const Center(child: LinearProgressIndicator()),
                       errorWidget: (context, url, error) => Center(
-                          child: Text(
-                        instrument.symbol ?? 'Error ${instrument.logo.id}',
-                        style: Theme.of(context).textTheme.body2,
-                      )),
+                        child: Text(
+                          instrument.symbol ?? 'Error ${instrument.logo.id}',
+                          style: Theme.of(context).textTheme.body2,
+                        ),
+                      ),
 //                              width: 100,
 //                                  height: 50,
                       imageUrl: _apiService.getImageUrl(instrument.logo),
@@ -924,7 +904,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
 
   Widget buildMarketCapLabel(BuildContext context, double marketCap) {
     return Container(
-      margin: EdgeInsets.only(left: MarketCapScalePainter.MARGIN_LEFT + MarketCapScalePainter.SCALE_WIDTH + 4.0),
+      margin: const EdgeInsets.only(left: MarketCapScalePainter.MARGIN_LEFT + MarketCapScalePainter.SCALE_WIDTH + 4.0),
       child: Align(
           alignment: Alignment.topLeft,
           heightFactor: 2.0,
@@ -936,7 +916,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
   }
 
   Widget buildLine(double stockCardWidth) {
-    final dotSize = 12.0;
+    const dotSize = 12.0;
     return Align(
       alignment: Alignment.centerRight,
       heightFactor: 6.0,
@@ -954,18 +934,17 @@ class MarketCapInstrumentCard extends StatelessWidget {
             right: stockCardWidth - 4 - (dotSize / 2),
 //            height: dotSize,
 //            width: dotSize,
-            child: circleReplacement != null
-                ? circleReplacement
-                : Container(
+            child: circleReplacement ??
+                Container(
 //              margin: EdgeInsets.,
-                    alignment: Alignment.centerRight,
-                    height: dotSize,
-                    width: dotSize,
-                    decoration: BoxDecoration(
-                        color: lineColor,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.black26 /*FinalyzerTheme.colorSecondary*/, width: 1.0)),
-                  ),
+                  alignment: Alignment.centerRight,
+                  height: dotSize,
+                  width: dotSize,
+                  decoration: BoxDecoration(
+                      color: lineColor,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black26 /*FinalyzerTheme.colorSecondary*/, width: 1.0)),
+                ),
           ),
         ],
       ),

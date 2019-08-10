@@ -13,7 +13,7 @@ class TextWithIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final children = [
       icon,
-      SizedBox(width: 12),
+      const SizedBox(width: 12),
       Text(label),
     ];
     return Row(
@@ -28,7 +28,7 @@ class MarketCapSortingHelpDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     Deps.of(context).analytics.setCurrentScreen(screenName: runtimeType.toString());
     return AlertDialog(
-      title: TextWithIcon(
+      title: const TextWithIcon(
         icon: Text('👋️'),
         label: 'MarketCap Sorting',
         reverse: true,
@@ -57,7 +57,7 @@ class MarketCapSortingHelpDialog extends StatelessWidget {
       ),
       actions: <Widget>[
         FlatButton(
-          child: Text('Great, let\'s go!'),
+          child: const Text('Great, let\'s go!'),
           onPressed: () {
             Navigator.of(context).pop(true);
           },

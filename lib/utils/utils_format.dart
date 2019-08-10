@@ -1,6 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:intl/intl.dart' as intl;
 import 'package:timeago/timeago.dart' as timeago;
-import 'dart:math' as math;
 
 final _marketCapFormat = intl.NumberFormat.simpleCurrency(name: 'USD', decimalDigits: 0);
 

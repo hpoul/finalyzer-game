@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger("app.anlage.game.screens.profile_edit");
+final _logger = Logger('app.anlage.game.screens.profile_edit');
 
 class ProfileEdit extends StatefulWidget {
   static const ROUTE_NAME = '/profile/edit';
@@ -38,14 +38,14 @@ class ProfileEditState extends State<ProfileEdit> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Profile'),
+        title: const Text('Your Profile'),
         elevation: 0,
       ),
       body: StreamBuilder<LoginState>(
         stream: api.loginState,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
@@ -66,7 +66,7 @@ class ProfileEditState extends State<ProfileEdit> {
                   children: <Widget>[
                     Container(
                       color: FinalyzerTheme.colorPrimary,
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: <Widget>[
                           Text(
@@ -76,8 +76,8 @@ class ProfileEditState extends State<ProfileEdit> {
                           InkWell(
                             onTap: selectProfileImage,
                             child: Container(
-                              margin: EdgeInsets.symmetric(vertical: 16.0),
-                              constraints: BoxConstraints.tightFor(width: 100.0, height: 100.0),
+                              margin: const EdgeInsets.symmetric(vertical: 16.0),
+                              constraints: const BoxConstraints.tightFor(width: 100.0, height: 100.0),
                               alignment: Alignment.center,
                               child: Align(
                                 alignment: Alignment.centerRight,
@@ -86,7 +86,7 @@ class ProfileEditState extends State<ProfileEdit> {
                                   builder: (context, snapshot) => snapshot.connectionState == ConnectionState.waiting
                                       ? Column(
                                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: <Widget>[
+                                          children: const <Widget>[
                                             CircularProgressIndicator(),
                                             Text('Uploading …'),
                                           ],
@@ -103,7 +103,7 @@ class ProfileEditState extends State<ProfileEdit> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: <Widget>[
                           TextFormField(
@@ -132,22 +132,22 @@ class ProfileEditState extends State<ProfileEdit> {
                           FutureBuilder(
                             future: _userUpdateFuture,
                             builder: (context, snapshot) => Padding(
-                              padding: EdgeInsets.only(top: 8),
+                              padding: const EdgeInsets.only(top: 8),
                               child: snapshot.connectionState == ConnectionState.waiting
                                   ? RaisedButton(
                                       onPressed: null,
-                                      child: Text('Loading …'),
+                                      child: const Text('Loading …'),
                                       disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),
                                     )
                                   : RaisedButton(
-                                      child: Text('Save'),
+                                      child: const Text('Save'),
                                       color: Theme.of(context).accentColor,
                                       onPressed: snapshot.connectionState == ConnectionState.waiting
                                           ? null
                                           : () {
                                               if (!_formKey.currentState.validate()) {
-                                                Scaffold.of(context)
-                                                    .showSnackBar(SnackBar(content: Text('Please fix the errors.')));
+                                                Scaffold.of(context).showSnackBar(
+                                                    const SnackBar(content: Text('Please fix the errors.')));
                                                 return;
                                               }
                                               setState(() {
@@ -156,7 +156,7 @@ class ProfileEditState extends State<ProfileEdit> {
                                               });
                                               _userUpdateFuture.then((val) {
                                                 Scaffold.of(context)
-                                                    .showSnackBar(SnackBar(content: Text('Saved successfully.')));
+                                                    .showSnackBar(const SnackBar(content: Text('Saved successfully.')));
                                               });
                                             },
                                     ),
@@ -187,11 +187,11 @@ class ProfileEditState extends State<ProfileEdit> {
 }
 
 class AvatarWithEditIcon extends StatelessWidget {
+  const AvatarWithEditIcon(this.avatarUrl, {this.radius, this.minRadius});
+
   final String avatarUrl;
   final double radius;
   final double minRadius;
-
-  AvatarWithEditIcon(this.avatarUrl, {this.radius, this.minRadius});
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -200,7 +200,7 @@ class AvatarWithEditIcon extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(500),
-                boxShadow: [BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))]),
+                boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 4, offset: Offset(0, 2))]),
             child: CircleAvatar(
               backgroundColor: Colors.white,
               backgroundImage: CachedNetworkImageProvider(avatarUrl),
@@ -213,10 +213,10 @@ class AvatarWithEditIcon extends StatelessWidget {
             child: FractionallySizedBox(
               widthFactor: 0.25,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(),
                   ],
                   border: Border.all(color: FinalyzerTheme.colorPrimary),

@@ -17,11 +17,11 @@ class DialogUtil {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text('Error during request.'),
-              content: Text('There was an error while performing this action. Please try again later.'),
+              title: const Text('Error during request.'),
+              content: const Text('There was an error while performing this action. Please try again later.'),
               actions: <Widget>[
                 FlatButton(
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -42,7 +42,7 @@ class DialogUtil {
             content: Text(content),
             actions: <Widget>[
               FlatButton(
-                child: Text('Ok'),
+                child: const Text('Ok'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -52,7 +52,7 @@ class DialogUtil {
         });
   }
 
-  static void launchUrl(String url) async {
+  static Future<void> launchUrl(String url) async {
     if (await canLaunch(url)) {
       await AnalyticsUtils.instance.analytics.logEvent(name: 'launch_url', parameters: <String, dynamic>{'url': url});
       await launch(url, forceSafariVC: false);
@@ -61,10 +61,10 @@ class DialogUtil {
     }
   }
 
-  static void openFeedback({String origin}) async {
+  static Future<void> openFeedback({String origin}) async {
     await AnalyticsUtils.instance.analytics
-        .logEvent(name: "launch_feedback", parameters: <String, dynamic>{'origin': origin ?? 'unknown'});
-    final url = 'mailto:hello@anlage.app';
+        .logEvent(name: 'launch_feedback', parameters: <String, dynamic>{'origin': origin ?? 'unknown'});
+    const url = 'mailto:hello@anlage.app';
     if (await canLaunch(url)) {
       await launch(url, forceSafariVC: false);
     } else {
@@ -79,16 +79,16 @@ class DialogUtil {
 //                    showDialog(context: context, builder: (context) => AskForMessagingPermission());
           deps.cloudMessaging.requestPermission();
         }
-      }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
+      }).catchError(LoggingUtil.futureCatchErrorLog('require permission?'));
     }
   }
 }
 
 class ErrorRetry extends StatelessWidget {
+  const ErrorRetry({this.onPressed, this.error});
+
   final VoidCallback onPressed;
   final Object error;
-
-  ErrorRetry({this.onPressed, this.error});
 
   @override
   Widget build(BuildContext context) {

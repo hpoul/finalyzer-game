@@ -11,10 +11,10 @@ import 'package:logging/logging.dart';
 final _logger = Logger('app.anlage.game.screens.company_details');
 
 class CompanyDetailsScreen extends StatelessWidget {
+  const CompanyDetailsScreen(this.details, this.logo);
+
   final CompanyInfoDetails details;
   final InstrumentImageDto logo;
-
-  CompanyDetailsScreen(this.details, this.logo);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class CompanyDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
                 child: CachedNetworkImage(
                   imageUrl: api.getImageUrl(logo),
                   height: 100,
@@ -129,7 +129,7 @@ class StockChart extends StatefulWidget {
   StockChart(this.symbol);
 
   final String symbol;
-  final DateTime start = DateTime.now().subtract(Duration(days: 7 * 52));
+  final DateTime start = DateTime.now().subtract(const Duration(days: 7 * 52));
   final DateTime end = DateTime.now();
 
   @override
@@ -143,13 +143,13 @@ class _StockChartState extends State<StockChart> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    this._apiPriceData = DepsProvider.of(context).apiPriceData;
+    _apiPriceData = DepsProvider.of(context).apiPriceData;
     _loadData();
   }
 
   void _loadData() {
     stockDataFuture ??= _apiPriceData.getEodStockData(
-      symbols: [this.widget.symbol],
+      symbols: [widget.symbol],
       start: widget.start,
       end: widget.end,
     ).then((response) {
@@ -178,18 +178,18 @@ class _StockChartState extends State<StockChart> {
           );
         }
         if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         if (snapshot.data.data?.isEmpty ?? true) {
           _logger.severe('No data available for ${widget.symbol}');
-          return Center(child: Text('No data available.'));
+          return const Center(child: Text('No data available.'));
         }
 
         return charts.TimeSeriesChart(
           [snapshot.data],
           animate: false,
-          primaryMeasureAxis: charts.NumericAxisSpec(
+          primaryMeasureAxis: const charts.NumericAxisSpec(
             tickProviderSpec: charts.BasicNumericTickProviderSpec(zeroBound: false, desiredTickCount: 5),
           ),
 //          behaviors: [

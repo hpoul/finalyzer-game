@@ -1,7 +1,7 @@
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger("app.anlage.game.utils.logging");
+final _logger = Logger('app.anlage.game.utils.logging');
 
 void setupLogging() {
   Logger.root.level = Level.ALL;
@@ -34,7 +34,7 @@ void setupLogging() {
 class LoggingUtil {
   static Function futureCatchErrorLog(String message) {
     return (dynamic error, StackTrace stackTrace) {
-      _logger.warning("Error during future: ${message}", error, stackTrace);
+      _logger.warning('Error during future: $message', error, stackTrace);
       return Future<dynamic>.error(error, stackTrace);
     };
   }

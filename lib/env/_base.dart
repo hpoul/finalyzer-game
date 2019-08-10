@@ -9,16 +9,16 @@ import '../main.dart';
 enum EnvType { production, development }
 
 abstract class Env {
+  Env(this.type) {
+    value = this;
+  }
+
   static Env value;
 
   String get baseUrl;
   Color get primarySwatch;
   Duration get fakeLatency => null;
   final EnvType type;
-
-  Env(this.type) {
-    value = this;
-  }
 
   Future<void> start() async {
     await startApp(this);
@@ -27,8 +27,8 @@ abstract class Env {
   String get name => runtimeType.toString();
 
   Deps createDeps() {
-    Env env = this;
-    final prefs = const PreferenceStore();
+    final Env env = this;
+    const prefs = PreferenceStore();
     final cloudMessaging = CloudMessagingUtil(prefs);
     final apiCaller = ApiCaller(env);
     return Deps(

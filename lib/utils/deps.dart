@@ -21,6 +21,16 @@ class FirebaseConfig {
 
 @immutable
 class Deps {
+  Deps({
+    @required this.apiCaller,
+    @required this.api,
+    @required this.env,
+    @required this.prefs,
+    @required this.cloudMessaging,
+  })  : apiChallenge = ApiChallenge(apiCaller),
+        apiPriceData = ApiPriceData(apiCaller),
+        analytics = AnalyticsUtils.instance;
+
   final Env env;
   final FirebaseConfig firebaseConfig = FirebaseConfig();
   final ApiCaller apiCaller;
@@ -32,23 +42,13 @@ class Deps {
   final CloudMessagingUtil cloudMessaging;
   final AnalyticsUtils analytics;
 
-  Deps(
-      {@required this.apiCaller,
-      @required this.api,
-      @required this.env,
-      @required this.prefs,
-      @required this.cloudMessaging})
-      : apiChallenge = ApiChallenge(apiCaller),
-        apiPriceData = ApiPriceData(apiCaller),
-        analytics = AnalyticsUtils.instance;
-
   static Deps of(BuildContext context) => (context.inheritFromWidgetOfExactType(DepsProvider) as DepsProvider).deps;
 }
 
 class DepsProvider extends InheritedWidget {
-  final Deps deps;
+  const DepsProvider({Key key, this.deps, Widget child}) : super(key: key, child: child);
 
-  DepsProvider({Key key, this.deps, Widget child}) : super(key: key, child: child);
+  final Deps deps;
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => false;

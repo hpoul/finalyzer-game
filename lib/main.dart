@@ -17,10 +17,10 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 
-final _logger = Logger("app.anlage.game.main");
+final _logger = Logger('app.anlage.game.main');
 
 Future<void> _setupCrashlytics() async {
-  bool isInDebugMode = false;
+  const bool isInDebugMode = false;
 
   FlutterError.onError = (FlutterErrorDetails details) {
     _logger.severe('Unhandled FlutterError. ${details.toString()}', details.exception, details.stack);
@@ -54,6 +54,8 @@ Future<void> startApp(Env env) async {
 void main() => throw Exception('Run some env/*.dart');
 
 class MyApp extends StatelessWidget {
+  MyApp(this.env) : deps = env.createDeps();
+
   static AnalyticsUtils analytics = AnalyticsUtils.instance;
   static MyAnalyticsObserver observer = MyAnalyticsObserver(analytics: analytics);
 
@@ -64,8 +66,6 @@ class MyApp extends StatelessWidget {
   final Deps deps;
 
 //  final Deps deps;
-
-  MyApp(this.env) : deps = env.createDeps();
 
   // This widget is the root of your application.
   @override
@@ -97,10 +97,10 @@ class MyApp extends StatelessWidget {
 }
 
 class DynamicLinkHandler extends StatefulWidget {
+  const DynamicLinkHandler({this.child, this.navigatorKey});
+
   final Widget child;
   final GlobalKey<NavigatorState> navigatorKey;
-
-  DynamicLinkHandler({this.child, this.navigatorKey});
 
   @override
   _DynamicLinkHandlerState createState() => _DynamicLinkHandlerState();
@@ -126,11 +126,11 @@ class _DynamicLinkHandlerState extends State<DynamicLinkHandler> with WidgetsBin
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Deps deps = DepsProvider.of(context);
+    final Deps deps = DepsProvider.of(context);
     WidgetsBinding.instance.addObserver(this);
     _retrieveDynamicLinkBackgroundWithLogging();
     _onNotificationSubscription = deps.cloudMessaging.onNotification.listen((notification) {
-      _logger.fine('Handling notification ${notification} ${notification?.toJson()}');
+      _logger.fine('Handling notification $notification ${notification?.toJson()}');
       if (notification == null) {
         return;
       }

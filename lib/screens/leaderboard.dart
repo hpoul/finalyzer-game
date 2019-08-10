@@ -27,14 +27,14 @@ class LeaderboardListState extends State<LeaderboardList> {
     return Scaffold(
       key: leaderboardScaffold,
       appBar: AppBar(
-        title: Text('Leaderboard'),
+        title: const Text('Leaderboard'),
       ),
       body: SafeArea(
         child: FutureBuilder<LeaderboardSimpleResponse>(
             future: api.fetchLeaderboard(),
             builder: (context, snapshot) {
               if (snapshot.data == null) {
-                return Center(
+                return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
@@ -67,7 +67,7 @@ class LeaderboardListState extends State<LeaderboardList> {
 }
 
 class LeaderBoardBottomSheet extends StatelessWidget {
-  LeaderBoardBottomSheet(this.entry, this.leaderboardScaffold);
+  const LeaderBoardBottomSheet(this.entry, this.leaderboardScaffold);
 
   final LeaderboardEntry entry;
   final GlobalKey<ScaffoldState> leaderboardScaffold;
@@ -81,12 +81,12 @@ class LeaderBoardBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text("${entry.displayName}", style: Theme.of(context).textTheme.headline),
+          Text('${entry.displayName}', style: Theme.of(context).textTheme.headline),
           ListTile(
             leading: Icon(Icons.send),
-            title: Text('Send Challenge'),
+            title: const Text('Send Challenge'),
             onTap: () {
-              leaderboardScaffold.currentState.showSnackBar(SnackBar(content: Text('Sending Challenge …')));
+              leaderboardScaffold.currentState.showSnackBar(const SnackBar(content: Text('Sending Challenge …')));
               Navigator.of(context).pop();
               apiChallenge
                   .createChallengeInvite(GameChallengeInviteType.DirectInvite, gameUserToken: entry.userToken)
@@ -96,7 +96,7 @@ class LeaderBoardBottomSheet extends StatelessWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(
                       content: Row(
-                    children: <Widget>[Text('Invitation sent successfully️'), Icon(Icons.check)],
+                    children: const <Widget>[Text('Invitation sent successfully️'), Icon(Icons.check)],
                   )));
 //                    DialogUtil.showSimpleAlertDialog(context, null, 'Sent invitation.');
               }).catchError(DialogUtil.genericErrorDialog(context));
@@ -109,14 +109,6 @@ class LeaderBoardBottomSheet extends StatelessWidget {
 }
 
 class LeaderboardListTile extends StatelessWidget {
-  final int rank;
-  final String displayName;
-  final String avatarUrl;
-  final int statsCorrectAnswers;
-  final bool isMyself;
-  final Widget subtitle;
-  final VoidCallback onTap;
-
   const LeaderboardListTile({
     Key key,
     this.rank,
@@ -127,6 +119,14 @@ class LeaderboardListTile extends StatelessWidget {
     this.subtitle,
     this.onTap,
   }) : super(key: key);
+
+  final int rank;
+  final String displayName;
+  final String avatarUrl;
+  final int statsCorrectAnswers;
+  final bool isMyself;
+  final Widget subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -139,14 +139,14 @@ class LeaderboardListTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Container(
-                padding: EdgeInsets.only(right: 8.0),
-                constraints: BoxConstraints(minWidth: 50),
+                padding: const EdgeInsets.only(right: 8.0),
+                constraints: const BoxConstraints(minWidth: 50),
                 child: Text(
                   '$rank.',
                   style: Theme.of(context).textTheme.title,
                   textAlign: TextAlign.right,
                 )),
-            Avatar(avatarUrl + "?asdfx"),
+            Avatar(avatarUrl + '?asdfx'),
           ],
         ),
         title: Text(displayName),

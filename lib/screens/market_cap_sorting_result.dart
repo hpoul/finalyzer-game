@@ -21,12 +21,12 @@ import 'package:logging/logging.dart';
 final _logger = Logger('market_cap_sorting_result');
 
 class MarketCapSortingResultWidget extends StatelessWidget {
+  MarketCapSortingResultWidget(this.response, this._gameBloc, this._gameSet);
+
   final GameSimpleSetVerifyResponse response;
   final MarketCapSortingGameBloc _gameBloc;
   final GameSimpleSetResponse _gameSet;
   final GlobalKey drawGlobalKey = GlobalKey();
-
-  MarketCapSortingResultWidget(this.response, this._gameBloc, this._gameSet);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     final deps = DepsProvider.of(context);
     return Container(
       child: AlertDialog(
-        contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
         content: SingleChildScrollView(
           child: RepaintBoundary(
             key: drawGlobalKey,
@@ -46,7 +46,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
         actions: <Widget>[
           FlatButton.icon(
             icon: Icon(Icons.share),
-            label: Text('Share'),
+            label: const Text('Share'),
             onPressed: () {
               AnalyticsUtils.instance.analytics
                   .logShare(contentType: 'result_sorting', itemId: 'sort', method: 'share');
@@ -104,11 +104,11 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                         ? Text('️📈️ Almost!', style: titleTextStyle)
                         : response.correctCount == 4
                             ? Text('🎉️ WOW! All Correct!', style: titleTextStyle.copyWith(color: Colors.green))
-                            : Text('?!')),
+                            : const Text('?!')),
 
 //        Text('${response.correctCount} correct answers.'),
             Container(
-              padding: EdgeInsets.only(bottom: 8, top: 20),
+              padding: const EdgeInsets.only(bottom: 8, top: 20),
               child: Text('Correct order by market cap:', style: theme.textTheme.caption),
             ),
           ] +
@@ -194,7 +194,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                     child: CachedNetworkImage(
                                       fit: BoxFit.scaleDown,
                                       alignment: Alignment.centerRight,
-                                      placeholder: (context, url) => Center(child: LinearProgressIndicator()),
+                                      placeholder: (context, url) => const Center(child: LinearProgressIndicator()),
                                       errorWidget: (context, url, error) =>
                                           Center(child: Text(info.symbol ?? 'Error ${info.logo.id}')),
                                       width: 100,
@@ -203,7 +203,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                     ),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.only(bottom: 8.0),
+                                    margin: const EdgeInsets.only(bottom: 8.0),
                                     child: Text(
                                       formatMarketCap(resultDto.marketCap),
                                       style: Theme.of(context).textTheme.caption.copyWith(fontFamily: 'RobotoMono'),
@@ -229,7 +229,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                                 ]),
                               ),
                               Container(
-                                margin: EdgeInsets.only(left: 8),
+                                margin: const EdgeInsets.only(left: 8),
                                 child: isCorrect
                                     ? Icon(
                                         Icons.check_circle,
@@ -256,35 +256,35 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     return ret;
   }
 
-  void _capturePngWithPicture(BuildContext context) async {
+  Future<void> _capturePngWithPicture(BuildContext context) async {
     try {
-      TextSpan span = TextSpan(
+      final TextSpan span = TextSpan(
           style: TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 24, fontFamily: 'RobotoMono'),
           text: 'https://anlage.app/game');
       final painter = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
       painter.layout();
 
       final boundary = drawGlobalKey.currentContext.findRenderObject() as RenderRepaintBoundary;
-      ui.Image img = await boundary.toImage(pixelRatio: 2.0);
+      final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
 
-      final padding = 64.0;
+      const padding = 64.0;
 
       final recorder = ui.PictureRecorder();
       final canvasRect =
-          Offset(0, 0) & Size(img.width + 2 * padding, img.height + 2 * padding + padding + painter.height);
+          const Offset(0, 0) & Size(img.width + 2 * padding, img.height + 2 * padding + padding + painter.height);
       final canvas = ui.Canvas(recorder, canvasRect);
 
       final p = Paint();
       p.color = Colors.white;
       canvas.drawRect(canvasRect, p);
-      canvas.drawImage(img, Offset(padding, padding), Paint());
+      canvas.drawImage(img, const Offset(padding, padding), Paint());
 
       painter.paint(canvas, Offset(padding, canvasRect.height - padding - painter.height));
       _logger.fine('painter.height: ${painter.height} --- $painter');
 
       final picture = recorder.endRecording();
 
-      ui.Image finalImage = await picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
+      final ui.Image finalImage = await picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
 
       final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {

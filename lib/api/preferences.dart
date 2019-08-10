@@ -4,9 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 final _logger = Logger('app.anlage.game.api.preferences');
 
 abstract class _Preference<T> {
-  final String name;
-
   const _Preference(this.name);
+
+  final String name;
 
   Future<T> get(SharedPreferences prefs);
 
@@ -45,9 +45,8 @@ class _BoolPreference extends _Preference<bool> {
 }
 
 class Preferences {
-  static const askedForPushPermission = _BoolPreference("asked_for_push");
-
   const Preferences();
+  static const askedForPushPermission = _BoolPreference('asked_for_push');
 }
 
 class PreferenceStore {

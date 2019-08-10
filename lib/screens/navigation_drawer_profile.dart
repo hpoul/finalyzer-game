@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final _logger = Logger("app.anlage.game.screens.navigation_drawer_profile");
+final _logger = Logger('app.anlage.game.screens.navigation_drawer_profile');
 
 class NavigationDrawerProfile extends StatelessWidget {
   @override
@@ -26,20 +26,20 @@ class NavigationDrawerProfile extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Column(
-                  children: <Widget>[
+                  children: const <Widget>[
                     Text('Error while fetching user information.'),
                   ],
                 );
               }
               if (!snapshot.hasData) {
                 _logger.fine(snapshot);
-                return Center(
+                return const Center(
 //                  heightFactor: 1.5,
                   child: CircularProgressIndicator(),
                 );
               }
 
-              final displayName = snapshot?.data?.userInfo?.displayName ?? "";
+              final displayName = snapshot?.data?.userInfo?.displayName ?? '';
               final userType = snapshot?.data?.userInfo?.userType ?? GameUserType.User;
               return Column(
                 mainAxisSize: MainAxisSize.max,
@@ -54,7 +54,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                       },
                       child: Container(
                         alignment: Alignment.centerRight,
-                        padding: EdgeInsets.all(16).copyWith(top: MediaQuery.of(context).padding.top + 16),
+                        padding: const EdgeInsets.all(16).copyWith(top: MediaQuery.of(context).padding.top + 16),
                         child: DefaultTextStyle(
                           style: Theme.of(context).primaryTextTheme.body1,
                           textAlign: TextAlign.right,
@@ -64,7 +64,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
                                         Container(
-                                          margin: EdgeInsets.only(bottom: 16),
+                                          margin: const EdgeInsets.only(bottom: 16),
                                           constraints: BoxConstraints.tightFor(width: 128, height: 128),
                                           child: AvatarWithEditIcon(
                                             snapshot?.data?.avatarUrl,
@@ -72,13 +72,13 @@ class NavigationDrawerProfile extends StatelessWidget {
                                           ),
                                         ),
                                       ] +
-                                      (displayName == ""
+                                      (displayName == ''
                                           ? [
                                               Text(
                                                 'Hello Anonymous Investor!',
                                                 style: TextStyle(fontWeight: FontWeight.bold),
                                               ),
-                                              Text(
+                                              const Text(
                                                 'Tell us a bit about you to get listed in the leaderboard!',
                                               ),
                                             ]
@@ -112,7 +112,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                 children: <Widget>[
                                   ListTile(
                                     leading: Icon(Icons.assignment),
-                                    title: Text('Completed Turns:'),
+                                    title: const Text('Completed Turns:'),
                                     trailing: Text(
                                       '${snapshot.data?.userInfo?.statsTotalTurns ?? '?'}',
                                       style: Theme.of(context).textTheme.display1,
@@ -123,7 +123,7 @@ class NavigationDrawerProfile extends StatelessWidget {
                                       Icons.thumb_up,
                                       color: Colors.green,
                                     ),
-                                    title: Text('Correct Answers:'),
+                                    title: const Text('Correct Answers:'),
                                     trailing: Text(
                                       '${snapshot.data?.userInfo?.statsCorrectAnswers ?? '?'}',
                                       style: Theme.of(context).textTheme.display1,
@@ -137,21 +137,21 @@ class NavigationDrawerProfile extends StatelessWidget {
                                 children: <Widget>[
                                   ListTile(
                                     leading: Icon(Icons.send),
-                                    title: Text('Challenge a friend.'),
+                                    title: const Text('Challenge a friend.'),
                                     onTap: () {
                                       Navigator.of(context).pushNamed(ChallengeInvite.ROUTE_NAME);
                                     },
                                   ),
                                   ListTile(
                                     leading: Icon(Icons.view_list),
-                                    title: Text('Challenges'),
+                                    title: const Text('Challenges'),
                                     onTap: () {
                                       Navigator.of(context).pushNamed(ChallengeList.ROUTE_NAME);
                                     },
                                   ),
                                   ListTile(
                                     leading: Icon(Icons.format_list_numbered),
-                                    title: Text('Leaderboard'),
+                                    title: const Text('Leaderboard'),
                                     onTap: () {
                                       Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
                                     },
@@ -159,23 +159,23 @@ class NavigationDrawerProfile extends StatelessWidget {
                                   Divider(),
                                   ListTile(
                                     leading: Icon(Icons.email),
-                                    title: Text('How can we improve? Problems?'),
-                                    subtitle: Text('We love to hear from you at hello@anlage.app'),
+                                    title: const Text('How can we improve? Problems?'),
+                                    subtitle: const Text('We love to hear from you at hello@anlage.app'),
                                     onTap: () {
                                       DialogUtil.openFeedback(origin: 'drawer');
                                     },
                                   ),
                                   ListTile(
                                     leading: Icon(Icons.link),
-                                    title: Text('By https://Anlage.App/'),
-                                    subtitle: Text('Track&Analyse your portfolio.'),
+                                    title: const Text('By https://Anlage.App/'),
+                                    subtitle: const Text('Track&Analyse your portfolio.'),
                                     onTap: () async {
-                                      final url = 'https://anlage.app/?utm_source=marketcap-game';
-                                      DialogUtil.launchUrl(url);
+                                      const url = 'https://anlage.app/?utm_source=marketcap-game';
+                                      await DialogUtil.launchUrl(url);
                                     },
                                     onLongPress: () async {
                                       _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
-                                      final url = 'https://anlage.app/?utm_source=marketcap-game';
+                                      const url = 'https://anlage.app/?utm_source=marketcap-game';
                                       if (await canLaunch(url)) {
                                         await launch(url, forceSafariVC: false);
                                       } else {

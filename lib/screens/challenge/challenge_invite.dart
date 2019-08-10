@@ -28,10 +28,10 @@ class ChallengeInvite extends StatelessWidget {
     DepsProvider.of(context).cloudMessaging.requestPermission();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Challenge Friend'),
+        title: const Text('Challenge Friend'),
       ),
       body: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: ChallengeInviteForm(),
       ),
     );
@@ -51,7 +51,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
 
   @override
   Widget build(BuildContext context) {
-    Deps deps = DepsProvider.of(context);
+    final Deps deps = DepsProvider.of(context);
     final apiChallenge = deps.apiChallenge;
     return Form(
       key: _formKey,
@@ -61,9 +61,9 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
           _logger.finer('snapshot: $snapshot');
           return Column(
             children: <Widget>[
-              Text(
-                  "Challenge your friends to a round of MarketCap Game! Once your friends accepts your invitation, you "
-                  "will both receive the same set of challenges."),
+              const Text(
+                  'Challenge your friends to a round of MarketCap Game! Once your friends accepts your invitation, you '
+                  'will both receive the same set of challenges.'),
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
                 child: Text(
@@ -83,7 +83,7 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
                 icon: Icon(Icons.create),
                 color: Theme.of(context).accentColor,
                 disabledColor: FinalyzerTheme.colorSecondary.withOpacity(0.5),
-                label: Text('Create Challenge'),
+                label: const Text('Create Challenge'),
                 onPressed: snapshot.connectionState == ConnectionState.waiting
                     ? null
                     : () {
@@ -145,9 +145,9 @@ class _ChallengeInviteFormState extends State<ChallengeInviteForm> {
 }
 
 class ChallengeInviteInfo extends StatefulWidget {
-  final String inviteToken;
+  const ChallengeInviteInfo({@required this.inviteToken});
 
-  ChallengeInviteInfo({@required this.inviteToken});
+  final String inviteToken;
 
   @override
   _ChallengeInviteInfoState createState() => _ChallengeInviteInfoState();
@@ -163,8 +163,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    this._deps = DepsProvider.of(context);
-    this._apiChallenge = _deps.apiChallenge;
+    _deps = DepsProvider.of(context);
+    _apiChallenge = _deps.apiChallenge;
     _requestInfo();
   }
 
@@ -172,22 +172,22 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Accepting invitation'),
+        title: const Text('Accepting invitation'),
       ),
       body: FutureBuilder<GameChallengeInviteInfoResponse>(
         future: _inviteInfoFuture,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return ErrorRetry(onPressed: this._requestInfo, error: snapshot.error);
+            return ErrorRetry(onPressed: _requestInfo, error: snapshot.error);
           }
           if (!snapshot.hasData) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: const [
                   CircularProgressIndicator(),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Text('Loading invitation'),
                   ),
                 ],
@@ -197,8 +197,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
           final createdBy = snapshot.data.createdBy;
           final isWeeklyChallenge = snapshot.data.challengeType == GameChallengeType.WeeklyChallenge;
           return Container(
-            alignment: Alignment(0, -0.4),
-            margin: EdgeInsets.all(16),
+            alignment: const Alignment(0, -0.4),
+            margin: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -216,7 +216,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                   ),
                 ),
                 isWeeklyChallenge
-                    ? Text('Join our current weekly challenge!')
+                    ? const Text('Join our current weekly challenge!')
                     : Text('You have been challenged by ${createdBy.displayName}. Do you want to play?'),
                 FutureBuilder<GameChallengeDto>(
                   future: _acceptChallengeFuture,
@@ -237,8 +237,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                                 }).catchError(DialogUtil.genericErrorDialog(context));
                               });
                             },
-                      icon: Icon(Icons.check),
-                      label: Text('Accept'),
+                      icon: const Icon(Icons.check),
+                      label: const Text('Accept'),
                     ),
                   ),
                 ),

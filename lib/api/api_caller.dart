@@ -9,7 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final _logger = Logger("app.anlage.game.api.api_caller");
+final _logger = Logger('app.anlage.game.api.api_caller');
 
 class ApiCallerInterceptor implements Interceptor {
   ApiCallerInterceptor(this._apiCaller, this._dio);
@@ -21,7 +21,7 @@ class ApiCallerInterceptor implements Interceptor {
   FutureOr onError(DioError error) async {
     if (error.response != null && error.response.statusCode == HttpStatus.unauthorized) {
       _logger.severe(
-          'It seems session got invalid. at least remove session so on next request it is working again. ${await this._apiCaller._getGameSessionFromPreferences()}');
+          'It seems session got invalid. at least remove session so on next request it is working again. ${await _apiCaller._getGameSessionFromPreferences()}');
       await _apiCaller._setGameSession(null);
     }
     return error;
@@ -56,6 +56,10 @@ class ApiCallerInterceptor implements Interceptor {
 }
 
 class ApiCaller {
+  ApiCaller(this._env) : _baseUri = Uri.parse(_env.baseUrl) {
+    _dio = _createSessionDio();
+  }
+
   static const PREF_GAME_SESSION = 'GAME_SESSION';
   static const GAME_SESSION_HEADER = 'GAME-SESSION';
 
@@ -64,10 +68,6 @@ class ApiCaller {
   Dio _dio;
 
   String _gameSession;
-
-  ApiCaller(this._env) : _baseUri = Uri.parse(_env.baseUrl) {
-    _dio = _createSessionDio();
-  }
 
   Dio _createSessionDio() {
     final dio = Dio();
@@ -81,8 +81,8 @@ class ApiCaller {
     final response = await _post(
         location,
         RegisterDeviceRequest(
-                "TODO",
-                "${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}",
+                'TODO', // TODO implement device info?
+                '${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}',
                 Platform.isIOS
                     ? DevicePlatform.iOS
                     : Platform.isAndroid ? DevicePlatform.Android : DevicePlatform.Unknown)

@@ -7,10 +7,10 @@ import 'package:logging/logging.dart';
 final _logger = Logger('app.anlage.game.utils.widgets.avatar');
 
 class Avatar extends StatelessWidget {
+  const Avatar(this.avatarUrl, {this.radius});
+
   final String avatarUrl;
   final double radius;
-
-  Avatar(this.avatarUrl, {this.radius});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class Avatar extends StatelessWidget {
     return CircleAvatar(
 //      backgroundColor: Theme.of(context).primaryColorDark,
       backgroundImage: CachedNetworkImageProvider(url, errorListener: () {
-        _logger.severe('Error while loading avatar from ${avatarUrl}');
+        _logger.severe('Error while loading avatar from $avatarUrl');
       }),
       radius: radius,
     );

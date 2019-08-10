@@ -2,9 +2,9 @@ import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 
 class ApiChallenge {
-  final ApiCaller _apiCaller;
-
   ApiChallenge(this._apiCaller);
+
+  final ApiCaller _apiCaller;
 
   Future<GameChallengeInviteResponse> createChallengeInvite(GameChallengeInviteType type,
       {String displayName = '', String gameUserToken}) {

@@ -75,7 +75,7 @@ class ApiService {
     _logger.fine('Creating new ApiService.');
 
     // some arbitrary time after staring up, request current status from the server.
-    Future<dynamic>.delayed(Duration(seconds: 3)).then((dynamic x) async {
+    Future<dynamic>.delayed(const Duration(seconds: 3)).then((dynamic x) async {
       await _updateUserInfo();
     });
     _cloudMessaging.onTokenRefresh.listen((newToken) {

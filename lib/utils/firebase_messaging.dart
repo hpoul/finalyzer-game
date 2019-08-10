@@ -9,12 +9,12 @@ import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 import 'package:rxdart/rxdart.dart';
 
-final _logger = Logger("app.anlage.game.utils.firebase_messaging");
+final _logger = Logger('app.anlage.game.utils.firebase_messaging');
 
 class CloudMessagingUtil with StreamSubscriberBase {
-  final PreferenceStore _prefs;
-
   CloudMessagingUtil(this._prefs);
+
+  final PreferenceStore _prefs;
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
@@ -49,7 +49,7 @@ class CloudMessagingUtil with StreamSubscriberBase {
       _onTokenRefresh.add(newToken);
     }));
     handle(_firebaseMessaging.onIosSettingsRegistered.listen((event) {
-      _logger.info('User updated iOS Settings ${event}');
+      _logger.info('User updated iOS Settings $event');
     }));
     _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.WeeklyChallenges));
     _firebaseMessaging.subscribeToTopic(convertFirebaseMessagingTopicToJson(FirebaseMessagingTopic.All));
@@ -58,7 +58,7 @@ class CloudMessagingUtil with StreamSubscriberBase {
 
   Future<String> getToken() async {
     final token = await _firebaseMessaging.getToken();
-    _logger.info('Token: ${token}.');
+    _logger.info('Token: $token.');
     return token;
   }
 
@@ -72,8 +72,8 @@ class CloudMessagingUtil with StreamSubscriberBase {
   }
 
   void requestPermission() {
-    AnalyticsUtils.instance.analytics.logEvent(name: "fcm_request_permission");
-    _firebaseMessaging.requestNotificationPermissions(IosNotificationSettings(
+    AnalyticsUtils.instance.analytics.logEvent(name: 'fcm_request_permission');
+    _firebaseMessaging.requestNotificationPermissions(const IosNotificationSettings(
       alert: true,
       badge: true,
       sound: true,

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 const kFinalyzerOrangePrimary = 0xFFE29B4A;
 const kFinalyzerOrange = Color(kFinalyzerOrangePrimary);
 const kFinalyzerGreen = Color(0xFF97c965);
-const kDarkGray = Color(0XFFF1F5F6);
+const kDarkGray = Color(0xFFF1F5F6);
 const kTextDarkGray = Colors.grey;
 const kAppBarElevation = 0.5;
 

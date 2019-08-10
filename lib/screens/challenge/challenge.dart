@@ -15,9 +15,9 @@ import 'package:flutter/widgets.dart';
 import '../market_cap_sorting.dart';
 
 class Challenge extends StatefulWidget {
-  final MarketCapSortingChallengeBloc gameBloc;
-
   const Challenge({Key key, @required this.gameBloc}) : super(key: key);
+
+  final MarketCapSortingChallengeBloc gameBloc;
 
   @override
   _ChallengeState createState() => _ChallengeState();
@@ -50,10 +50,10 @@ class ChallengeList extends StatefulWidget {
 enum ChallengeListItemType { Challenge, InviteCta }
 
 class ChallengeListItem {
-  ChallengeListItemType type;
-  GameChallengeInfoDto challengeInfo;
   ChallengeListItem.info(this.challengeInfo) : type = ChallengeListItemType.Challenge;
   ChallengeListItem.type(this.type);
+  ChallengeListItemType type;
+  GameChallengeInfoDto challengeInfo;
 }
 
 class _ChallengeListState extends State<ChallengeList> {
@@ -62,14 +62,9 @@ class _ChallengeListState extends State<ChallengeList> {
   Future<GameChallengeListResponse> _listFuture;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    this._deps = DepsProvider.of(context);
+    _deps = DepsProvider.of(context);
     _deps.cloudMessaging.requestPermission();
     _refresh();
   }
@@ -92,12 +87,12 @@ class _ChallengeListState extends State<ChallengeList> {
       builder: (context, snapshot) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('Challenges'),
+            title: const Text('Challenges'),
           ),
           body: !snapshot.hasData
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : ListView.separated(
-                  separatorBuilder: (context, index) => Divider(
+                  separatorBuilder: (context, index) => const Divider(
                     height: 0,
                   ),
                   itemCount: snapshot.data.length,
@@ -116,18 +111,18 @@ class _ChallengeListState extends State<ChallengeList> {
                             ? Theme.of(context).accentColor
                             : null,
                         child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                           leading: Avatar(challenge.createdBy == null
                               ? _deps.api.currentLoginState.avatarUrl
                               : challenge.createdBy.avatarUrl),
                           title: challenge.title.isNotEmpty
                               ? Text(challenge.title)
                               : isWeeklyChallenge
-                                  ? Text('Weekly challenge!')
+                                  ? const Text('Weekly challenge!')
                                   : Text(
                                       'Created ${_deps.formatUtil.formatRelativeFuzzy(challenge.createdAt.dateTime)}'),
                           subtitle: isWeeklyChallenge
-                              ? Text('Participate now!')
+                              ? const Text('Participate now!')
                               : Text(
                                   challenge.createdBy == null ? 'by you.' : 'by: ${challenge.createdBy.displayName}.'),
                           trailing: Icon(
@@ -180,15 +175,15 @@ class ChallengeInviteCta extends StatelessWidget {
       child: Ink(
         color: Theme.of(context).primaryColorLight,
         child: ListTile(
-          contentPadding: EdgeInsets.all(32),
+          contentPadding: const EdgeInsets.all(32),
           title: Column(
             children: <Widget>[
               Container(
                 child: Icon(Icons.send),
               ),
               Container(
-                margin: EdgeInsets.only(top: 32),
-                child: Text('Challenge a friend'),
+                margin: const EdgeInsets.only(top: 32),
+                child: const Text('Challenge a friend'),
               ),
             ],
           ),
@@ -202,9 +197,9 @@ class ChallengeInviteCta extends StatelessWidget {
 }
 
 class ChallengeListActionBottomSheet extends StatelessWidget {
-  final GameChallengeInfoDto challengeInfo;
+  const ChallengeListActionBottomSheet(this.challengeInfo);
 
-  ChallengeListActionBottomSheet(this.challengeInfo);
+  final GameChallengeInfoDto challengeInfo;
 
   @override
   Widget build(BuildContext context) {
@@ -215,12 +210,12 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Text("Challenge", style: Theme.of(context).textTheme.headline),
+          Text('Challenge', style: Theme.of(context).textTheme.headline),
           ListTile(
             leading: Icon(Icons.play_arrow),
-            title: Text('Start'),
+            title: const Text('Start'),
             onTap: () {
-              apiChallenge.startChallenge(this.challengeInfo.challengeId).then((challenge) {
+              apiChallenge.startChallenge(challengeInfo.challengeId).then((challenge) {
                 final bloc = MarketCapSortingChallengeBloc(deps.api, challenge);
                 Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                     name: '/challenge/game',
@@ -232,7 +227,7 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.details),
-            title: Text('Details/Results'),
+            title: const Text('Details/Results'),
             onTap: () {
               Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                   name: '/challenge/details', builder: (context) => ChallengeDetails(challengeInfo.challengeId)));
@@ -245,9 +240,9 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
 }
 
 class ChallengeDetails extends StatefulWidget {
-  final String challengeId;
+  const ChallengeDetails(this.challengeId);
 
-  ChallengeDetails(this.challengeId);
+  final String challengeId;
 
   @override
   _ChallengeDetailsState createState() => _ChallengeDetailsState();
@@ -265,9 +260,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
     super.didChangeDependencies();
     _deps = DepsProvider.of(context);
     _apiChallenge = _deps.apiChallenge;
-    if (detailsFuture == null) {
-      detailsFuture = _apiChallenge.getGameChallengeDetails(widget.challengeId);
-    }
+    detailsFuture ??= _apiChallenge.getGameChallengeDetails(widget.challengeId);
   }
 
   @override
@@ -285,7 +278,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
               details?.baseInfo?.myParticipantStatus == GameChallengeParticipantStatus.TurnsCreated) {
             actions = [
               RaisedButton(
-                child: Text('Play Now'),
+                child: const Text('Play Now'),
                 onPressed: () {
                   _apiChallenge
                       .startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve)
@@ -306,10 +299,10 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
         final statusText = (GameChallengeParticipantStatus status) {
           switch (status) {
             case GameChallengeParticipantStatus.Invited:
-              return Text('Did not accept invitation.');
+              return const Text('Did not accept invitation.');
             case GameChallengeParticipantStatus.TurnsCreated:
             case GameChallengeParticipantStatus.Ready:
-              return Text('Did not finish yet.');
+              return const Text('Did not finish yet.');
             case GameChallengeParticipantStatus.Finished:
               return null;
           }
@@ -318,10 +311,10 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Challenge Details'),
+            title: const Text('Challenge Details'),
           ),
           body: !snapshot.hasData
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : Column(
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
@@ -330,7 +323,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                           child: createdBy == null
                               ? Text('You created this callenge ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.')
                               : details.baseInfo.type == GameChallengeType.WeeklyChallenge
-                                  ? Text('Weekly Challenge')
+                                  ? const Text('Weekly Challenge')
                                   : Text(
                                       'Challenge created by ${details.baseInfo.createdBy.displayName}, ${_deps.formatUtil.formatRelativeFuzzy(createdAt)}.'),
                         ),
@@ -340,7 +333,7 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                       [
                         Expanded(
                           child: ListView.separated(
-                            separatorBuilder: (context, index) => Divider(height: 0),
+                            separatorBuilder: (context, index) => const Divider(height: 0),
                             itemBuilder: (context, index) {
                               final p = details.participants[index];
                               return LeaderboardListTile(
