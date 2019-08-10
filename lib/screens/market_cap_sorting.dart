@@ -3,12 +3,15 @@ import 'dart:ui' as ui;
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
+import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/company_details.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/screens/market_cap_sorting_help.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting_result.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -202,6 +205,11 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text('Market Cap Game'),
       actions: <Widget>[
+        IconButton(
+            icon: Icon(Icons.help),
+            onPressed: () async {
+              await showDialog(context: context, builder: (context) => MarketCapSortingHelpDialog());
+            }),
         StreamBuilder<LoginState>(
           builder: (context, snapshot) => IconButton(
               iconSize: 36,
@@ -258,62 +266,74 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         appBar: MarketCapAppBar(
           api: _api,
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          label: isVerifying
-              ? Text('Checking …')
-              : verification != null
-                  ? (challengeBloc == null
-                      ? Text('New Game')
-                      : challengeBloc.isCompleted ? Text('Finish') : Text('Next Turn'))
-                  : Text(snapshot.hasData ? 'Check' : 'Loading …'),
-          icon: isVerifying || snapshot.data == null
-              ? Container(
-                  height: 16.0,
-                  width: 16.0,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                  ))
-              : Icon(Icons.check),
-          onPressed: verification != null
-              ? () {
-                  _gameBloc.nextTurn();
-                  setState(() {
-                    verification = null;
-                  });
-                }
-              : (isVerifying || snapshot.data == null)
-                  ? null
-                  : () {
-                      setState(() {
-                        isVerifying = !isVerifying;
-                      });
-                      _gameBloc.verifyMarketCaps().then((val) {
-                        DepsProvider.of(context)
-                            .analytics
-                            .events
-                            .trackTurnVerify(gameType: GameType.sorting, score: val.response.correctCount);
+        floatingActionButton: isVerifying
+            ? FloatingActionButton.extended(
+                label: Text('Checking …'),
+                icon: FabProgressCircle(),
+                onPressed: null,
+              )
+            : !snapshot.hasData
+                ? FloatingActionButton.extended(
+                    label: Text('Loading …'),
+                    icon: FabProgressCircle(),
+                    onPressed: null,
+                  )
+                : verification != null
+                    ? FloatingActionButton.extended(
+                        label: (challengeBloc == null
+                            ? Text('New Game')
+                            : challengeBloc.isCompleted ? Text('Finish') : Text('Next Turn')),
+                        icon: Icon(Icons.navigate_next),
+                        onPressed: () async {
+                          if (challengeBloc?.isCompleted ?? false) {
+                            await Navigator.of(context).pushReplacement(
+                              AnalyticsPageRoute(
+                                  name: '/challenge/details',
+                                  builder: (context) => ChallengeDetails(challengeBloc.challenge.challengeId)),
+                            );
+                          } else {
+                            _gameBloc.nextTurn();
+                            setState(() {
+                              verification = null;
+                            });
+                            DialogUtil.askForPermissionsIfRequired(Deps.of(context));
+                          }
+                        },
+                      )
+                    : FloatingActionButton.extended(
+                        label: Text('Check'),
+                        icon: Icon(Icons.check),
+                        onPressed: () {
+                          setState(() {
+                            isVerifying = true;
+                          });
+                          _gameBloc.verifyMarketCaps().then((val) {
+                            DepsProvider.of(context)
+                                .analytics
+                                .events
+                                .trackTurnVerify(gameType: GameType.sorting, score: val.response.correctCount);
 //                    _showVerifyResultDialog(val, snapshot.data);
-                        setState(() {
+                            setState(() {
 //                          isVerifying = false;
-                          _verificationAnimation ??=
-                              AnimationController(duration: const Duration(seconds: 8), vsync: this);
-                          _verificationAnimation.forward(from: 0).then((val) {
+                              _verificationAnimation ??=
+                                  AnimationController(duration: const Duration(seconds: 8), vsync: this);
+                              _verificationAnimation.forward(from: 0).then((val) {
+                                setState(() {
+                                  isVerifying = false;
+                                });
+                              });
+                              verification = val;
+                            });
+                          }).catchError((error, stackTrace) {
+                            _logger.severe('Error while verifying market caps.', error, stackTrace);
                             setState(() {
                               isVerifying = false;
                             });
+                            _showErrorDialog(error);
                           });
-                          verification = val;
-                        });
-                      }).catchError((error, stackTrace) {
-                        _logger.severe('Error while verifying market caps.', error, stackTrace);
-                        setState(() {
-                          isVerifying = false;
-                        });
-                        _showErrorDialog(error);
-                      });
-                    },
-          isExtended: true,
-        ),
+                        },
+                        isExtended: true,
+                      ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: Card(
           elevation: 16.0,
@@ -325,26 +345,32 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                    Text(
-                      verification == null || isVerifying
-                          ? 'Sort the companies based on their Market Cap.'
-                          : 'Hint: Tap on Company Logo for more information!',
-                      style: Theme.of(context).textTheme.body2,
-                    ),
-                  ] +
-                  (widget.gameBloc.maxTurns == null
-                      ? []
-                      : [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Turn ${widget.gameBloc.currentTurn + 1} of ${widget.gameBloc.maxTurns}',
-                              style: Theme.of(context).textTheme.caption,
-                              textAlign: TextAlign.center,
-                            ),
+                ...(verification == null || isVerifying
+                    ? [Text('Sort the companies based on their Market Cap.')]
+                    : [
+                        Text(
+                          'You got ${verification.response.correctCount} of ${verification.response.actual.length} correct!',
+                          style: Theme.of(context).textTheme.body2.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          'Hint: Tap on Company Logo for more information!',
+                          style: Theme.of(context).textTheme.body2.apply(fontSizeFactor: 0.8, color: Colors.black38),
+                        ),
+                      ]),
+                ...(widget.gameBloc.maxTurns == null
+                    ? []
+                    : [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            'Turn ${widget.gameBloc.currentTurn + 1} of ${widget.gameBloc.maxTurns}',
+                            style: Theme.of(context).textTheme.caption,
+                            textAlign: TextAlign.center,
                           ),
-                          LinearProgressIndicator(value: (widget.gameBloc.currentTurn + 1) / widget.gameBloc.maxTurns),
-                        ]),
+                        ),
+                        LinearProgressIndicator(value: (widget.gameBloc.currentTurn + 1) / widget.gameBloc.maxTurns),
+                      ])
+              ],
             ),
           ),
         ),
@@ -402,6 +428,17 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
               ],
             ));
   }
+}
+
+class FabProgressCircle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 16.0,
+        width: 16.0,
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+        ),
+      );
 }
 
 class MarketCapSortingScaleWidget extends StatefulWidget {
@@ -562,7 +599,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                                 return Padding(
                                   padding: EdgeInsets.only(
                                     right: animation.subAnimation
-                                        .drive(_slotAnimation(0, 4))
+                                        .drive(_slotAnimation(0, 5))
                                         .drive(Tween(begin: 0.0, end: 32.0))
                                         .value,
                                   ),
@@ -597,7 +634,7 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                       marketCapScaleMin: simpleGameSet.marketCapScaleMin,
                       marketCapScaleMax: simpleGameSet.marketCapScaleMax,
                       marketCapPositions: marketCapPositions.map((key, value) => MapEntry(key,
-                          value.subAnimation.drive(_slotAnimation(1, 4, slotSpan: 3)).drive(value.marketCap).value)),
+                          value.subAnimation.drive(_slotAnimation(1, 5, slotSpan: 4)).drive(value.marketCap).value)),
                     ),
                   ),
                 ]),

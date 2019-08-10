@@ -1,4 +1,6 @@
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/deps.dart';
+import 'package:anlage_app_game/utils/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -69,6 +71,17 @@ class DialogUtil {
       _logger.severe('Unable to launch url $url');
     }
   }
+
+  static void askForPermissionsIfRequired(Deps deps) {
+    if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
+      deps.cloudMessaging.requiresAskPermission().then((askPermission) {
+        if (askPermission) {
+//                    showDialog(context: context, builder: (context) => AskForMessagingPermission());
+          deps.cloudMessaging.requestPermission();
+        }
+      }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
+    }
+  }
 }
 
 class ErrorRetry extends StatelessWidget {
@@ -92,4 +105,3 @@ class ErrorRetry extends StatelessWidget {
     );
   }
 }
-

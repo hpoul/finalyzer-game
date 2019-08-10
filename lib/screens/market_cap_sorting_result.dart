@@ -7,7 +7,7 @@ import 'package:anlage_app_game/screens/company_details.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
-import 'package:anlage_app_game/utils/logging.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -69,14 +69,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                 Navigator.of(context).pop();
                 _gameBloc.nextTurn();
 
-                if ((deps.api.currentLoginState?.userInfo?.statsTotalTurns ?? -1) > 2) {
-                  deps.cloudMessaging.requiresAskPermission().then((askPermission) {
-                    if (askPermission) {
-//                    showDialog(context: context, builder: (context) => AskForMessagingPermission());
-                      deps.cloudMessaging.requestPermission();
-                    }
-                  }).catchError(LoggingUtil.futureCatchErrorLog("require permission?"));
-                }
+                DialogUtil.askForPermissionsIfRequired(deps);
               }
             },
           )
