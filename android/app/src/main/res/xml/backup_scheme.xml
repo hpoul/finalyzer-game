@@ -7,6 +7,9 @@
         path="FlutterSharedPreferences.xml" />
 
 
+    <!-- exclude shared prefs used by secure storage plugin.
+     https://github.com/mogol/flutter_secure_storage/issues/43#issuecomment-478219007 -->
+    <exclude domain="sharedpref" path="FlutterSecureStorage"/>
 
 
     <!-- no idea if the following makes sense, copied over from https://stackoverflow.com/a/51718354/109219 -->
