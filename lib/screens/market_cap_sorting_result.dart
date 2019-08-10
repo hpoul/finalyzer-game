@@ -258,10 +258,10 @@ class MarketCapSortingResultWidget extends StatelessWidget {
 
   void _capturePngWithPicture(BuildContext context) async {
     try {
-      TextSpan span = new TextSpan(
-          style: new TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 24, fontFamily: 'RobotoMono'),
+      TextSpan span = TextSpan(
+          style: TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 24, fontFamily: 'RobotoMono'),
           text: 'https://anlage.app/game');
-      final painter = new TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
+      final painter = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
       painter.layout();
 
       final boundary = drawGlobalKey.currentContext.findRenderObject() as RenderRepaintBoundary;

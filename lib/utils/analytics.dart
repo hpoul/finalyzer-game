@@ -24,7 +24,7 @@ class AnalyticsUtils {
     }
   }
 
-  static final instance = new AnalyticsUtils._();
+  static final instance = AnalyticsUtils._();
 
   final FirebaseAnalytics _analytics = FirebaseAnalytics();
   AnalyticsUtils get analytics => this;

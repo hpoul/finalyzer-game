@@ -9,7 +9,7 @@ import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 import 'package:rxdart/rxdart.dart';
 
-final _logger = new Logger("app.anlage.game.utils.firebase_messaging");
+final _logger = Logger("app.anlage.game.utils.firebase_messaging");
 
 class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
   final PreferenceStore _prefs;
@@ -21,7 +21,7 @@ class CloudMessagingUtil with StreamSubscriberMixin<dynamic> {
   final BehaviorSubject<String> _onTokenRefresh = BehaviorSubject<String>();
   ValueObservable<String> get onTokenRefresh => _onTokenRefresh.stream;
 
-  static const Platform platform = const LocalPlatform();
+  static const Platform platform = LocalPlatform();
 
   final BehaviorSubject<GameNotification> _onNotification = BehaviorSubject<GameNotification>();
   ValueObservable<GameNotification> get onNotification => _onNotification.stream;

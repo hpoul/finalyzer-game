@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final _logger = new Logger("app.anlage.game.screens.navigation_drawer_profile");
+final _logger = Logger("app.anlage.game.screens.navigation_drawer_profile");
 
 class NavigationDrawerProfile extends StatelessWidget {
   @override

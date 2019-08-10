@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
 
-final _logger = new Logger("app.anlage.game.main");
+final _logger = Logger("app.anlage.game.main");
 
 Future<void> _setupCrashlytics() async {
   bool isInDebugMode = false;

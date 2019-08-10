@@ -21,7 +21,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-final _logger = new Logger("app.anlage.game.screens.market_cap_sorting");
+final _logger = Logger("app.anlage.game.screens.market_cap_sorting");
 
 class MarketCapSorting extends StatefulWidget {
   @override
@@ -54,10 +54,10 @@ class MarketCapScalePainter extends CustomPainter {
   }
 
   TextPainter _createMarketCapPainter(double marketCap) {
-    TextSpan span = new TextSpan(
-        style: new TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 12, fontFamily: 'RobotoMono'),
+    TextSpan span = TextSpan(
+        style: TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 12, fontFamily: 'RobotoMono'),
         text: formatMarketCap(marketCap));
-    final painter = new TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
+    final painter = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
     painter.layout();
     return painter;
   }
@@ -90,9 +90,9 @@ class MarketCapScalePainter extends CustomPainter {
           ], true),
         paint);
 
-    maxTextPainter.paint(canvas, new Offset(MARGIN_LEFT + SCALE_WIDTH + 4, TEXT_MARGIN_VERTICAL));
+    maxTextPainter.paint(canvas, Offset(MARGIN_LEFT + SCALE_WIDTH + 4, TEXT_MARGIN_VERTICAL));
     minTextPainter.paint(
-        canvas, new Offset(MARGIN_LEFT + SCALE_WIDTH + 4, size.height - minTextPainter.height - TEXT_MARGIN_VERTICAL));
+        canvas, Offset(MARGIN_LEFT + SCALE_WIDTH + 4, size.height - minTextPainter.height - TEXT_MARGIN_VERTICAL));
 //    minTextPainter.paint(canvas, new Offset(MARGIN_LEFT + SCALE_WIDTH + 4, 600));
 //    canvas.draw
   }

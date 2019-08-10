@@ -1,7 +1,7 @@
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:logging/logging.dart';
 
-final _logger = new Logger("app.anlage.game.utils.logging");
+final _logger = Logger("app.anlage.game.utils.logging");
 
 void setupLogging() {
   Logger.root.level = Level.ALL;
