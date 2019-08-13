@@ -57,11 +57,14 @@ dependencies:
     git:
       url: https://github.com/hpoul/flutter_async_utils.git
       ref: c0205050e93a5a31aa0843a3f25773e09c118261
+  built_value: ^6.7.0
+  simple_json_persistence: ^0.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^1.6.5
+  built_value_generator: ^6.7.0
 dependency_overrides:
 #  analytics_event_gen:
 #    path: ../../analytics_events/analytics_event_gen

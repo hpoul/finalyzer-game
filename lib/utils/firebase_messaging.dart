@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:anlage_app_game/api/dtos.generated.dart';
-import 'package:anlage_app_game/api/preferences.dart';
+import 'package:anlage_app_game/data/preferences.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_async_utils/flutter_async_utils.dart';
@@ -66,7 +66,7 @@ class CloudMessagingUtil with StreamSubscriberBase {
     if (!platform.isIOS || _askedForPermissionsThisRun) {
       return false;
     }
-    return !await _prefs.getValue(Preferences.askedForPushPermission);
+    return (await _prefs.store.load()).askedForPushPermissionAt == null;
 //    return await getToken() == null
 //        && !await _prefs.getValue(Preferences.askedForPushPermission);
   }
@@ -79,7 +79,7 @@ class CloudMessagingUtil with StreamSubscriberBase {
       sound: true,
     ));
     _askedForPermissionsThisRun = true;
-    _prefs.setValue(Preferences.askedForPushPermission, true);
+    _prefs.update((b) => b..askedForPushPermissionAt = DateTime.now().toUtc());
   }
 
   void _handleMessage(Map<String, dynamic> message) {
