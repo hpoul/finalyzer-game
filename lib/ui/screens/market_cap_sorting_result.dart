@@ -20,6 +20,7 @@ import 'package:logging/logging.dart';
 
 final _logger = Logger('market_cap_sorting_result');
 
+@Deprecated('Not used right now.')
 class MarketCapSortingResultWidget extends StatelessWidget {
   MarketCapSortingResultWidget(this.response, this._gameBloc, this._gameSet);
 
@@ -78,6 +79,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
     );
   }
 
+  @Deprecated('do not use, it is duplicated code (see market_cap_sorting)')
   Widget _createResultScreen(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet,
       MarketCapSortingGameBloc _gameBloc, BuildContext context) {
     final _api = DepsProvider.of(context).api;

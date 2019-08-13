@@ -161,7 +161,7 @@ class NavigationDrawerContent extends StatelessWidget {
                             style: Theme.of(context).textTheme.display1,
                           ),
                         ),
-                        Divider(),
+                        const Divider(),
                       ],
                     ),
                     Column(
@@ -188,7 +188,7 @@ class NavigationDrawerContent extends StatelessWidget {
                             Navigator.of(context).pushNamed(LeaderboardList.ROUTE_NAME);
                           },
                         ),
-                        Divider(),
+                        const Divider(),
                         ListTile(
                           leading: Icon(Icons.email),
                           title: const Text('How can we improve? Problems?'),

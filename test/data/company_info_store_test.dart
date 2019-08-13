@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/data/company_info_store.dart';
 import 'package:flutter_test/flutter_test.dart';

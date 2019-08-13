@@ -19,4 +19,7 @@ class AnalyticsEventImpl implements AnalyticsEvent {
         'gameType': gameType?.toString()?.substring(9),
         'score': score
       });
+  @override
+  void trackCloseResultOverlay() =>
+      tracker('trackCloseResultOverlay', <String, dynamic>{});
 }

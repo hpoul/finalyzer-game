@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
@@ -13,6 +15,7 @@ import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -354,6 +357,7 @@ class _MarketCapSortingScreenState extends State<MarketCapSortingScreen> with Si
         ));
   }
 
+  @Deprecated('old result screen')
   // ignore: unused_element
   void _showVerifyResultDialog(GameSimpleSetVerifyResponse response, GameSimpleSetResponse gameSet) {
     showDialog<dynamic>(
@@ -406,21 +410,16 @@ class MarketCapSortingScaleWidget extends StatefulWidget {
 class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with TickerProviderStateMixin {
   bool moved = false;
   String draggedInstrument;
-
-  static const List<String> emoji = ['🤔', '🤷️', '😎️', '😎️', '🎉️'];
-  static const List<String> correctLabels = [
-    'None were correct',
-    'Nice try!',
-    'Almost!',
-    'Almost!',
-    'WOW! All Correct!',
-  ];
+  bool _captureImage = false;
+  Animation<double> _forceHideResultOverlay;
+  final GlobalKey repaintBoundary = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _logger.finer('MarketCapSortingScaleState.init');
     moved = false;
+    _forceHideResultOverlay = null;
   }
 
   @override
@@ -452,144 +451,135 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
     final gameBloc = widget.gameBloc;
     final simpleGameSet = widget.simpleGameSet;
     final finishAnimation = widget.verificationAnimation?.drive(_slotAnimation(9, 10));
-    return CustomPaint(
-      foregroundPainter: MarketCapScalePainter(simpleGameSet.marketCapScaleMin, simpleGameSet.marketCapScaleMax),
-      child: Stack(
-        children: <Widget>[
-          AnimatedOpacity(
-            duration: const Duration(seconds: 2),
-            opacity: widget.verification == null ? 1 : 0.2,
-            child: MarketCapPositionScale(
-              moved: moved,
-              instruments: instruments
-                  .map(
-                    (instrument) => MarketCapPositionScaleChild(
-                      instrumentKey: instrument.instrumentKey,
-                      builder: (context, marketCapValue, isDragged) => MarketCapInstrumentCard(
-                        instrument: instrument,
-                        marketCapValue: marketCapValue,
-                        moved: moved,
-                        isDragged: isDragged,
-                        lineColor: widget.verification == null ? FinalyzerTheme.colorPrimary : Colors.grey,
-                        disabled: widget.verification != null,
+    return RepaintBoundary(
+      key: repaintBoundary,
+      child: CustomPaint(
+        foregroundPainter: MarketCapScalePainter(simpleGameSet.marketCapScaleMin, simpleGameSet.marketCapScaleMax),
+        child: Stack(
+          children: <Widget>[
+            AnimatedOpacity(
+              duration: const Duration(seconds: 2),
+              opacity: widget.verification == null ? 1 : 0.2,
+              child: MarketCapPositionScale(
+                moved: moved,
+                instruments: instruments
+                    .map(
+                      (instrument) => MarketCapPositionScaleChild(
+                        instrumentKey: instrument.instrumentKey,
+                        builder: (context, marketCapValue, isDragged) => MarketCapInstrumentCard(
+                          instrument: instrument,
+                          marketCapValue: marketCapValue,
+                          moved: moved,
+                          isDragged: isDragged,
+                          lineColor: widget.verification == null ? FinalyzerTheme.colorPrimary : Colors.grey,
+                          disabled: widget.verification != null,
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+                marketCapScaleMin: simpleGameSet.marketCapScaleMin,
+                marketCapScaleMax: simpleGameSet.marketCapScaleMax,
+                marketCapPositions: Map.fromEntries(gameBloc.marketCapPositions),
+                draggedInstrument: draggedInstrument,
+                changedDraggedInstrument: (instrumentKey) {
+                  setState(() {
+                    draggedInstrument = instrumentKey;
+                  });
+                },
+                draggedInstrumentToMarketCap: (instrumentKey, marketCap) {
+                  setState(() {
+                    moved = true;
+                    gameBloc.updateMarketCapPosition(instrumentKey, marketCap);
+                  });
+                },
+              ),
+            ),
+            ...(widget.verification == null
+                ? []
+                : [
+                    MarketCapAnimationTween(
+                      animation: _slotAnimation(1, 10, slotSpan: 9.0).animate(widget.verificationAnimation),
+                      startMarketCap: Map.fromEntries(gameBloc.marketCapPositions),
+                      endMarketCap: widget.verification?.response?.actual
+                          ?.map((guessDto) => MapEntry(guessDto.instrumentKey, guessDto.marketCap)),
+                      builder: (context, marketCapPositions) => MarketCapPositionScale(
+                        moved: true,
+                        instruments: instruments
+                            .map(
+                              (instrument) => MarketCapPositionScaleChild(
+                                instrumentKey: instrument.instrumentKey,
+                                builder: (context, marketCapValue, isDragged) {
+                                  final isCorrect = widget.verification.guessedCorrectInstrumentKeys
+                                      .contains(instrument.instrumentKey);
+                                  final animation = marketCapPositions[instrument.instrumentKey];
+                                  final colorTween =
+                                      ColorTween(begin: Colors.grey, end: isCorrect ? Colors.green : Colors.red)
+                                          .animate(animation.subAnimation);
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      right: animation.subAnimation
+                                          .drive(_slotAnimation(0, 5))
+                                          .drive(Tween(begin: 0.0, end: 32.0))
+                                          .value,
+                                    ),
+                                    child: MarketCapInstrumentCard(
+                                      instrument: instrument,
+                                      marketCapValue: marketCapValue,
+                                      moved: null,
+                                      isDragged: isDragged,
+                                      lineColor: colorTween.value,
+                                      circleReplacement: animation.subAnimation.value < 1
+                                          ? null
+                                          : Container(
+                                              alignment: Alignment.topCenter,
+                                              child: isCorrect
+                                                  ? Icon(Icons.check_circle, color: colorTween.value)
+                                                  : Icon(Icons.cancel, color: colorTween.value),
+                                            ),
+                                      onTap: () {
+                                        final details = widget.verification.response.details
+                                            .firstWhere((details) => details.instrumentKey == instrument.instrumentKey);
+                                        Navigator.of(context)
+                                            .push<dynamic>(CompanyDetailsScreen.route(details, instrument.logo));
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                            .toList(),
+                        marketCapScaleMin: simpleGameSet.marketCapScaleMin,
+                        marketCapScaleMax: simpleGameSet.marketCapScaleMax,
+                        marketCapPositions: marketCapPositions.map((key, value) => MapEntry(key,
+                            value.subAnimation.drive(_slotAnimation(1, 5, slotSpan: 4)).drive(value.marketCap).value)),
                       ),
                     ),
-                  )
-                  .toList(growable: false),
-              marketCapScaleMin: simpleGameSet.marketCapScaleMin,
-              marketCapScaleMax: simpleGameSet.marketCapScaleMax,
-              marketCapPositions: Map.fromEntries(gameBloc.marketCapPositions),
-              draggedInstrument: draggedInstrument,
-              changedDraggedInstrument: (instrumentKey) {
-                setState(() {
-                  draggedInstrument = instrumentKey;
-                });
-              },
-              draggedInstrumentToMarketCap: (instrumentKey, marketCap) {
-                setState(() {
-                  moved = true;
-                  gameBloc.updateMarketCapPosition(instrumentKey, marketCap);
-                });
-              },
-            ),
-          ),
-          ...(widget.verification == null
-              ? []
-              : [
-                  MarketCapAnimationTween(
-                    animation: _slotAnimation(1, 10, slotSpan: 9.0).animate(widget.verificationAnimation),
-                    startMarketCap: Map.fromEntries(gameBloc.marketCapPositions),
-                    endMarketCap: widget.verification?.response?.actual
-                        ?.map((guessDto) => MapEntry(guessDto.instrumentKey, guessDto.marketCap)),
-                    builder: (context, marketCapPositions) => MarketCapPositionScale(
-                      moved: true,
-                      instruments: instruments
-                          .map(
-                            (instrument) => MarketCapPositionScaleChild(
-                              instrumentKey: instrument.instrumentKey,
-                              builder: (context, marketCapValue, isDragged) {
-                                final isCorrect =
-                                    widget.verification.guessedCorrectInstrumentKeys.contains(instrument.instrumentKey);
-                                final animation = marketCapPositions[instrument.instrumentKey];
-                                final colorTween =
-                                    ColorTween(begin: Colors.grey, end: isCorrect ? Colors.green : Colors.red)
-                                        .animate(animation.subAnimation);
-                                return Padding(
-                                  padding: EdgeInsets.only(
-                                    right: animation.subAnimation
-                                        .drive(_slotAnimation(0, 5))
-                                        .drive(Tween(begin: 0.0, end: 32.0))
-                                        .value,
-                                  ),
-                                  child: MarketCapInstrumentCard(
-                                    instrument: instrument,
-                                    marketCapValue: marketCapValue,
-                                    moved: null,
-                                    isDragged: isDragged,
-                                    lineColor: colorTween.value,
-                                    circleReplacement: animation.subAnimation.value < 1
-                                        ? null
-                                        : Container(
-                                            alignment: Alignment.topCenter,
-                                            child: isCorrect
-                                                ? Icon(Icons.check_circle, color: colorTween.value)
-                                                : Icon(Icons.cancel, color: colorTween.value),
-                                          ),
-                                    onTap: () {
-                                      final details = widget.verification.response.details
-                                          .firstWhere((details) => details.instrumentKey == instrument.instrumentKey);
-                                      Navigator.of(context)
-                                          .push<dynamic>(CompanyDetailsScreen.route(details, instrument.logo));
-                                    },
-                                  ),
-                                );
+                    AnimatedBuilder(
+                      animation: _forceHideResultOverlay ?? finishAnimation,
+                      builder: (BuildContext context, Widget child) =>
+                          Opacity(opacity: _forceHideResultOverlay?.value ?? finishAnimation.value, child: child),
+                      child: TurnResultOverlay(
+                        correctCount: widget.verification.response.correctCount,
+                        onShare: _captureImage
+                            ? null
+                            : () {
+                                _shareResult(context);
                               },
-                            ),
-                          )
-                          .toList(),
-                      marketCapScaleMin: simpleGameSet.marketCapScaleMin,
-                      marketCapScaleMax: simpleGameSet.marketCapScaleMax,
-                      marketCapPositions: marketCapPositions.map((key, value) => MapEntry(key,
-                          value.subAnimation.drive(_slotAnimation(1, 5, slotSpan: 4)).drive(value.marketCap).value)),
+                        onClose: _captureImage
+                            ? null
+                            : () {
+                                Deps.of(context).analytics.events.trackCloseResultOverlay();
+                                setState(() {
+                                  _forceHideResultOverlay = Tween(begin: 1.0, end: 0.0).animate(
+                                      AnimationController(duration: const Duration(milliseconds: 300), vsync: this)
+                                        ..forward(from: 0));
+                                });
+                              },
+                      ),
                     ),
-                  ),
-                  AnimatedBuilder(
-                    animation: finishAnimation,
-                    builder: (BuildContext context, Widget child) =>
-                        Opacity(opacity: finishAnimation.value, child: child),
-                    child: Center(
-                        child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          emoji[widget.verification.response.correctCount] ?? '',
-//                          textScaleFactor: 10,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 120,
-//                            shadows: [Shadow(color: Colors.black54, offset: const Offset(0, 4), blurRadius: 8)],
-                          ),
-                        ),
-                        Card(
-                          elevation: 2,
-                          child: Container(
-//                            decoration:
-//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              correctLabels[widget.verification.response.correctCount],
-                              style: Theme.of(context).textTheme.body1.apply(fontSizeFactor: 2).copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-//                              textScaleFactor: 2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )),
-                  ),
-                ]),
-        ],
+                  ]),
+          ],
+        ),
       ),
     );
   }
@@ -599,6 +589,137 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
     final renderBox = context.findRenderObject() as RenderBox;
     final constraints = renderBox?.constraints;
     return constraints?.maxWidth ?? 0.0;
+  }
+
+  Future<void> _shareResult(BuildContext context) async {
+    setState(() {
+      _captureImage = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _capturePngWithPicture(context);
+        _captureImage = false;
+      });
+    });
+  }
+
+  Future<void> _capturePngWithPicture(BuildContext context) async {
+    try {
+      final TextSpan span = TextSpan(
+          style: TextStyle(color: FinalyzerTheme.colorPrimary, fontSize: 24, fontFamily: 'RobotoMono'),
+          text: 'https://anlage.app/game');
+      final painter = TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
+      painter.layout();
+
+      final boundary = repaintBoundary.currentContext.findRenderObject() as RenderRepaintBoundary;
+      final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
+
+      const padding = 64.0;
+
+      final recorder = ui.PictureRecorder();
+      final canvasRect =
+          const Offset(0, 0) & Size(img.width + 2 * padding, img.height + 2 * padding + padding + painter.height);
+      final canvas = ui.Canvas(recorder, canvasRect);
+
+      final p = Paint();
+      p.color = Colors.white;
+      canvas.drawRect(canvasRect, p);
+      canvas.drawImage(img, const Offset(padding, padding), Paint());
+
+      painter.paint(canvas, Offset(padding, canvasRect.height - padding - painter.height));
+      _logger.fine('painter.height: ${painter.height} --- $painter');
+
+      final picture = recorder.endRecording();
+
+      final ui.Image finalImage = await picture.toImage(canvasRect.width.toInt(), canvasRect.height.toInt());
+
+      final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) {
+        _logger.severe('byteData is null ?!');
+        return;
+      }
+      _logger.fine('Opening share dialog.');
+      await Share.file('MarketCap Game - Results', 'result.png', byteData.buffer.asUint8List(), 'image/png');
+      await Deps.of(context).analytics.logShare(contentType: 'result_sorting', itemId: 'sort', method: 'share');
+//      await EsysFlutterShare.shareImage('result.png', byteData, 'MarketShare Game - Results');
+    } catch (error, stackTrace) {
+      _logger.severe('Error during share', error, stackTrace);
+      rethrow;
+    }
+  }
+}
+
+class TurnResultOverlay extends StatelessWidget {
+  const TurnResultOverlay({
+    Key key,
+    @required this.correctCount,
+    this.onShare,
+    this.onClose,
+  }) : super(key: key);
+
+  static const List<String> _emoji = ['🤔', '🤷️', '😎️', '😎️', '🎉️'];
+  static const List<String> _correctLabels = [
+    'None were correct',
+    'Nice try!',
+    'Almost!',
+    'Almost!',
+    'WOW! All Correct!',
+  ];
+  final int correctCount;
+  final VoidCallback onShare;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: IntrinsicWidth(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: onShare == null && onClose == null
+                  ? []
+                  : <Widget>[
+                      FlatButton.icon(
+                        icon: Icon(Icons.share),
+                        label: const Text('Share'),
+                        onPressed: onShare,
+                      ),
+                      IconButton(icon: Icon(Icons.close), onPressed: onClose),
+                    ],
+            ),
+            Text(
+              _emoji[correctCount] ?? '',
+//                          textScaleFactor: 10,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 120,
+//                            shadows: [Shadow(color: Colors.black54, offset: const Offset(0, 4), blurRadius: 8)],
+              ),
+            ),
+            Card(
+              elevation: 2,
+              child: Container(
+//                            decoration:
+//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  _correctLabels[correctCount],
+                  style: Theme.of(context).textTheme.body1.apply(fontSizeFactor: 2).copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+//                              textScaleFactor: 2,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
