@@ -470,6 +470,8 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                         marketCapValue: marketCapValue,
                         moved: moved,
                         isDragged: isDragged,
+                        lineColor: widget.verification == null ? FinalyzerTheme.colorPrimary : Colors.grey,
+                        disabled: widget.verification != null,
                       ),
                     ),
                   )
@@ -494,33 +496,6 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
           ...(widget.verification == null
               ? []
               : [
-                  AnimatedBuilder(
-                    animation: finishAnimation,
-                    builder: (BuildContext context, Widget child) =>
-                        Opacity(opacity: finishAnimation.value, child: child),
-                    child: Center(
-                        child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          emoji[widget.verification.response.correctCount] ?? '',
-                          textScaleFactor: 10,
-                        ),
-                        Card(
-                          elevation: 2,
-                          child: Container(
-//                            decoration:
-//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              correctLabels[widget.verification.response.correctCount],
-                              textScaleFactor: 2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )),
-                  ),
                   MarketCapAnimationTween(
                     animation: _slotAnimation(1, 10, slotSpan: 9.0).animate(widget.verificationAnimation),
                     startMarketCap: Map.fromEntries(gameBloc.marketCapPositions),
@@ -577,6 +552,41 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                       marketCapPositions: marketCapPositions.map((key, value) => MapEntry(key,
                           value.subAnimation.drive(_slotAnimation(1, 5, slotSpan: 4)).drive(value.marketCap).value)),
                     ),
+                  ),
+                  AnimatedBuilder(
+                    animation: finishAnimation,
+                    builder: (BuildContext context, Widget child) =>
+                        Opacity(opacity: finishAnimation.value, child: child),
+                    child: Center(
+                        child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          emoji[widget.verification.response.correctCount] ?? '',
+//                          textScaleFactor: 10,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 120,
+//                            shadows: [Shadow(color: Colors.black54, offset: const Offset(0, 4), blurRadius: 8)],
+                          ),
+                        ),
+                        Card(
+                          elevation: 2,
+                          child: Container(
+//                            decoration:
+//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              correctLabels[widget.verification.response.correctCount],
+                              style: Theme.of(context).textTheme.body1.apply(fontSizeFactor: 2).copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+//                              textScaleFactor: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )),
                   ),
                 ]),
         ],
@@ -785,6 +795,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
     this.circleReplacement,
     this.lineColor = FinalyzerTheme.colorSecondary,
     this.onTap,
+    this.disabled = false,
   }) : super(key: key);
 
   final SimpleGameDto instrument;
@@ -794,6 +805,7 @@ class MarketCapInstrumentCard extends StatelessWidget {
   final Color lineColor;
   final Widget circleReplacement;
   final VoidCallback onTap;
+  final bool disabled;
 
   @override
   Widget build(BuildContext context) {
@@ -842,6 +854,8 @@ class MarketCapInstrumentCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     child: CachedNetworkImage(
+                      color: disabled ? Colors.white : null,
+                      colorBlendMode: BlendMode.color,
                       placeholder: (context, url) => const Center(child: LinearProgressIndicator()),
                       errorWidget: (context, url, error) => Center(
                         child: Text(
