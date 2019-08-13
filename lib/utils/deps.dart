@@ -2,6 +2,7 @@ import 'package:anlage_app_game/api/api_caller.dart';
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/api_pricedata.dart';
 import 'package:anlage_app_game/api/api_service.dart';
+import 'package:anlage_app_game/data/company_info_store.dart';
 import 'package:anlage_app_game/data/preferences.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
@@ -39,6 +40,7 @@ class Deps {
   final ApiPriceData apiPriceData;
   final FormatUtil formatUtil = FormatUtil();
   final PreferenceStore prefs;
+  final CompanyInfoStore companyInfoStore = CompanyInfoStore();
   final CloudMessagingUtil cloudMessaging;
   final AnalyticsUtils analytics;
 

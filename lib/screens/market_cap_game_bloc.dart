@@ -1,14 +1,16 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/data/company_info_store.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
 final _logger = Logger('app.anlage.game.screens.market_cap_sorting');
 
 class MarketCapSortingGameBloc {
-  MarketCapSortingGameBloc(this._apiService) {
+  MarketCapSortingGameBloc(this._apiService, {@required this.companyInfoStore}) {
     _logger.finer('New MarketCapSortingGameBloc created. $runtimeType');
     _simpleGameSetFetcher = BehaviorSubject<GameSimpleSetResponse>.seeded(null, onListen: () {
       _logger.fine('_simpleGameSetFetcher is being listened to.');
@@ -25,6 +27,7 @@ class MarketCapSortingGameBloc {
   }
 
   final ApiService _apiService;
+  final CompanyInfoStore companyInfoStore;
 
   ApiService get api => _apiService;
 
@@ -86,10 +89,38 @@ class MarketCapSortingGameBloc {
   Future<GameSimpleSetVerifyResponseWrapper> verifyMarketCaps() {
     final guess = marketCapPositions.map((pos) => GameSimpleSetGuessDto(pos.key, pos.value)).toList()
       ..sort((a, b) => -a.marketCap.compareTo(b.marketCap));
-    return _apiService.verifySimpleGameSet(_currentSimpleGameSet.gameTurnId, guess).then((response) {
+    final gameTurnId = _currentSimpleGameSet.gameTurnId;
+    final logos = Map.fromEntries(_currentSimpleGameSet.simpleGame.map((instrument) => MapEntry(
+          instrument.instrumentKey,
+          instrument.logo,
+        )));
+    return _apiService.verifySimpleGameSet(gameTurnId, guess).then((response) {
       final guessMap = Map<int, GameSimpleSetGuessDto>.from(guess.asMap());
       final actualMap = response.actual.toList()..sort((a, b) => -a.marketCap.compareTo(b.marketCap));
       guessMap.removeWhere((key, value) => actualMap[key].instrumentKey != value.instrumentKey);
+
+      companyInfoStore.update(
+        (b) => b
+          ..companyInfos.addEntries(response.details.map(
+            (details) => MapEntry(
+                details.instrumentKey,
+                CompanyInfoWrapper(
+                  (wb) => wb
+                    ..details = details
+                    ..logo = logos[details.instrumentKey],
+                )),
+          ))
+          ..history.add(
+            HistoryGameSet(
+              (hb) => hb
+                ..playAt = DateTime.now().toUtc()
+                ..instruments.replace(response.details.map<String>((details) => details.instrumentKey))
+                ..turnId = gameTurnId
+                ..points = response.correctCount,
+            ),
+          ),
+      );
+
       return GameSimpleSetVerifyResponseWrapper(
           response: response,
           guessedCorrectInstrumentKeys: guessMap.values.map<String>((i) => i.instrumentKey).toSet());
@@ -104,7 +135,11 @@ class GameSimpleSetVerifyResponseWrapper {
 }
 
 class MarketCapSortingChallengeBloc extends MarketCapSortingGameBloc {
-  MarketCapSortingChallengeBloc(ApiService apiService, this.challenge) : super(apiService);
+  MarketCapSortingChallengeBloc(
+    ApiService apiService,
+    this.challenge, {
+    @required CompanyInfoStore companyInfoStore,
+  }) : super(apiService, companyInfoStore: companyInfoStore);
 
   GameChallengeDto challenge;
 

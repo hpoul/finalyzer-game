@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/data/company_info_store.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
@@ -16,6 +17,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:pedantic/pedantic.dart';
+import 'package:provider/provider.dart';
 
 final _logger = Logger('app.anlage.game.main');
 
@@ -76,20 +78,29 @@ class MyApp extends StatelessWidget {
       deps: deps,
       child: DynamicLinkHandler(
         navigatorKey: navigatorKey,
-        child: MaterialApp(
-          title: 'MarketCap Game',
-          navigatorKey: navigatorKey,
+        child: MultiProvider(
+          providers: [
+            StreamProvider<CompanyInfoData>(
+              builder: (context) => deps.companyInfoStore.store.onValueChangedAndLoad,
+              initialData: deps.companyInfoStore.store.cachedValue,
+            ),
+            Provider.value(value: deps.formatUtil),
+          ],
+          child: MaterialApp(
+            title: 'MarketCap Game',
+            navigatorKey: navigatorKey,
 //          debugShowCheckedModeBanner: false,
-          theme: buildFinalyzerTheme(),
-          navigatorObservers: [observer],
-          home: MarketCapSorting(),
-          //MyHomePage(title: 'Never mind.'),
-          routes: {
-            ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
-            LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
-            ChallengeInvite.ROUTE_NAME: (context) => ChallengeInvite(),
-            ChallengeList.ROUTE_NAME: (context) => ChallengeList(),
-          },
+            theme: buildFinalyzerTheme(),
+            navigatorObservers: [observer],
+            home: MarketCapSorting(),
+            //MyHomePage(title: 'Never mind.'),
+            routes: {
+              ProfileEdit.ROUTE_NAME: (context) => ProfileEdit(),
+              LeaderboardList.ROUTE_NAME: (context) => LeaderboardList(),
+              ChallengeInvite.ROUTE_NAME: (context) => ChallengeInvite(),
+              ChallengeList.ROUTE_NAME: (context) => ChallengeList(),
+            },
+          ),
         ),
       ),
     );

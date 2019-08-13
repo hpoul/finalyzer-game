@@ -216,7 +216,11 @@ class ChallengeListActionBottomSheet extends StatelessWidget {
             title: const Text('Start'),
             onTap: () {
               apiChallenge.startChallenge(challengeInfo.challengeId).then((challenge) {
-                final bloc = MarketCapSortingChallengeBloc(deps.api, challenge);
+                final bloc = MarketCapSortingChallengeBloc(
+                  deps.api,
+                  challenge,
+                  companyInfoStore: deps.companyInfoStore,
+                );
                 Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                     name: '/challenge/game',
                     builder: (context) => Challenge(
@@ -283,7 +287,8 @@ class _ChallengeDetailsState extends State<ChallengeDetails> {
                   _apiChallenge
                       .startChallenge(details.baseInfo.challengeId, action: GameChallengeAction.Retrieve)
                       .then((challenge) {
-                    final bloc = MarketCapSortingChallengeBloc(_deps.api, challenge);
+                    final bloc =
+                        MarketCapSortingChallengeBloc(_deps.api, challenge, companyInfoStore: _deps.companyInfoStore);
                     Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
                         name: '/challenge/game',
                         builder: (context) => Challenge(

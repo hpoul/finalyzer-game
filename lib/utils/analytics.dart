@@ -32,8 +32,10 @@ class AnalyticsUtils {
   AnalyticsEvent events;
 
   // backward compatibility methods which simply redirect to firebase analytics.
-  Future<void> logEvent({@required String name, Map<String, dynamic> parameters}) async {
-    _logger.fine('logEvent(name: $name, parameters: $parameters)');
+  Future<void> logEvent({@required String name, Map<String, dynamic> parameters, bool silent = false}) async {
+    if (!silent) {
+      _logger.fine('logEvent(name: $name, parameters: $parameters)');
+    }
     await _analytics.logEvent(name: name, parameters: parameters);
   }
 

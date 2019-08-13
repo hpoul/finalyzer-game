@@ -17,9 +17,12 @@ void setupLogging() {
     }
     if (rec.stackTrace != null) {
       print(rec.stackTrace);
-      if (rec.level >= Level.INFO) {
-        AnalyticsUtils.instance.analytics
-            .logEvent(name: 'logerror', parameters: <String, dynamic>{'message': rec.message, 'stack': rec.stackTrace});
+      if (rec.level >= Level.WARNING) {
+        AnalyticsUtils.instance.analytics.logEvent(
+          name: 'logerror',
+          parameters: <String, dynamic>{'message': rec.message, 'stack': rec.stackTrace},
+          silent: true,
+        );
 //        FlutterCrashlytics().logException(rec.error, rec.stackTrace);
       }
     } else if (rec.level >= Level.SEVERE) {

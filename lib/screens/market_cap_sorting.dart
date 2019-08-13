@@ -1,14 +1,12 @@
-import 'dart:ui' as ui;
-
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
 import 'package:anlage_app_game/screens/challenge/challenge.dart';
 import 'package:anlage_app_game/screens/company_details.dart';
 import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
-import 'package:anlage_app_game/screens/market_cap_sorting_help.dart';
 import 'package:anlage_app_game/screens/market_cap_sorting_result.dart';
 import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
+import 'package:anlage_app_game/ui/widgets/app_bar.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
@@ -159,10 +157,11 @@ class MarketCapSortingState extends State<MarketCapSorting> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final api = DepsProvider.of(context).api;
+    final deps = Deps.of(context);
+    final api = deps.api;
     if (_api != api) {
       _api = api;
-      _gameBloc = MarketCapSortingGameBloc(_api);
+      _gameBloc = MarketCapSortingGameBloc(_api, companyInfoStore: deps.companyInfoStore);
       _gameBloc.nextTurn();
     }
   }
@@ -180,42 +179,6 @@ class MarketCapSortingState extends State<MarketCapSorting> {
         builder: (context, snapshot) {
           return MarketCapSortingScreen(_gameBloc, snapshot);
         });
-  }
-}
-
-class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const MarketCapAppBar({Key key, this.api}) : super(key: key);
-
-  final ApiService api;
-  @override
-  ui.Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: const Text('Market Cap Game'),
-      actions: <Widget>[
-        IconButton(
-            icon: Icon(Icons.help),
-            onPressed: () async {
-              await showDialog<dynamic>(context: context, builder: (context) => MarketCapSortingHelpDialog());
-            }),
-        StreamBuilder<LoginState>(
-          builder: (context, snapshot) => IconButton(
-              iconSize: 36,
-              icon: CircleAvatar(
-                  maxRadius: 18,
-                  backgroundColor: Colors.white,
-                  backgroundImage:
-                      snapshot.data?.avatarUrl == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
-              onPressed: () {
-                AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
-                Scaffold.of(context).openEndDrawer();
-              }),
-          stream: api.loginState,
-        ),
-      ],
-    );
   }
 }
 
@@ -600,10 +563,8 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                                     onTap: () {
                                       final details = widget.verification.response.details
                                           .firstWhere((details) => details.instrumentKey == instrument.instrumentKey);
-                                      Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
-                                        name: '/company/details',
-                                        builder: (context) => CompanyDetailsScreen(details, instrument.logo),
-                                      ));
+                                      Navigator.of(context)
+                                          .push<dynamic>(CompanyDetailsScreen.route(details, instrument.logo));
                                     },
                                   ),
                                 );

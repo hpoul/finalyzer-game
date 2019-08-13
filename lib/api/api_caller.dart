@@ -55,16 +55,42 @@ class ApiCallerInterceptor implements Interceptor {
   }
 }
 
+class SessionStore {
+  const SessionStore();
+  static const PREF_GAME_SESSION = 'GAME_SESSION';
+
+  Future<String> loadSession() async {
+    final storage = FlutterSecureStorage();
+    String _gameSession = await storage.read(key: PREF_GAME_SESSION);
+
+    if (_gameSession == null) {
+      // for backward compatibility check shared preferences.
+      final prefs = await SharedPreferences.getInstance();
+      _gameSession = prefs.getString(PREF_GAME_SESSION);
+      if (_gameSession != null) {
+        await storage.write(key: PREF_GAME_SESSION, value: _gameSession);
+        await prefs.remove(PREF_GAME_SESSION);
+      }
+    }
+    return _gameSession;
+  }
+
+  Future<void> writeSession(String gameSession) async {
+    final storage = FlutterSecureStorage();
+    await storage.write(key: PREF_GAME_SESSION, value: gameSession);
+  }
+}
+
 class ApiCaller {
-  ApiCaller(this._env) : _baseUri = Uri.parse(_env.baseUrl) {
+  ApiCaller(this._env, {this.sessionStore = const SessionStore()}) : _baseUri = Uri.parse(_env.baseUrl) {
     _dio = _createSessionDio();
   }
 
-  static const PREF_GAME_SESSION = 'GAME_SESSION';
   static const GAME_SESSION_HEADER = 'GAME-SESSION';
 
   final Env _env;
   final Uri _baseUri;
+  final SessionStore sessionStore;
   Dio _dio;
 
   String _gameSession;
@@ -97,29 +123,11 @@ class ApiCaller {
   }
 
   Future<String> _getGameSessionFromPreferences() async {
-    if (_gameSession != null) {
-      return _gameSession;
-    }
-
-    final storage = FlutterSecureStorage();
-    _gameSession = await storage.read(key: PREF_GAME_SESSION);
-
-    if (_gameSession == null) {
-      // for backward compatibility check shared preferences.
-      final prefs = await SharedPreferences.getInstance();
-      _gameSession = prefs.getString(PREF_GAME_SESSION);
-      if (_gameSession != null) {
-        await storage.write(key: PREF_GAME_SESSION, value: _gameSession);
-        await prefs.remove(PREF_GAME_SESSION);
-      }
-    }
-
-    return _gameSession;
+    return _gameSession ??= await sessionStore.loadSession();
   }
 
   Future<void> _setGameSession(String gameSession) async {
-    final storage = FlutterSecureStorage();
-    await storage.write(key: PREF_GAME_SESSION, value: gameSession);
+    await sessionStore.writeSession(gameSession);
     _gameSession = gameSession;
   }
 

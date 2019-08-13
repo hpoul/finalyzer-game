@@ -135,3 +135,5 @@ ios/**/*.lock
 /_tools/secrets/api-project-284252947431-f35dc129d015.json
 /_tools/secrets/secrets.env
 flutter_export_environment.sh
+
+/test/**/*.new.json

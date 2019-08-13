@@ -97,7 +97,7 @@ class NavigationDrawerContent extends StatelessWidget {
                   children: <Widget>[
                         Container(
                           margin: const EdgeInsets.only(bottom: 16),
-                          constraints: BoxConstraints.tightFor(width: 128, height: 128),
+                          constraints: const BoxConstraints.tightFor(width: 128, height: 128),
                           child: AvatarWithEditIcon(
                             loginType.avatarUrl,
                             radius: 64,

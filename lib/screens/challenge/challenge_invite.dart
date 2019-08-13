@@ -232,7 +232,8 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                                   Navigator.of(context).pushReplacement<dynamic, dynamic>(AnalyticsPageRoute<dynamic>(
                                       name: '/challenge/game',
                                       builder: (context) => Challenge(
-                                            gameBloc: MarketCapSortingChallengeBloc(_deps.api, value),
+                                            gameBloc: MarketCapSortingChallengeBloc(_deps.api, value,
+                                                companyInfoStore: _deps.companyInfoStore),
                                           )));
                                 }).catchError(DialogUtil.genericErrorDialog(context));
                               });

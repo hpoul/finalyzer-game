@@ -2,6 +2,7 @@ import 'package:anlage_app_game/api/api_pricedata.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
+import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -12,6 +13,11 @@ final _logger = Logger('app.anlage.game.screens.company_details');
 
 class CompanyDetailsScreen extends StatelessWidget {
   const CompanyDetailsScreen(this.details, this.logo);
+
+  static Route<void> route(CompanyInfoDetails details, InstrumentImageDto logo) => AnalyticsPageRoute<dynamic>(
+        name: '/company/details',
+        builder: (context) => CompanyDetailsScreen(details, logo),
+      );
 
   final CompanyInfoDetails details;
   final InstrumentImageDto logo;

@@ -142,10 +142,7 @@ class MarketCapSortingResultWidget extends StatelessWidget {
                       onTap: () {
                         final details =
                             response.details.firstWhere((details) => resultDto.instrumentKey == details.instrumentKey);
-                        Navigator.of(context).push<dynamic>(AnalyticsPageRoute<dynamic>(
-                          name: '/company/details',
-                          builder: (context) => CompanyDetailsScreen(details, info.logo),
-                        ));
+                        Navigator.of(context).push<dynamic>(CompanyDetailsScreen.route(details, info.logo));
                       },
                       child: Container(
                         decoration: resultIdx == 0
