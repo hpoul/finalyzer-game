@@ -2,8 +2,8 @@ import 'dart:ui' as ui;
 
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/data/company_info_store.dart';
-import 'package:anlage_app_game/screens/history/history_list.dart';
-import 'package:anlage_app_game/screens/market_cap_sorting_help.dart';
+import 'package:anlage_app_game/ui/screens/history/history_list.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_sorting_help.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';

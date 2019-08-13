@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger('app.anlage.game.screens.leaderboard');
+final _logger = Logger('app.anlage.game.ui.screens.leaderboard');
 
 class LeaderboardList extends StatefulWidget {
   static const ROUTE_NAME = '/leaderboard';

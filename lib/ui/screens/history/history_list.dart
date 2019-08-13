@@ -1,5 +1,5 @@
 import 'package:anlage_app_game/data/company_info_store.dart';
-import 'package:anlage_app_game/screens/company_details.dart';
+import 'package:anlage_app_game/ui/screens/company_details.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
 import 'package:anlage_app_game/utils/utils_format.dart';
@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 class ReversedListView<T> {
   ReversedListView(this._list);
+
   final List<T> _list;
 
   int get length => _list.length;
@@ -19,6 +20,7 @@ class ReversedListView<T> {
 
 class HistoryList extends StatelessWidget {
   static const String ROUTE_NAME = '/history';
+
   static PageRoute<void> get route => AnalyticsPageRoute(
         name: ROUTE_NAME,
         builder: (context) => HistoryList(),

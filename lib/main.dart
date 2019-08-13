@@ -4,11 +4,11 @@ import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/data/company_info_store.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
-import 'package:anlage_app_game/screens/challenge/challenge.dart';
-import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
-import 'package:anlage_app_game/screens/leaderboard.dart';
-import 'package:anlage_app_game/screens/market_cap_sorting.dart';
-import 'package:anlage_app_game/screens/profile_edit.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge_invite.dart';
+import 'package:anlage_app_game/ui/screens/leaderboard.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_sorting.dart';
+import 'package:anlage_app_game/ui/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/logging.dart';
@@ -89,7 +89,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             title: 'MarketCap Game',
             navigatorKey: navigatorKey,
-//          debugShowCheckedModeBanner: false,
+            debugShowCheckedModeBanner: false,
             theme: buildFinalyzerTheme(),
             navigatorObservers: [observer],
             home: MarketCapSorting(),

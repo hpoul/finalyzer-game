@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger('app.anlage.game.screens.profile_edit');
+final _logger = Logger('app.anlage.game.ui.screens.profile_edit');
 
 class ProfileEdit extends StatefulWidget {
   static const ROUTE_NAME = '/profile/edit';

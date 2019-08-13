@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
-final _logger = Logger('app.anlage.game.screens.market_cap_sorting');
+final _logger = Logger('app.anlage.game.ui.screens.market_cap_sorting');
 
 class MarketCapSortingGameBloc {
   MarketCapSortingGameBloc(this._apiService, {@required this.companyInfoStore}) {

@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:logging/logging.dart';
 
-final _logger = Logger('app.anlage.game.screens.company_details');
+final _logger = Logger('app.anlage.game.ui.screens.company_details');
 
 class CompanyDetailsScreen extends StatelessWidget {
   const CompanyDetailsScreen(this.details, this.logo);

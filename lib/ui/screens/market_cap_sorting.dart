@@ -1,11 +1,11 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
-import 'package:anlage_app_game/screens/challenge/challenge.dart';
-import 'package:anlage_app_game/screens/company_details.dart';
-import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
-import 'package:anlage_app_game/screens/market_cap_sorting_result.dart';
-import 'package:anlage_app_game/screens/navigation_drawer_profile.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/ui/screens/company_details.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_sorting_result.dart';
+import 'package:anlage_app_game/ui/screens/navigation_drawer_profile.dart';
 import 'package:anlage_app_game/ui/widgets/app_bar.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
@@ -19,7 +19,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
-final _logger = Logger('app.anlage.game.screens.market_cap_sorting');
+final _logger = Logger('app.anlage.game.ui.screens.market_cap_sorting');
 
 class MarketCapSorting extends StatefulWidget {
   @override

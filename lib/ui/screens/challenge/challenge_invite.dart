@@ -2,8 +2,8 @@ import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/secrets.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
-import 'package:anlage_app_game/screens/challenge/challenge.dart';
-import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
@@ -15,7 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:share/share.dart';
 
-final _logger = Logger('app.anlage.game.screens.challenge.challenge_invite');
+final _logger = Logger('app.anlage.game.ui.screens.challenge.challenge_invite');
 
 class ChallengeInvite extends StatelessWidget {
   static const ROUTE_NAME = '/challenge/invite';

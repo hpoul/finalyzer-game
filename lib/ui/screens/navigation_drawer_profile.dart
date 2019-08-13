@@ -1,10 +1,10 @@
 import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/finalyzer_theme.dart';
-import 'package:anlage_app_game/screens/challenge/challenge.dart';
-import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
-import 'package:anlage_app_game/screens/leaderboard.dart';
-import 'package:anlage_app_game/screens/profile_edit.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge_invite.dart';
+import 'package:anlage_app_game/ui/screens/leaderboard.dart';
+import 'package:anlage_app_game/ui/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ import 'package:logging/logging.dart';
 import 'package:package_info/package_info.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-final _logger = Logger('app.anlage.game.screens.navigation_drawer_profile');
+final _logger = Logger('app.anlage.game.ui.screens.navigation_drawer_profile');
 
 class NavigationDrawerProfile extends StatelessWidget {
   @override

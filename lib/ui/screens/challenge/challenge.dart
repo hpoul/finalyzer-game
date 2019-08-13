@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:anlage_app_game/api/api_challenge_service.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
-import 'package:anlage_app_game/screens/challenge/challenge_invite.dart';
-import 'package:anlage_app_game/screens/leaderboard.dart';
-import 'package:anlage_app_game/screens/market_cap_game_bloc.dart';
+import 'package:anlage_app_game/ui/screens/challenge/challenge_invite.dart';
+import 'package:anlage_app_game/ui/screens/leaderboard.dart';
+import 'package:anlage_app_game/ui/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/route_observer_analytics.dart';
