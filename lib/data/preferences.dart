@@ -43,7 +43,7 @@ class PreferenceStore {
   Future<void> _migrateOldData() async {
     // we previously used shared preferences with only a single option, let's migrate it.
     final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString('asked_for_push');
+    final value = prefs.getBool('asked_for_push');
     if (value != null) {
       await update((b) => b..askedForPushPermissionAt = DateTime.now().toUtc());
       await prefs.remove('asked_for_push');
