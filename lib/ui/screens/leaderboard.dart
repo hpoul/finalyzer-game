@@ -1,9 +1,12 @@
+import 'dart:math' as math;
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/ui/widgets/index_offset_list_view.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
 import 'package:anlage_app_game/utils/widgets/error_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 
@@ -33,7 +36,7 @@ class LeaderboardListState extends State<LeaderboardList> {
       ),
       body: SafeArea(
         child: FutureBuilder<LeaderboardSimpleResponse>(
-            future: _leaderboardFuture,
+            future: _leaderboardFuture ??= api.fetchLeaderboard(),
             builder: (context, snapshot) {
               if (snapshot.data == null || snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
@@ -52,9 +55,11 @@ class LeaderboardListState extends State<LeaderboardList> {
               }
 
               final list = snapshot.data.leaderboardEntries.toList();
-              return ListView.builder(
+              return IndexOffsetListView.builder(
+                initialIndex: math.max(list.indexWhere((e) => e.loggedInUser) - 5, 0),
                 itemCount: snapshot.data.leaderboardEntries.length,
                 itemBuilder: (context, idx) {
+                  assert(idx >= 0 && idx < list.length);
                   final entry = list[idx];
                   return LeaderboardListTile(
                     rank: entry.rank,
@@ -142,7 +147,6 @@ class LeaderboardListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _logger.finer('AvatarUrl: $avatarUrl');
     return Ink(
       color: isMyself ? Colors.lightGreen : null,
       child: ListTile(

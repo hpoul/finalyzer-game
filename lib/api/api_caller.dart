@@ -137,6 +137,7 @@ class ApiCaller {
     }
     final dio = _dio;
     try {
+      _logger.finest('Requesting ${location.path} ...');
       final response = await dio.get<dynamic>(_baseUri.resolve(location.path).toString(),
           options: Options(responseType: ResponseType.json));
       return location.bodyFromGetJson(response.data);
