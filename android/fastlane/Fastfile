@@ -26,8 +26,11 @@ platform :android do
     #gradle(task: "clean assembleRelease")
     #upload_to_play_store(apk: '../build/app/outputs/apk/release/app-release.apk', track: 'beta')
     #upload_to_play_store(apk: '../build/app/outputs/apk/release/app-release.apk', track: 'internal')
-    upload_to_play_store(aab: '../build/app/outputs/bundle/release/app.aab', track: 'beta')
-    #upload_to_play_store(aab: '../build/app/outputs/bundle/release/app.aab', track: 'internal')
+    #upload_to_play_store(aab: '../build/app/outputs/bundle/release/app.aab', track: 'beta')
+    # According to https://support.google.com/googleplay/android-developer/answer/3131213?hl=en
+    # internal testing is quicker:
+    # "When should I use an internal test?[...]Fast: You can distribute apps via the internal test track much faster than the open or closed tracks."
+    upload_to_play_store(aab: '../build/app/outputs/bundle/release/app.aab', track: 'internal')
   
     # sh "your_script.sh"
     # You can also use other beta testing services here
