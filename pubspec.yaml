@@ -39,7 +39,7 @@ dependencies:
   image: ^2.1.4
   timeago: ^2.0.18
   flutter_secure_storage: ^3.2.1+1
-  pedantic: ^1.7.0
+  pedantic: ^1.8.0+1
 
   charts_flutter: ^0.6.0
   lottie_flutter: ^0.2.0

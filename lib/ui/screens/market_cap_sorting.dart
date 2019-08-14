@@ -557,8 +557,9 @@ class MarketCapSortingScaleState extends State<MarketCapSortingScaleWidget> with
                     ),
                     AnimatedBuilder(
                       animation: _forceHideResultOverlay ?? finishAnimation,
-                      builder: (BuildContext context, Widget child) =>
-                          Opacity(opacity: _forceHideResultOverlay?.value ?? finishAnimation.value, child: child),
+                      builder: (BuildContext context, Widget child) => finishAnimation.value == 0
+                          ? Container()
+                          : Opacity(opacity: _forceHideResultOverlay?.value ?? finishAnimation.value, child: child),
                       child: TurnResultOverlay(
                         correctCount: widget.verification.response.correctCount,
                         onShare: _captureImage
@@ -658,7 +659,7 @@ class TurnResultOverlay extends StatelessWidget {
     this.onClose,
   }) : super(key: key);
 
-  static const List<String> _emoji = ['🤔', '🤷️', '😎️', '😎️', '🎉️'];
+//  static const List<String> _emoji = ['🤔', '🤷️', '😎️', '😎️', '🎉️'];
   static const List<String> _correctLabels = [
     'None were correct',
     'Nice try!',

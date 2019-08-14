@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:anlage_app_game/api/api_service.dart';
+import 'package:anlage_app_game/api/dio_firebase_performance_interceptor.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
 import 'package:dio/dio.dart';
@@ -96,13 +97,15 @@ class ApiCaller {
   String _gameSession;
 
   Dio _createSessionDio() {
-    final dio = Dio();
+    final dio = _createDio();
     dio.interceptors.add(ApiCallerInterceptor(this, dio));
     return dio;
   }
 
+  Dio _createDio() => Dio()..interceptors.add(FirebasePerformanceInterceptor());
+
   Future<String> _registerDevice() async {
-    final dio = Dio();
+    final dio = _createDio();
     final location = RegisterDeviceLocation();
     final response = await _post(
         location,
@@ -133,6 +136,7 @@ class ApiCaller {
 
   Future<U> get<U>(GetLocation<U> location) async {
     if (_env.fakeLatency != null) {
+      _logger.finer('Simulating network latency, ${_env.fakeLatency}');
       await Future<dynamic>.delayed(_env.fakeLatency);
     }
     final dio = _dio;

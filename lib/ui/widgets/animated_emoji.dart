@@ -84,6 +84,7 @@ class _AnimatedEmojiState extends State<AnimatedEmoji> with SingleTickerProvider
     _animationTimeoutTimer = Timer(const Duration(seconds: 10), () {
       _logger.fine('timeout reached, stopping animation.');
       _controller.stop();
+      _controller.forward();
     });
   }
 
