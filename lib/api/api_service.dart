@@ -204,7 +204,7 @@ class ApiService {
   }
 
   Future<LeaderboardSimpleResponse> fetchLeaderboard() async {
-    return await _apiCaller.get(LeaderboardSimpleLocation());
+    return await _apiCaller.get(LeaderboardSimpleLocation(null));
   }
 
   String resolveUri(String relativeOrAbsoluteUrl) => _baseUri.resolve(relativeOrAbsoluteUrl).toString();

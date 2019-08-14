@@ -141,7 +141,7 @@ class ApiCaller {
           options: Options(responseType: ResponseType.json));
       return location.bodyFromGetJson(response.data);
     } on DioError catch (dioError, stackTrace) {
-      _logger.finer('Error during api call', dioError, stackTrace);
+      _logger.finer('${_gameSession}Error during api call $location', dioError, stackTrace);
       throw ApiNetworkError.fromError(dioError);
     }
   }

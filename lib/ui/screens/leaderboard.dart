@@ -2,6 +2,7 @@ import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:anlage_app_game/utils/widgets/avatar.dart';
+import 'package:anlage_app_game/utils/widgets/error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -19,6 +20,7 @@ class LeaderboardList extends StatefulWidget {
 
 class LeaderboardListState extends State<LeaderboardList> {
   final leaderboardScaffold = GlobalKey<ScaffoldState>();
+  Future<LeaderboardSimpleResponse> _leaderboardFuture;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +33,21 @@ class LeaderboardListState extends State<LeaderboardList> {
       ),
       body: SafeArea(
         child: FutureBuilder<LeaderboardSimpleResponse>(
-            future: api.fetchLeaderboard(),
+            future: _leaderboardFuture,
             builder: (context, snapshot) {
-              if (snapshot.data == null) {
+              if (snapshot.data == null || snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
+                );
+              }
+              if (snapshot.hasError) {
+                return ErrorWidgetWithRetry(
+                  error: snapshot.error,
+                  onRetry: () {
+                    setState(() {
+                      _leaderboardFuture = api.fetchLeaderboard();
+                    });
+                  },
                 );
               }
 
