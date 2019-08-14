@@ -8,6 +8,7 @@ import 'package:anlage_app_game/ui/screens/company_details.dart';
 import 'package:anlage_app_game/ui/screens/market_cap_game_bloc.dart';
 import 'package:anlage_app_game/ui/screens/market_cap_sorting_result.dart';
 import 'package:anlage_app_game/ui/screens/navigation_drawer_profile.dart';
+import 'package:anlage_app_game/ui/widgets/animated_emoji.dart';
 import 'package:anlage_app_game/ui/widgets/app_bar.dart';
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:anlage_app_game/utils/deps.dart';
@@ -672,51 +673,60 @@ class TurnResultOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: IntrinsicWidth(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: onShare == null && onClose == null
-                  ? []
-                  : <Widget>[
-                      FlatButton.icon(
-                        icon: Icon(Icons.share),
-                        label: const Text('Share'),
-                        onPressed: onShare,
-                      ),
-                      IconButton(icon: Icon(Icons.close), onPressed: onClose),
-                    ],
-            ),
-            Text(
-              _emoji[correctCount] ?? '',
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white70,
+          border: Border.all(color: Colors.black26, width: 0.5),
+          borderRadius: BorderRadius.circular(4),
+//          boxShadow: [BoxShadow(blurRadius: 4)],
+        ),
+//        elevation: 0,
+//        borderOnForeground: false,
+//        margin: EdgeIn,
+        padding: const EdgeInsets.all(8),
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: onShare == null && onClose == null
+                    ? []
+                    : <Widget>[
+                        FlatButton.icon(
+                          icon: Icon(Icons.share),
+                          label: const Text('Share'),
+                          onPressed: onShare,
+                        ),
+                        IconButton(icon: Icon(Icons.close), onPressed: onClose),
+                      ],
+              ),
+              /*Text(
+                _emoji[correctCount] + 'a😂️' ?? '',
 //                          textScaleFactor: 10,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 120,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+//                color: Colors.black,
+                  fontSize: 110,
+                  height: 1.5,
+                  fontWeight: FontWeight.normal,
 //                            shadows: [Shadow(color: Colors.black54, offset: const Offset(0, 4), blurRadius: 8)],
-              ),
-            ),
-            Card(
-              elevation: 2,
-              child: Container(
-//                            decoration:
-//                                BoxDecoration(border: Border.all(), borderRadius: BorderRadius.all(Radius.circular(4))),
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  _correctLabels[correctCount],
-                  style: Theme.of(context).textTheme.body1.apply(fontSizeFactor: 2).copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-//                              textScaleFactor: 2,
                 ),
+              ),*/
+              AnimatedEmoji.points(correctCount),
+              Text(
+                _correctLabels[correctCount],
+                style: Theme.of(context).textTheme.body1.copyWith(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+//                              textScaleFactor: 2,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
