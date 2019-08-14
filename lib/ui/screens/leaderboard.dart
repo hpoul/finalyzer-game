@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:anlage_app_game/api/dtos.generated.dart';
+import 'package:anlage_app_game/ui/screens/profile_edit.dart';
 import 'package:anlage_app_game/ui/widgets/index_offset_list_view.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
@@ -68,6 +69,10 @@ class LeaderboardListState extends State<LeaderboardList> {
                     isMyself: entry.loggedInUser,
                     statsCorrectAnswers: entry.statsCorrectAnswers,
                     onTap: () {
+                      if (entry.loggedInUser) {
+                        Navigator.of(context).pushNamed(ProfileEdit.ROUTE_NAME);
+                        return;
+                      }
                       showModalBottomSheet<dynamic>(
                         context: context,
                         builder: (context) => BottomSheet(
