@@ -55,6 +55,7 @@ dependencies:
       ref: c0205050e93a5a31aa0843a3f25773e09c118261
   built_value: ^6.7.0
   simple_json_persistence: ^0.1.1
+  flutter_markdown: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +86,7 @@ flutter:
   #  - images/a_dot_ham.jpeg
   assets:
     - assets/lottie/
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

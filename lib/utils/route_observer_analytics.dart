@@ -1,4 +1,5 @@
 import 'package:anlage_app_game/utils/analytics.dart';
+import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
@@ -22,9 +23,29 @@ class MyAnalyticsObserver extends RouteObserver<Route<dynamic>> {
   });
 
   final AnalyticsUtils analytics;
+  final Expando<String> _routeExpando = Expando<String>('routeExpando');
 
-  String _extractScreenName(Route<dynamic> route) =>
-      route.settings.name ?? (route is AnalyticsPageRoute ? route.name : null) ?? route.runtimeType.toString();
+  String _extractScreenName(Route<dynamic> route) {
+    final name = route.settings.name ?? (route is AnalyticsPageRoute ? route.name : null);
+    if (name != null) {
+      return name;
+    }
+    final override = DialogUtil.nextPushedScreenName;
+    if (override != null) {
+      _routeExpando[route] = override;
+      return override;
+    }
+    final previous = _routeExpando[route];
+    if (previous != null) {
+      return previous;
+    }
+    final stackTrace = StackTrace.current;
+    final firstLine =
+        stackTrace.toString().split('\n').firstWhere((line) => !line.contains(RegExp(r'Observer|Navigator')));
+    final callerName = RegExp(r'([\w\.]{2,999})').firstMatch(firstLine)?.group(1);
+    _logger.warning('Unable to find name for route ${route.runtimeType}, using $callerName', null, stackTrace);
+    return _routeExpando[route] = callerName ?? route.runtimeType.toString();
+  }
 
   void _sendScreenView(Route<dynamic> route) {
     final String screenName = _extractScreenName(route);

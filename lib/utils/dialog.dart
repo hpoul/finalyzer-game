@@ -82,6 +82,19 @@ class DialogUtil {
       }).catchError(LoggingUtil.futureCatchErrorLog('require permission?'));
     }
   }
+
+  static String nextPushedScreenName;
+
+  static T pushInfo<T>(String screenName, T Function() callback) {
+    try {
+      assert(nextPushedScreenName == null);
+      nextPushedScreenName = screenName;
+      return callback();
+    } finally {
+      assert(nextPushedScreenName != null);
+      nextPushedScreenName = null;
+    }
+  }
 }
 
 class ErrorRetry extends StatelessWidget {

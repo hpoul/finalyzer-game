@@ -8,6 +8,7 @@ import 'package:anlage_app_game/ui/screens/profile_edit.dart';
 import 'package:anlage_app_game/utils/deps.dart';
 import 'package:anlage_app_game/utils/dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:logging/logging.dart';
 import 'package:package_info/package_info.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -208,22 +209,46 @@ class NavigationDrawerContent extends StatelessWidget {
                           onLongPress: () async {
                             _logger.severe('TEST Crash Stuff', Error(), StackTrace.current);
                             const url = 'https://anlage.app/?utm_source=marketcap-game';
-                            if (await canLaunch(url)) {
-                              await launch(url, forceSafariVC: false);
-                            } else {
-                              _logger.severe('Unable to launch url $url');
-                            }
+                            await DialogUtil.launchUrl(url);
                           },
                         ),
-                        ...(packageInfo == null
-                            ? []
-                            : [
-                                Text(
-                                  'MarketCap Game V${packageInfo.version}-${packageInfo.buildNumber}',
-                                  style: TextStyle(color: Colors.black26, fontSize: 12),
+                        ListTile(
+                          leading: Icon(Icons.info_outline),
+                          title: const Text('About & Credits'),
+                          subtitle: packageInfo == null
+                              ? null
+                              : Text('MarketCap Game V${packageInfo.version}b${packageInfo.buildNumber}'),
+                          onTap: () {
+                            final imageSize = IconTheme.of(context).size;
+                            DialogUtil.pushInfo('/about', () {
+                              showAboutDialog(
+                                context: context,
+                                applicationName: packageInfo?.appName,
+                                applicationVersion: '${packageInfo.version}b${packageInfo.buildNumber}',
+                                applicationLegalese: '© by https://Anlage.App, 2019',
+                                applicationIcon: Image.asset(
+                                  'assets/images/app-icon.png',
+                                  width: imageSize,
+                                  height: imageSize,
+                                  fit: BoxFit.contain,
                                 ),
-                                const SizedBox(height: 8),
-                              ]),
+                                children: [
+                                  const SizedBox(height: 16),
+                                  MarkdownBody(
+                                    data: 'App contains animations from [lottiefiles.com](https://lottiefiles.com):\n'
+                                        '[emoji-shock](https://lottiefiles.com/44-emoji-shock), '
+                                        '[trophy](https://lottiefiles.com/677-trophy), '
+                                        '[suspects](https://lottiefiles.com/1441-suspects), '
+                                        '[smoothymom-clap](https://lottiefiles.com/4054-smoothymon-clap)',
+                                    onTapLink: (link) async {
+                                      await DialogUtil.launchUrl(link);
+                                    },
+                                  )
+                                ],
+                              );
+                            });
+                          },
+                        ),
                       ],
                     ),
                   ],
