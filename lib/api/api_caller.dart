@@ -5,9 +5,11 @@ import 'package:anlage_app_game/api/api_service.dart';
 import 'package:anlage_app_game/api/dio_firebase_performance_interceptor.dart';
 import 'package:anlage_app_game/api/dtos.generated.dart';
 import 'package:anlage_app_game/env/_base.dart';
+import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
+import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final _logger = Logger('app.anlage.game.api.api_caller');
@@ -85,6 +87,9 @@ class SessionStore {
 class ApiCaller {
   ApiCaller(this._env, {this.sessionStore = const SessionStore()}) : _baseUri = Uri.parse(_env.baseUrl) {
     _dio = _createSessionDio();
+    _generateUserAgent().then((ua) {
+      _dio.options.headers[HttpHeaders.userAgentHeader] = ua;
+    });
   }
 
   static const GAME_SESSION_HEADER = 'GAME-SESSION';
@@ -106,11 +111,12 @@ class ApiCaller {
 
   Future<String> _registerDevice() async {
     final dio = _createDio();
+    _dio.options.headers[HttpHeaders.userAgentHeader] = await _generateUserAgent();
     final location = RegisterDeviceLocation();
     final response = await _post(
         location,
         RegisterDeviceRequest(
-                'TODO', // TODO implement device info?
+                await _generateDeviceInfo(),
                 '${Platform.operatingSystem} ${Platform.operatingSystemVersion} - Dart ${Platform.version}',
                 Platform.isIOS
                     ? DevicePlatform.iOS
@@ -123,6 +129,24 @@ class ApiCaller {
       throw StateError('Got null response for gameSession from server.');
     }
     return gameSession;
+  }
+
+  Future<String> _generateUserAgent() async {
+    final info = await PackageInfo.fromPlatform();
+    return 'Dart ${Platform.version}, ${info.version}b${info.buildNumber} (${info.packageName}';
+  }
+
+  Future<String> _generateDeviceInfo() async {
+    final deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      final info = await deviceInfo.iosInfo;
+      return 'ios ${info.name} ${info.model} (${info.systemName} ${info.systemVersion}';
+    } else if (Platform.isAndroid) {
+      final info = await deviceInfo.androidInfo;
+      return 'android ${info.product}, ${info.manufacturer}, ${info.device}, ${info.version.release} ${info.version.securityPatch}';
+    } else {
+      return 'Unknown Platform (${Platform.operatingSystem})';
+    }
   }
 
   Future<String> _getGameSessionFromPreferences() async {
