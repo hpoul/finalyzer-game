@@ -155,7 +155,7 @@ class ChallengeInviteInfo extends StatefulWidget {
 
 class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
   Future<GameChallengeInviteInfoResponse> _inviteInfoFuture;
-  Future<GameChallengeDto> _acceptChallengeFuture;
+  Future<dynamic> _acceptChallengeFuture;
 
   Deps _deps;
   ApiChallenge _apiChallenge;
@@ -218,7 +218,7 @@ class _ChallengeInviteInfoState extends State<ChallengeInviteInfo> {
                 isWeeklyChallenge
                     ? const Text('Join our current weekly challenge!')
                     : Text('You have been challenged by ${createdBy.displayName}. Do you want to play?'),
-                FutureBuilder<GameChallengeDto>(
+                FutureBuilder<dynamic>(
                   future: _acceptChallengeFuture,
                   builder: (context, snapshot) => Padding(
                     padding: const EdgeInsets.all(8.0),

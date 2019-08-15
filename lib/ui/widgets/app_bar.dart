@@ -20,8 +20,19 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final companyInfoData = Provider.of<CompanyInfoData>(context);
+    final ModalRoute<dynamic> parentRoute = ModalRoute.of(context);
+    final canPop = parentRoute.canPop;
+//    final canPop = Navigator.of(context).canPop();
     return AppBar(
       title: const Text('Market Cap Game'),
+      leading: canPop
+          ? const BackButton()
+          : IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                AnalyticsUtils.instance.analytics.events.trackDrawerOpen(source: 'appBar/menu');
+                Scaffold.of(context).openEndDrawer();
+              }),
       actions: <Widget>[
         ...(companyInfoData?.history?.isNotEmpty != true
             ? []
@@ -47,7 +58,7 @@ class MarketCapAppBar extends StatelessWidget implements PreferredSizeWidget {
                   backgroundImage:
                       snapshot.data?.avatarUrl == null ? null : CachedNetworkImageProvider(snapshot.data.avatarUrl)),
               onPressed: () {
-                AnalyticsUtils.instance.analytics.logEvent(name: 'drawer_open_click_avatar');
+                AnalyticsUtils.instance.analytics.events.trackDrawerOpen(source: 'appBar/avatar');
                 Scaffold.of(context).openEndDrawer();
               }),
           stream: api.loginState,

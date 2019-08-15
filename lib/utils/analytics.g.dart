@@ -22,4 +22,7 @@ class AnalyticsEventImpl implements AnalyticsEvent {
   @override
   void trackCloseResultOverlay() =>
       tracker('trackCloseResultOverlay', <String, dynamic>{});
+  @override
+  void trackDrawerOpen({String source}) =>
+      tracker('trackDrawerOpen', <String, dynamic>{'source': source});
 }

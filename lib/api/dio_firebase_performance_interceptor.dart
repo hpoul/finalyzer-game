@@ -16,7 +16,7 @@ class FirebasePerformanceInterceptor implements Interceptor {
   static const _HTTP_METHOD_MAPPING = <String, HttpMethod>{
     'POST': HttpMethod.Post,
     'GET': HttpMethod.Get,
-    'Put': HttpMethod.Put,
+    'PUT': HttpMethod.Put,
     'OPTIONS': HttpMethod.Options,
     'HEAD': HttpMethod.Head,
   };

@@ -71,4 +71,6 @@ abstract class AnalyticsEvent {
   void trackTurnVerify({@required GameType gameType, @required int score});
 
   void trackCloseResultOverlay();
+
+  void trackDrawerOpen({String source});
 }
