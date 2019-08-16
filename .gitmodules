@@ -1,0 +1,4 @@
+[submodule "_design"]
+	path = _design
+	url = ../finalyzer-game.git
+	branch = design
