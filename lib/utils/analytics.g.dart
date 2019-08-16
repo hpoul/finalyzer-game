@@ -12,17 +12,17 @@ class AnalyticsEventImpl implements AnalyticsEvent {
   final TrackAnalytics tracker;
 
   @override
-  void trackResultVerify() => tracker('trackResultVerify', <String, dynamic>{});
+  void trackResultVerify() => tracker('resultVerify', <String, dynamic>{});
   @override
   void trackTurnVerify({GameType gameType, int score}) =>
-      tracker('trackTurnVerify', <String, dynamic>{
+      tracker('turnVerify', <String, dynamic>{
         'gameType': gameType?.toString()?.substring(9),
         'score': score
       });
   @override
   void trackCloseResultOverlay() =>
-      tracker('trackCloseResultOverlay', <String, dynamic>{});
+      tracker('closeResultOverlay', <String, dynamic>{});
   @override
   void trackDrawerOpen({String source}) =>
-      tracker('trackDrawerOpen', <String, dynamic>{'source': source});
+      tracker('drawerOpen', <String, dynamic>{'source': source});
 }
