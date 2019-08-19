@@ -9,8 +9,12 @@ Anlage.App Market Cap Game: https://anlage.app/game
 
 ## Manually Building for Samsung Galaxy Store, Amazon Apps Store
 
-- `flutter build apk -t lib/env/production.dart --release --target-platform android-arm,android-arm64 --split-per-abi --build-number xxx`
-- see [AndroidManifest.xml](android/app/src/main/AndroidManifest.xml)
+- amazon:
+    - `flutter build apk -t lib/env/production.dart --release --build-number`
+- samsung:
+    - see [AndroidManifest.xml](android/app/src/main/AndroidManifest.xml)
+    - `flutter build apk -t lib/env/production.dart --release --target-platform android-arm,android-arm64 --split-per-abi --build-number xxx`
+    - (this will generate 1xxx and 2xxx versioncodes)
 
 ## CI
 

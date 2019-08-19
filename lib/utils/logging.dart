@@ -1,29 +1,20 @@
 import 'package:anlage_app_game/utils/analytics.dart';
 import 'package:logging/logging.dart';
+import 'package:logging_appenders/logging_appenders.dart';
 
 final _logger = Logger('app.anlage.game.utils.logging');
 
 void setupLogging() {
   Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen(PrintAppender().logListener());
   Logger.root.onRecord.listen((LogRecord rec) {
-    print('${rec.loggerName} - ${rec.level.name}: ${rec.time}: ${rec.message}');
-
-//    if (rec.level >= Level.INFO) {
-//      FlutterCrashlytics().log(rec.message, priority: rec.level.value, tag: rec.loggerName);
-//    }
-
-    if (rec.error != null) {
-      print(rec.error);
-    }
     if (rec.stackTrace != null) {
-      print(rec.stackTrace);
       if (rec.level >= Level.WARNING) {
         AnalyticsUtils.instance.analytics.logEvent(
           name: 'logerror',
           parameters: <String, dynamic>{'message': rec.message, 'stack': rec.stackTrace},
           silent: true,
         );
-//        FlutterCrashlytics().logException(rec.error, rec.stackTrace);
       }
     } else if (rec.level >= Level.SEVERE) {
       AnalyticsUtils.instance.analytics.logEvent(
